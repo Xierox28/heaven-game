@@ -215,95 +215,120 @@ export default function HamsterCharacter({ state, onPet }) {
 
             {/* กล่องบรรจุตัวน้อง 16:9 อัตราส่วนตรงกับภาพ 1024x576 เป๊ะๆ */}
             <div className="relative w-64 sm:w-72 aspect-[16/9] flex items-center justify-center">
-              <img
-                src={breedImg}
-                onError={(e) => { e.currentTarget.src = "/assets/heaven-hamster.png"; }}
-                alt="Hamster Character"
-                className={`w-full h-full object-contain pixel-art filter drop-shadow-md transition-all duration-500 ${tintClass} ${sleepTint}`}
-                draggable="false"
-              />
+            {/* ============================================================
+                4. WARDROBE LAYERS (แยกปีกไว้ข้างหลังตัวน้องอย่างเด็ดขาด)
+            ============================================================ */}
+            {(() => {
+              const rawEquipped = Array.isArray(equipped)
+                ? equipped
+                : Object.values(equipped || {}).filter(Boolean);
 
-              {/* แก้มแดง (Blush) ตรงตำแหน่งแก้มทั้งสองข้าง */}
-              <div className="absolute top-[64%] left-[34%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
-              <div className="absolute top-[66%] left-[59%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+              const offsets = state.wardrobeOffsets || {};
+              const wingsList = rawEquipped.filter((id) => WARDROBE_ITEMS.find((w) => w.id === id)?.type === "wings");
+              const frontList = rawEquipped.filter((id) => WARDROBE_ITEMS.find((w) => w.id === id)?.type !== "wings");
 
-              {/* Personality Icon Floater */}
-              {pDef && !isSleeping && (
-                <div className="absolute -top-1 -right-1 z-25 pointer-events-none text-xs bg-white/90 border border-amber-300 rounded-full w-5 h-5 flex items-center justify-center shadow-xs animate-bounce">
-                  {pDef.icon}
-                </div>
-              )}
-
-          {/* ดวงตาตอนหลับ (Sleeping Eyes) ทับตาจริงพอดิบพอดี */}
-          {isSleeping && (
-            <>
-              <div className="absolute top-[60.5%] left-[40.5%] w-3.5 h-1 border-b-2 border-slate-700 rounded-full pointer-events-none"></div>
-              <div className="absolute top-[62.5%] left-[52.5%] w-3.5 h-1 border-b-2 border-slate-700 rounded-full pointer-events-none"></div>
-            </>
-          )}
-
-          {/* ดวงตาตอนป่วย (Sick Eyes) */}
-          {mood === "sick" && !isSleeping && (
-            <>
-              <div className="absolute top-[57%] left-[41%] text-[10px] font-black text-slate-800 pointer-events-none">×</div>
-              <div className="absolute top-[59%] left-[53%] text-[10px] font-black text-slate-800 pointer-events-none">×</div>
-            </>
-          )}
-
-          {/* คิ้วตอนโกรธ (Angry Eyebrows) */}
-          {mood === "angry" && !isSleeping && (
-            <>
-              <div className="absolute top-[55%] left-[39%] w-4 h-1 bg-slate-800 rounded-full rotate-[20deg] pointer-events-none"></div>
-              <div className="absolute top-[57%] left-[51%] w-4 h-1 bg-slate-800 rounded-full rotate-[-20deg] pointer-events-none"></div>
-            </>
-          )}
-
-          {/* ============================================================
-              4. WARDROBE LAYERS (Multi-wear stacking สวมใส่ได้หลายชิ้นพร้อมกัน)
-          ============================================================ */}
-          {(() => {
-            const rawEquipped = Array.isArray(equipped)
-              ? equipped
-              : Object.values(equipped || {}).filter(Boolean);
-
-            // เรียงลำดับ Layer: Wings (หลังสุด) -> Outfit (ล่าง) -> Accessory (กลาง) -> Hat / Glasses (บนสุด)
-            const layerOrder = { wings: 0, outfit: 1, accessory: 2, hat: 3 };
-            const sortedList = [...rawEquipped].sort((a, b) => {
-              const typeA = WARDROBE_ITEMS.find((w) => w.id === a)?.type || "outfit";
-              const typeB = WARDROBE_ITEMS.find((w) => w.id === b)?.type || "outfit";
-              return (layerOrder[typeA] || 1) - (layerOrder[typeB] || 1);
-            });
-
-            const offsets = state.wardrobeOffsets || {};
-
-            return sortedList.map((itemId) => {
-              const itemDef = WARDROBE_ITEMS.find((w) => w.id === itemId);
-              const isWings = itemDef?.type === "wings";
-              const isAccessory = itemDef?.type === "accessory";
-              const isHat = itemDef?.type === "hat";
-              const zClass = isWings ? "z-5" : isHat ? "z-25" : isAccessory ? "z-20" : "z-15";
-              let anim = "";
-              if (isWings || itemDef?.isAnimated) anim = "animate-wing-flap";
-              else if (itemId === "bell_collar") anim = "animate-bounce";
-              else if (itemId === "star_glasses") anim = "animate-pulse";
-              const offset = offsets[itemId] || { x: 0, y: 0, scale: 1.0 };
+              const layerOrder = { outfit: 1, accessory: 2, hat: 3 };
+              frontList.sort((a, b) => {
+                const typeA = WARDROBE_ITEMS.find((w) => w.id === a)?.type || "outfit";
+                const typeB = WARDROBE_ITEMS.find((w) => w.id === b)?.type || "outfit";
+                return (layerOrder[typeA] || 1) - (layerOrder[typeB] || 1);
+              });
 
               return (
-                <img
-                  key={itemId}
-                  src={`/assets/wardrobe/${itemId}.png`}
-                  alt={itemId}
-                  className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none ${zClass} ${anim}`}
-                  style={{
-                    transform: `translate(${offset.x || 0}%, ${offset.y || 0}%) scale(${offset.scale || 1.0})`,
-                    transformOrigin: isWings ? "50% 50%" : isHat ? "50% 25%" : isAccessory ? "50% 70%" : "50% 50%",
-                    transition: "transform 0.15s ease-out",
-                  }}
-                  draggable="false"
-                />
+                <>
+                  {/* 🪽 WINGS LAYER — อยู่ข้างหลังตัวน้องอย่างเด็ดขาด (z-0) ไม่บังหน้า/หู */}
+                  {wingsList.map((itemId) => {
+                    const itemDef = WARDROBE_ITEMS.find((w) => w.id === itemId);
+                    const offset = offsets[itemId] || { x: 0, y: 0, scale: 1.15 };
+                    return (
+                      <img
+                        key={itemId}
+                        src={`/assets/wardrobe/${itemId}.png`}
+                        alt={itemId}
+                        className="absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-0 animate-wing-flap"
+                        style={{
+                          transform: `translate(${offset.x || 0}%, ${(offset.y || 0) - 6}%) scale(${offset.scale || 1.15})`,
+                          transformOrigin: "50% 55%",
+                          transition: "transform 0.15s ease-out",
+                        }}
+                        draggable="false"
+                      />
+                    );
+                  })}
+
+                  {/* 🐹 HAMSTER BODY — อยู่หน้าปีก (relative z-10) */}
+                  <img
+                    src={breedImg}
+                    onError={(e) => { e.currentTarget.src = "/assets/heaven-hamster.png"; }}
+                    alt="Hamster Character"
+                    className={`relative z-10 w-full h-full object-contain pixel-art filter drop-shadow-md transition-all duration-500 ${tintClass} ${sleepTint}`}
+                    draggable="false"
+                  />
+
+                  {/* แก้มแดง (Blush) ตรงตำแหน่งแก้มทั้งสองข้าง (z-15) */}
+                  <div className="absolute top-[64%] left-[34%] z-15 w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+                  <div className="absolute top-[66%] left-[59%] z-15 w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+
+                  {/* Personality Icon Floater (z-25) */}
+                  {pDef && !isSleeping && (
+                    <div className="absolute -top-1 -right-1 z-25 pointer-events-none text-xs bg-white/90 border border-amber-300 rounded-full w-5 h-5 flex items-center justify-center shadow-xs animate-bounce">
+                      {pDef.icon}
+                    </div>
+                  )}
+
+                  {/* ดวงตาตอนหลับ (Sleeping Eyes) (z-15) */}
+                  {isSleeping && (
+                    <>
+                      <div className="absolute top-[60.5%] left-[40.5%] z-15 w-3.5 h-1 border-b-2 border-slate-700 rounded-full pointer-events-none"></div>
+                      <div className="absolute top-[62.5%] left-[52.5%] z-15 w-3.5 h-1 border-b-2 border-slate-700 rounded-full pointer-events-none"></div>
+                    </>
+                  )}
+
+                  {/* ดวงตาตอนป่วย (Sick Eyes) (z-15) */}
+                  {mood === "sick" && !isSleeping && (
+                    <>
+                      <div className="absolute top-[57%] left-[41%] z-15 text-[10px] font-black text-slate-800 pointer-events-none">×</div>
+                      <div className="absolute top-[59%] left-[53%] z-15 text-[10px] font-black text-slate-800 pointer-events-none">×</div>
+                    </>
+                  )}
+
+                  {/* คิ้วตอนโกรธ (Angry Eyebrows) (z-15) */}
+                  {mood === "angry" && !isSleeping && (
+                    <>
+                      <div className="absolute top-[55%] left-[39%] z-15 w-4 h-1 bg-slate-800 rounded-full rotate-[20deg] pointer-events-none"></div>
+                      <div className="absolute top-[57%] left-[51%] z-15 w-4 h-1 bg-slate-800 rounded-full rotate-[-20deg] pointer-events-none"></div>
+                    </>
+                  )}
+
+                  {/* 👗 FRONT WARDROBE — หมวก, แว่น, โบว์, เสื้อผ้า (z-20 / z-25) อยู่หน้าตัวน้อง */}
+                  {frontList.map((itemId) => {
+                    const itemDef = WARDROBE_ITEMS.find((w) => w.id === itemId);
+                    const isAccessory = itemDef?.type === "accessory";
+                    const isHat = itemDef?.type === "hat";
+                    const zClass = isHat ? "z-25" : isAccessory ? "z-20" : "z-16";
+                    let anim = "";
+                    if (itemId === "bell_collar") anim = "animate-bounce";
+                    else if (itemId === "star_glasses") anim = "animate-pulse";
+                    const offset = offsets[itemId] || { x: 0, y: 0, scale: 1.0 };
+
+                    return (
+                      <img
+                        key={itemId}
+                        src={`/assets/wardrobe/${itemId}.png`}
+                        alt={itemId}
+                        className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none ${zClass} ${anim}`}
+                        style={{
+                          transform: `translate(${offset.x || 0}%, ${offset.y || 0}%) scale(${offset.scale || 1.0})`,
+                          transformOrigin: isHat ? "50% 25%" : isAccessory ? "50% 70%" : "50% 50%",
+                          transition: "transform 0.15s ease-out",
+                        }}
+                        draggable="false"
+                      />
+                    );
+                  })}
+                </>
               );
-            });
-          })()}
+            })()}
 
           {/* Eating bowl */}
           {isEating && (
