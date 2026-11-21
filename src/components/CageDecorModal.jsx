@@ -173,8 +173,19 @@ export default function CageDecorModal({
                   >
                     {/* ไอคอนและรายละเอียด */}
                     <div className="flex items-center space-x-2.5">
-                      <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-2xl shadow-inner">
-                        {item.icon}
+                      <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-2xl shadow-inner overflow-hidden p-1 flex-shrink-0">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-contain pixel-art drop-shadow-xs"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = "block";
+                            }}
+                          />
+                        ) : null}
+                        <span style={{ display: item.image ? "none" : "block" }}>{item.icon}</span>
                       </div>
                       <div>
                         <div className="flex items-center space-x-1.5">
@@ -241,8 +252,16 @@ export default function CageDecorModal({
             {/* ผลการเปิดกล่องสุ่ม */}
             {unboxResult ? (
               <div className="bg-white rounded-3xl p-5 border-4 border-amber-300 text-center shadow-lg my-auto animate-cute-bounce">
-                <div className="text-5xl my-2">
-                  {unboxResult.item.icon}
+                <div className="my-2 flex justify-center">
+                  {unboxResult.item.image ? (
+                    <img
+                      src={unboxResult.item.image}
+                      alt={unboxResult.item.name}
+                      className="w-24 h-24 object-contain pixel-art drop-shadow-md animate-bounce"
+                    />
+                  ) : (
+                    <span className="text-5xl">{unboxResult.item.icon}</span>
+                  )}
                 </div>
                 <div className="mb-2">
                   {getRarityBadge(unboxResult.item.rarity)}

@@ -6,6 +6,7 @@ import { authService } from "../services/authService";
 import { isFirebaseConfigured } from "../firebaseConfig";
 import { sound } from "../utils/audio";
 import { FOOD_ITEMS } from "../constants/gameData";
+import { FURNITURE_ITEMS } from "../constants/furnitureData";
 
 import HamsterCharacter from "../components/HamsterCharacter";
 import StatusBars from "../components/StatusBars";
@@ -322,57 +323,71 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
                 </div>
 
-                {/* 🏡 House / Bed Slot (มุมขวาบนของกรง) */}
-                {equippedFurniture.house && (
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sound.playClick();
-                      setIsDecorOpen(true);
-                    }}
-                    className="absolute top-10 right-3.5 z-20 cursor-pointer group flex flex-col items-center animate-cute-breathe"
-                    title="บ้าน/ที่นอน (คลิกเพื่อเปลี่ยน)"
-                  >
-                    <div className="w-12 h-12 bg-white/85 backdrop-blur-xs border-2 border-amber-300 rounded-2xl flex items-center justify-center text-3xl shadow-sm group-hover:scale-110 transition-transform">
-                      {equippedFurniture.house === "mushroom_house" && "🍄"}
-                      {equippedFurniture.house === "log_cabin" && "🪵"}
-                      {equippedFurniture.house === "cloud_bed" && "☁️"}
-                      {equippedFurniture.house === "fairy_castle" && "🏰"}
+                {/* 🏡 House / Bed Slot (มุมขวาบนของกรง - แสดงภาพ Pixel Art) */}
+                {(() => {
+                  const houseDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.house);
+                  if (!houseDef) return null;
+                  return (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sound.playClick();
+                        setIsDecorOpen(true);
+                      }}
+                      className="absolute top-7 right-2.5 z-20 cursor-pointer group flex flex-col items-center animate-cute-breathe"
+                      title={`${houseDef.name} (คลิกเพื่อเปลี่ยน)`}
+                    >
+                      <div className="w-16 h-16 flex items-center justify-center filter drop-shadow-md group-hover:scale-110 transition-transform">
+                        {houseDef.image ? (
+                          <img
+                            src={houseDef.image}
+                            alt={houseDef.name}
+                            className="w-full h-full object-contain pixel-art drop-shadow"
+                          />
+                        ) : (
+                          <span className="text-4xl">{houseDef.icon}</span>
+                        )}
+                      </div>
+                      <span className="text-[9px] font-black text-amber-900 bg-white/90 border border-amber-300 px-2 py-0.5 rounded-full mt-0.5 shadow-xs">
+                        {houseDef.name}
+                      </span>
                     </div>
-                    <span className="text-[9px] font-black text-amber-900 bg-amber-200/80 px-1.5 py-0.2 rounded-md mt-0.5 shadow-xs">
-                      {equippedFurniture.house === "mushroom_house" && "บ้านเห็ด"}
-                      {equippedFurniture.house === "log_cabin" && "บ้านไม้"}
-                      {equippedFurniture.house === "cloud_bed" && "เตียงเมฆ"}
-                      {equippedFurniture.house === "fairy_castle" && "ปราสาท"}
-                    </span>
-                  </div>
-                )}
+                  );
+                })()}
 
-                {/* 🎠 Toy Slot (มุมขวาล่างของกรง) */}
-                {equippedFurniture.toy && (
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sound.playPet();
-                      setIsDecorOpen(true);
-                    }}
-                    className="absolute bottom-11 right-3.5 z-20 cursor-pointer group flex flex-col items-center"
-                    title="ของเล่น (คลิกเพื่อเปลี่ยน)"
-                  >
-                    <div className="w-11 h-11 bg-white/85 backdrop-blur-xs border-2 border-amber-300 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">
-                      {equippedFurniture.toy === "wooden_swing" && <span>🪵</span>}
-                      {equippedFurniture.toy === "rainbow_tunnel" && <span>🌈</span>}
-                      {equippedFurniture.toy === "hamster_slide" && <span>🛝</span>}
-                      {equippedFurniture.toy === "amusement_ferris" && <span className="animate-spin" style={{ animationDuration: "10s" }}>🎡</span>}
+                {/* 🎠 Toy Slot (มุมขวาล่างของกรง - แสดงภาพ Pixel Art) */}
+                {(() => {
+                  const toyDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.toy);
+                  if (!toyDef) return null;
+                  return (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sound.playPet();
+                        setIsDecorOpen(true);
+                      }}
+                      className="absolute bottom-9 right-2 z-20 cursor-pointer group flex flex-col items-center"
+                      title={`${toyDef.name} (คลิกเพื่อเปลี่ยน)`}
+                    >
+                      <div className="w-14 h-14 flex items-center justify-center filter drop-shadow-md group-hover:scale-110 transition-transform">
+                        {toyDef.image ? (
+                          <img
+                            src={toyDef.image}
+                            alt={toyDef.name}
+                            className={`w-full h-full object-contain pixel-art drop-shadow ${
+                              toyDef.id === "wooden_swing" ? "animate-[floatAngryPuff_2s_ease-in-out_infinite]" : ""
+                            }`}
+                          />
+                        ) : (
+                          <span className="text-3xl">{toyDef.icon}</span>
+                        )}
+                      </div>
+                      <span className="text-[9px] font-black text-orange-900 bg-white/90 border border-orange-300 px-2 py-0.5 rounded-full mt-0.5 shadow-xs">
+                        {toyDef.name}
+                      </span>
                     </div>
-                    <span className="text-[9px] font-black text-orange-900 bg-orange-200/80 px-1.5 py-0.2 rounded-md mt-0.5 shadow-xs">
-                      {equippedFurniture.toy === "wooden_swing" && "ชิงช้า"}
-                      {equippedFurniture.toy === "rainbow_tunnel" && "อุโมงค์"}
-                      {equippedFurniture.toy === "hamster_slide" && "สไลเดอร์"}
-                      {equippedFurniture.toy === "amusement_ferris" && "ชิงช้าสวรรค์"}
-                    </span>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Poop objects */}
                 <div className="absolute bottom-3 left-6 right-6 flex items-end pointer-events-auto z-20">
@@ -392,26 +407,26 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   ))}
                 </div>
 
-                {/* 🧶 Rug Slot (พรมปูพื้นใต้ตัวน้อง) */}
-                {equippedFurniture.rug && (
-                  <div className="absolute top-[65%] left-1/2 -translate-x-1/2 z-0 pointer-events-none filter drop-shadow-xs">
-                    {equippedFurniture.rug === "fluffy_cream" && (
-                      <div className="w-48 sm:w-56 h-10 bg-amber-100/90 border-2 border-white rounded-full shadow-inner flex items-center justify-center text-xs opacity-75">
-                        ☁️ ☁️ ☁️
-                      </div>
-                    )}
-                    {equippedFurniture.rug === "clover_lawn" && (
-                      <div className="w-48 sm:w-56 h-10 bg-emerald-200/90 border-2 border-emerald-400 rounded-full shadow-inner flex items-center justify-center text-xs opacity-85">
-                        🍀 ☘️ 🍀 ☘️
-                      </div>
-                    )}
-                    {equippedFurniture.rug === "royal_velvet" && (
-                      <div className="w-48 sm:w-56 h-10 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 border-2 border-yellow-400 rounded-full shadow-inner flex items-center justify-center text-xs text-yellow-300">
-                        👑 👑 👑
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* 🧶 Rug Slot (พรมปูพื้น Pixel Art ใต้ตัวน้อง) */}
+                {(() => {
+                  const rugDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.rug);
+                  if (!rugDef) return null;
+                  return (
+                    <div className="absolute top-[63%] left-1/2 -translate-x-1/2 z-0 pointer-events-none filter drop-shadow-xs flex items-center justify-center">
+                      {rugDef.image ? (
+                        <img
+                          src={rugDef.image}
+                          alt={rugDef.name}
+                          className="w-52 sm:w-60 max-h-16 object-contain pixel-art drop-shadow-xs opacity-95"
+                        />
+                      ) : (
+                        <div className="w-48 sm:w-56 h-10 bg-amber-100/90 border-2 border-white rounded-full shadow-inner flex items-center justify-center text-xs opacity-75">
+                          {rugDef.icon}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Hamster Character */}
                 <div className="relative z-10 my-auto py-1" onClick={(e) => e.stopPropagation()}>
@@ -460,7 +475,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1"
             >
               <Scroll className="w-3 h-3 text-amber-700" />
-              <span>ประวัติอัปเดต (v3.0)</span>
+              <span>ประวัติอัปเดต (v3.1)</span>
             </button>
           </div>
         </div>
