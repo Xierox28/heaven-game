@@ -36,6 +36,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isPassOpen, setIsPassOpen] = useState(false);
   const [isUpdateLogOpen, setIsUpdateLogOpen] = useState(false);
+  const [isMoveMode, setIsMoveMode] = useState(false);
+  const [selectedDecor, setSelectedDecor] = useState("house");
   const [pendingAchievement, setPendingAchievement] = useState(null);
 
   // Double-tap Quick Feed state
@@ -60,6 +62,67 @@ export default function PlayerView({ onNavigateToAdmin }) {
     } else {
       gameStateService.feed(FOOD_ITEMS[0]);
     }
+  };
+
+  // 🏡 FURNITURE POSITION HELPERS
+  const currentPositions = {
+    house: { x: 18, y: 3 },
+    toy: { x: 82, y: 3 },
+    rug: { x: 50, y: 6 },
+    ...(gameState.furniture?.positions || {}),
+  };
+
+  const handleNudgeDecor = (category, dx, dy) => {
+    sound.playClick();
+    const current = currentPositions[category] || { x: 50, y: 5 };
+    const newX = Math.max(8, Math.min(92, current.x + dx));
+    const newY = Math.max(1, Math.min(38, current.y + dy));
+
+    gameStateService.updateState((prev) => ({
+      ...prev,
+      furniture: {
+        ...prev.furniture,
+        positions: {
+          house: { x: 18, y: 3 },
+          toy: { x: 82, y: 3 },
+          rug: { x: 50, y: 6 },
+          ...(prev.furniture?.positions || {}),
+          [category]: { x: newX, y: newY },
+        },
+      },
+    }));
+  };
+
+  const handleSetDecorPreset = (category, x, y) => {
+    sound.playClick();
+    gameStateService.updateState((prev) => ({
+      ...prev,
+      furniture: {
+        ...prev.furniture,
+        positions: {
+          house: { x: 18, y: 3 },
+          toy: { x: 82, y: 3 },
+          rug: { x: 50, y: 6 },
+          ...(prev.furniture?.positions || {}),
+          [category]: { x, y },
+        },
+      },
+    }));
+  };
+
+  const handleResetAllPositions = () => {
+    sound.playClick();
+    gameStateService.updateState((prev) => ({
+      ...prev,
+      furniture: {
+        ...prev.furniture,
+        positions: {
+          house: { x: 18, y: 3 },
+          toy: { x: 82, y: 3 },
+          rug: { x: 50, y: 6 },
+        },
+      },
+    }));
   };
 
   const handleCageTap = useCallback(() => {
@@ -296,7 +359,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
                   </span>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1.5">
                     <button
                       type="button"
                       onClick={(e) => {
@@ -309,6 +372,24 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     >
                       <span>🛋️</span>
                       <span>แต่งห้อง</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sound.playClick();
+                        setIsMoveMode(!isMoveMode);
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border ${
+                        isMoveMode
+                          ? "bg-amber-500 text-white border-amber-600 shadow-amber-300 shadow-sm"
+                          : "bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300"
+                      }`}
+                      title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
+                    >
+                      <span>📍</span>
+                      <span>{isMoveMode ? "เสร็จสิ้น" : "ย้ายของ"}</span>
                     </button>
 
                     <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full hidden sm:inline-block">
@@ -342,20 +423,37 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
                 </div>
 
-                {/* 🏡 House / Bed Slot (วางบนพื้นกรงมุมซ้าย ขนาดใหญ่สมจริง น้องอยู่ได้จริง) */}
+                {/* 🏡 House / Bed Slot (วางบนพื้นกรง ปรับตำแหน่งได้อิสระ) */}
                 {(() => {
                   const houseDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.house);
                   if (!houseDef) return null;
+                  const isSelected = isMoveMode && selectedDecor === "house";
                   return (
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
                         sound.playClick();
-                        setIsDecorOpen(true);
+                        if (isMoveMode) {
+                          setSelectedDecor("house");
+                        } else {
+                          setIsDecorOpen(true);
+                        }
                       }}
-                      className="absolute bottom-3 left-2 sm:left-4 z-10 cursor-pointer group flex flex-col items-center select-none"
-                      title={`${houseDef.name} (คลิกเพื่อตกแต่งห้อง)`}
+                      style={{
+                        left: `${currentPositions.house.x}%`,
+                        bottom: `${currentPositions.house.y}%`,
+                        transform: "translateX(-50%)",
+                      }}
+                      className={`absolute z-10 cursor-pointer group flex flex-col items-center select-none transition-all duration-200 ${
+                        isSelected ? "ring-4 ring-amber-400 ring-offset-2 rounded-2xl scale-105" : ""
+                      }`}
+                      title={isMoveMode ? "คลิกเพื่อเลือกย้ายบ้าน" : `${houseDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
+                      {isMoveMode && (
+                        <span className="text-[9px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-full mb-1 shadow-xs animate-bounce">
+                          🏠 บ้าน
+                        </span>
+                      )}
                       <div className="relative w-26 h-26 sm:w-32 sm:h-32 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
                         {/* เงาใต้บ้านบนพื้น */}
                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-20 sm:w-26 h-4 bg-amber-950/20 rounded-full blur-[2px] pointer-events-none"></div>
@@ -373,20 +471,37 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   );
                 })()}
 
-                {/* 🎠 Toy Slot (วางบนพื้นกรงมุมขวา สมจริง) */}
+                {/* 🎠 Toy Slot (วางบนพื้นกรง ปรับตำแหน่งได้อิสระ) */}
                 {(() => {
                   const toyDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.toy);
                   if (!toyDef) return null;
+                  const isSelected = isMoveMode && selectedDecor === "toy";
                   return (
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
                         sound.playPet();
-                        setIsDecorOpen(true);
+                        if (isMoveMode) {
+                          setSelectedDecor("toy");
+                        } else {
+                          setIsDecorOpen(true);
+                        }
                       }}
-                      className="absolute bottom-3 right-2 sm:right-4 z-10 cursor-pointer group flex flex-col items-center select-none"
-                      title={`${toyDef.name} (คลิกเพื่อตกแต่งห้อง)`}
+                      style={{
+                        left: `${currentPositions.toy.x}%`,
+                        bottom: `${currentPositions.toy.y}%`,
+                        transform: "translateX(-50%)",
+                      }}
+                      className={`absolute z-10 cursor-pointer group flex flex-col items-center select-none transition-all duration-200 ${
+                        isSelected ? "ring-4 ring-amber-400 ring-offset-2 rounded-2xl scale-105" : ""
+                      }`}
+                      title={isMoveMode ? "คลิกเพื่อเลือกย้ายของเล่น" : `${toyDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
+                      {isMoveMode && (
+                        <span className="text-[9px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-full mb-1 shadow-xs animate-bounce">
+                          🎠 ของเล่น
+                        </span>
+                      )}
                       <div className="relative w-22 h-22 sm:w-26 sm:h-26 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
                         {/* เงาใต้ของเล่นบนพื้น */}
                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-18 sm:w-22 h-3.5 bg-amber-950/20 rounded-full blur-[2px] pointer-events-none"></div>
@@ -428,8 +543,25 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 {(() => {
                   const rugDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.rug);
                   if (!rugDef) return null;
+                  const isSelected = isMoveMode && selectedDecor === "rug";
                   return (
-                    <div className="absolute bottom-6 sm:bottom-7 left-1/2 -translate-x-1/2 z-0 pointer-events-none filter drop-shadow-xs flex items-center justify-center">
+                    <div
+                      onClick={(e) => {
+                        if (isMoveMode) {
+                          e.stopPropagation();
+                          sound.playClick();
+                          setSelectedDecor("rug");
+                        }
+                      }}
+                      style={{
+                        left: `${currentPositions.rug.x}%`,
+                        bottom: `${currentPositions.rug.y}%`,
+                        transform: "translateX(-50%)",
+                      }}
+                      className={`absolute z-0 filter drop-shadow-xs flex items-center justify-center transition-all duration-200 ${
+                        isMoveMode ? "cursor-pointer" : "pointer-events-none"
+                      } ${isSelected ? "ring-4 ring-amber-400 ring-offset-2 rounded-2xl scale-105" : ""}`}
+                    >
                       {rugDef.image ? (
                         <img
                           src={rugDef.image}
@@ -461,6 +593,108 @@ export default function PlayerView({ onNavigateToAdmin }) {
               </div>
             );
           })()}
+
+          {/* 📍 MOVE FURNITURE TOOLBAR (แผงควบคุมเลื่อนจัดวางตำแหน่งของตกแต่ง) */}
+          {isMoveMode && (
+            <div className="mt-2.5 bg-white/95 backdrop-blur-md border-2 border-amber-300 rounded-2xl p-3 shadow-lg flex flex-col space-y-2 animate-slide-in-down">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs font-black text-amber-900">📍 จัดวาง:</span>
+                  <span className="text-xs text-amber-800 font-bold">
+                    {selectedDecor === "house" ? "บ้าน/ที่นอน" : selectedDecor === "toy" ? "ของเล่น" : "พรม"}
+                  </span>
+                </div>
+
+                {/* Category selector */}
+                <div className="flex space-x-1">
+                  {[
+                    { id: "house", label: "🏠 บ้าน" },
+                    { id: "toy", label: "🎠 ของเล่น" },
+                    { id: "rug", label: "🧶 พรม" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        sound.playClick();
+                        setSelectedDecor(tab.id);
+                      }}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-black transition-all ${
+                        selectedDecor === tab.id
+                          ? "bg-amber-500 text-white shadow-xs"
+                          : "bg-amber-100 hover:bg-amber-200 text-amber-900"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nudge & Presets */}
+              <div className="flex items-center justify-between pt-1 border-t border-amber-200">
+                {/* D-Pad Buttons */}
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => handleNudgeDecor(selectedDecor, -6, 0)}
+                    className="w-8 h-8 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-sm border border-amber-300 flex items-center justify-center active:scale-90 shadow-xs"
+                    title="เลื่อนซ้าย"
+                  >
+                    ◀
+                  </button>
+                  <button
+                    onClick={() => handleNudgeDecor(selectedDecor, 6, 0)}
+                    className="w-8 h-8 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-sm border border-amber-300 flex items-center justify-center active:scale-90 shadow-xs"
+                    title="เลื่อนขวา"
+                  >
+                    ▶
+                  </button>
+                  <button
+                    onClick={() => handleNudgeDecor(selectedDecor, 0, 4)}
+                    className="w-8 h-8 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-sm border border-amber-300 flex items-center justify-center active:scale-90 shadow-xs"
+                    title="เลื่อนขึ้น"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => handleNudgeDecor(selectedDecor, 0, -4)}
+                    className="w-8 h-8 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-sm border border-amber-300 flex items-center justify-center active:scale-90 shadow-xs"
+                    title="เลื่อนลง"
+                  >
+                    ▼
+                  </button>
+                </div>
+
+                {/* Preset shortcuts */}
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => handleSetDecorPreset(selectedDecor, 18, 3)}
+                    className="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-black"
+                  >
+                    ซ้าย
+                  </button>
+                  <button
+                    onClick={() => handleSetDecorPreset(selectedDecor, 50, 4)}
+                    className="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-black"
+                  >
+                    กลาง
+                  </button>
+                  <button
+                    onClick={() => handleSetDecorPreset(selectedDecor, 82, 3)}
+                    className="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-black"
+                  >
+                    ขวา
+                  </button>
+                  <button
+                    onClick={handleResetAllPositions}
+                    className="px-2 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-[10px] font-black ml-1"
+                    title="รีเซ็ตกลับค่าเริ่มต้น"
+                  >
+                    รีเซ็ต
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ============================================================
               3. STATUS BARS

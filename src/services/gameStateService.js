@@ -91,6 +91,10 @@ class GameStateService {
           ...INITIAL_GAME_STATE.furniture.equipped,
           ...(val?.furniture?.equipped || {}),
         },
+        positions: {
+          ...INITIAL_GAME_STATE.furniture.positions,
+          ...(val?.furniture?.positions || {}),
+        },
         inventory: Array.isArray(val?.furniture?.inventory)
           ? val.furniture.inventory
           : INITIAL_GAME_STATE.furniture.inventory,

@@ -230,150 +230,41 @@ export default function HamsterCharacter({ state, onPet }) {
           )}
 
           {/* ============================================================
-              4. WARDROBE LAYERS (สวมใส่ชุดและไอเทม Pixel Art ของแท้ตรงตำแหน่ง)
+              4. WARDROBE LAYERS (สวมใส่ชุดและไอเทม Pixel Art พอดีสรีระ 100%)
           ============================================================ */}
 
-          {/* OUTFIT: ผ้าคลุมฮีโร่สีแดง (พาดจากไหล่ขวาไปด้านหลังลำตัว) */}
-          {equipped.outfit === "cape_hero" && (
-            <div className="absolute top-[34%] left-[58%] w-14 sm:w-16 z-10 pointer-events-none filter drop-shadow-md rotate-[-6deg]">
-              <img
-                src="/assets/wardrobe/cape_hero.png"
-                alt="Cape Hero"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
+          {/* OUTFIT LAYER (ชุดนอนปุยเมฆ, ฮู้ดดี้, ผ้าคลุมฮีโร่, ผ้ากันเปื้อน) */}
+          {equipped.outfit && (
+            <img
+              src={`/assets/wardrobe/${equipped.outfit}.png`}
+              alt={equipped.outfit}
+              className="absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-15"
+              draggable="false"
+            />
           )}
 
-          {/* OUTFIT: CLOUD PAJAMAS (Season 1 Gold Pass Master) */}
-          {equipped.outfit === "cloud_pajamas" && (
-            <div className="absolute top-[67%] left-[48%] -translate-x-1/2 w-28 sm:w-32 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/cloud_pajamas.png"
-                alt="Cloud Pajamas"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
+          {/* ACCESSORY LAYER (โบว์แดง, กระดิ่งทอง, เข็มกลัดดาว) */}
+          {equipped.accessory && (
+            <img
+              src={`/assets/wardrobe/${equipped.accessory}.png`}
+              alt={equipped.accessory}
+              className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-20 ${
+                equipped.accessory === "bell_collar" ? "animate-bounce" : ""
+              }`}
+              draggable="false"
+            />
           )}
 
-          {/* OUTFIT: HOODIE SPECIAL */}
-          {equipped.outfit === "hoodie_special" && (
-            <div className="absolute top-[67%] left-[48%] -translate-x-1/2 w-28 sm:w-32 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/hoodie_special.png"
-                alt="Special Hoodie"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* OUTFIT: CUTE BIB (ผ้ากันเปื้อนลายดาวใต้คาง) */}
-          {equipped.outfit === "cute_bib" && (
-            <div className="absolute top-[66%] left-[47.7%] -translate-x-1/2 w-16 sm:w-18 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/cute_bib.png"
-                alt="Cute Bib"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* ACCESSORY: RED BOW (โบว์แดงน่ารัก) */}
-          {equipped.accessory === "red_bow" && (
-            <div className="absolute top-[67%] left-[47.7%] -translate-x-1/2 w-14 sm:w-16 z-20 pointer-events-none filter drop-shadow-sm animate-pulse">
-              <img
-                src="/assets/wardrobe/red_bow.png"
-                alt="Red Bow"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* ACCESSORY: BELL COLLAR (กระดิ่งทอง) */}
-          {equipped.accessory === "bell_collar" && (
-            <div className="absolute top-[66%] left-[47.7%] -translate-x-1/2 w-14 sm:w-16 z-20 pointer-events-none filter drop-shadow-sm animate-bounce">
-              <img
-                src="/assets/wardrobe/bell_collar.png"
-                alt="Bell Collar"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* ACCESSORY: STAR BADGE (เข็มกลัดดาวประกาย) */}
-          {equipped.accessory === "star_badge" && (
-            <div className="absolute top-[66%] left-[36%] w-8 sm:w-9 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/star_badge.png"
-                alt="Star Badge"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* HAT: FROG HAT (หมวกกบน้อยตาโต สวมบนหัวตรงกะโหลกระหว่างหู) */}
-          {equipped.hat === "frog_hat" && (
-            <div className="absolute top-[12%] left-[47.5%] -translate-x-1/2 w-18 sm:w-20 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/frog_hat.png"
-                alt="Frog Hat"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* HAT: FLOWER CROWN (มงกุฎดอกไม้ สวมบนหน้าผากระหว่างสองหู) */}
-          {equipped.hat === "flower_crown" && (
-            <div className="absolute top-[32%] left-[47.5%] -translate-x-1/2 w-20 sm:w-22 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/flower_crown.png"
-                alt="Flower Crown"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* HAT: PARTY HAT (หมวกปาร์ตี้เอียงน่ารักบนหัว) */}
-          {equipped.hat === "party_hat" && (
-            <div className="absolute top-[3%] left-[47.5%] -translate-x-1/2 w-12 sm:w-14 z-20 pointer-events-none filter drop-shadow-sm rotate-[6deg]">
-              <img
-                src="/assets/wardrobe/party_hat.png"
-                alt="Party Hat"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* HAT: UNICORN HAT (หมวกยูนิคอร์นสายรุ้ง) */}
-          {equipped.hat === "unicorn_hat" && (
-            <div className="absolute top-[3%] left-[47.5%] -translate-x-1/2 w-16 sm:w-18 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/unicorn_hat.png"
-                alt="Unicorn Hat"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* HAT: SUNGLASSES (แว่นกันแดด สวมตรงตาทั้งสองข้าง) */}
-          {equipped.hat === "sunglasses" && (
-            <div className="absolute top-[57%] left-[47.7%] -translate-x-1/2 w-16 sm:w-18 z-20 pointer-events-none filter drop-shadow-sm">
-              <img
-                src="/assets/wardrobe/sunglasses.png"
-                alt="Sunglasses"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
-          )}
-
-          {/* HAT: STAR GLASSES (แว่นดาว สวมตรงตาทั้งสองข้าง) */}
-          {equipped.hat === "star_glasses" && (
-            <div className="absolute top-[53%] left-[47.7%] -translate-x-1/2 w-18 sm:w-20 z-20 pointer-events-none filter drop-shadow-sm animate-pulse">
-              <img
-                src="/assets/wardrobe/star_glasses.png"
-                alt="Star Glasses"
-                className="w-full h-auto object-contain pixel-art"
-              />
-            </div>
+          {/* HAT / GLASSES LAYER (หมวกกบ, หมวกปาร์ตี้, ยูนิคอร์น, แว่นกันแดด, มงกุฎดอกไม้, แว่นดาว) */}
+          {equipped.hat && (
+            <img
+              src={`/assets/wardrobe/${equipped.hat}.png`}
+              alt={equipped.hat}
+              className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-25 ${
+                equipped.hat === "star_glasses" ? "animate-pulse" : ""
+              }`}
+              draggable="false"
+            />
           )}
 
           {/* Eating bowl */}

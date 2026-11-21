@@ -33,6 +33,11 @@ export const INITIAL_GAME_STATE = {
       wallpaper: "default_grid",
       rug: null,
     },
+    positions: {
+      house: { x: 18, y: 3 },
+      toy: { x: 82, y: 3 },
+      rug: { x: 50, y: 6 },
+    },
     inventory: ["default_grid"],
   },
 
@@ -122,19 +127,19 @@ export const FOOD_ITEMS = [
 // WARDROBE ITEMS (รวมชุด Pass และ Streak พร้อมภาพ Pixel Art)
 // ============================================================
 export const WARDROBE_ITEMS = [
-  { id: "frog_hat",    type: "hat",       name: "หมวกกบเขียวตาโต",         icon: "🐸", image: "/assets/wardrobe/frog_hat.png", cost: 0,   reqLevel: 1, desc: "หมวกกบน้อยสุดคิ้วท์ ใส่แล้วน่ารักตาแป๋ว" },
-  { id: "unicorn_hat", type: "hat",       name: "หมวกยูนิคอร์นสายรุ้ง",     icon: "🦄", image: "/assets/wardrobe/unicorn_hat.png", cost: 200, reqLevel: 1, desc: "ไอเทมลิมิเต็ดจากเช็คชื่อ 7 วัน สวยวิ้งค์มีเขาเวทมนตร์" },
-  { id: "star_glasses",type: "hat",       name: "แว่นตาดาววิ้งค์",          icon: "⭐", image: "/assets/wardrobe/star_glasses.png", cost: 150, reqLevel: 1, desc: "แว่นรูปดาวประกายวิบวับ ลิมิเต็ดจาก Gold Pass" },
-  { id: "sunglasses",  type: "hat",       name: "แว่นกันแดดสุดเท่",         icon: "🕶️", image: "/assets/wardrobe/sunglasses.png", cost: 50,  reqLevel: 5, desc: "แว่นดำบอสใหญ่ เพิ่มความคูล 300%" },
-  { id: "flower_crown",type: "hat",       name: "มงกุฎดอกไม้พาสเทล",       icon: "🌸", image: "/assets/wardrobe/flower_crown.png", cost: 75,  reqLevel: 5, desc: "มงกุฎดอกซากุระ หวานละมุนน่าทะนุถนอม" },
-  { id: "party_hat",   type: "hat",       name: "หมวกปาร์ตี้สายรุ้ง",      icon: "🎉", image: "/assets/wardrobe/party_hat.png", cost: 60,  reqLevel: 5, desc: "หมวกทรงกรวยหลากสี พร้อมลุยทุกเทศกาล" },
-  { id: "red_bow",     type: "accessory", name: "โบว์แดงน่ารัก",           icon: "🎀", image: "/assets/wardrobe/red_bow.png", cost: 40,  reqLevel: 5, desc: "โบว์ผ้าซาตินสีแดงสด เพิ่มความหวาน" },
-  { id: "bell_collar", type: "accessory", name: "กระดิ่งทองกุ๊งกิ๊ง",       icon: "🔔", image: "/assets/wardrobe/bell_collar.png", cost: 55,  reqLevel: 5, desc: "ปลอกคอกระดิ่งสีทอง เดินไปไหนมีเสียงกุ๊งกิ๊ง" },
-  { id: "star_badge",  type: "accessory", name: "เข็มกลัดดาวประกาย",       icon: "⭐", image: "/assets/wardrobe/star_badge.png", cost: 45,  reqLevel: 5, desc: "เข็มกลัดรูปดาวส่องแสงวิบวับ" },
-  { id: "cloud_pajamas",type: "outfit",   name: "ชุดนอนปุยเมฆแฟนซี",       icon: "☁️", image: "/assets/wardrobe/cloud_pajamas.png", cost: 250, reqLevel: 1, desc: "ชุดนอนขนนุ่มลายปุยเมฆ ลิมิเต็ด Season 1 Gold Pass Master" },
-  { id: "hoodie_special", type: "outfit", name: "ชุดฮู้ดดี้พิเศษ (Limited)", icon: "🧥", image: "/assets/wardrobe/hoodie_special.png", cost: 150, reqLevel: 5, desc: "ฮู้ดดี้ขนปุยโทนพาสเทล อุ่นสบาย (ไอเทมลิมิเต็ด!)" },
-  { id: "cute_bib",    type: "outfit",    name: "ผ้ากันเปื้อนลายดาว",       icon: "⭐", image: "/assets/wardrobe/cute_bib.png", cost: 65,  reqLevel: 5, desc: "ผ้ากันเปื้อนสำหรับเจ้าแฮมสเตอร์ตัวน้อย" },
-  { id: "cape_hero",   type: "outfit",    name: "ผ้าคลุมฮีโร่สีแดง",       icon: "🦸", image: "/assets/wardrobe/cape_hero.png", cost: 120, reqLevel: 5, desc: "ผ้าคลุมยาวพลิ้วไหว สำหรับผู้พิทักษ์ความยุติธรรม" },
+  { id: "frog_hat",    type: "hat",       name: "หมวกกบเขียวตาโต",         icon: "🐸", image: "/assets/wardrobe/thumbs/frog_hat.png", cost: 0,   reqLevel: 1, desc: "หมวกกบน้อยสุดคิ้วท์ ใส่แล้วน่ารักตาแป๋ว" },
+  { id: "unicorn_hat", type: "hat",       name: "หมวกยูนิคอร์นสายรุ้ง",     icon: "🦄", image: "/assets/wardrobe/thumbs/unicorn_hat.png", cost: 200, reqLevel: 1, desc: "ไอเทมลิมิเต็ดจากเช็คชื่อ 7 วัน สวยวิ้งค์มีเขาเวทมนตร์" },
+  { id: "star_glasses",type: "hat",       name: "แว่นตาดาววิ้งค์",          icon: "⭐", image: "/assets/wardrobe/thumbs/star_glasses.png", cost: 150, reqLevel: 1, desc: "แว่นรูปดาวประกายวิบวับ ลิมิเต็ดจาก Gold Pass" },
+  { id: "sunglasses",  type: "hat",       name: "แว่นกันแดดสุดเท่",         icon: "🕶️", image: "/assets/wardrobe/thumbs/sunglasses.png", cost: 50,  reqLevel: 5, desc: "แว่นดำบอสใหญ่ เพิ่มความคูล 300%" },
+  { id: "flower_crown",type: "hat",       name: "มงกุฎดอกไม้พาสเทล",       icon: "🌸", image: "/assets/wardrobe/thumbs/flower_crown.png", cost: 75,  reqLevel: 5, desc: "มงกุฎดอกซากุระ หวานละมุนน่าทะนุถนอม" },
+  { id: "party_hat",   type: "hat",       name: "หมวกปาร์ตี้สายรุ้ง",      icon: "🎉", image: "/assets/wardrobe/thumbs/party_hat.png", cost: 60,  reqLevel: 5, desc: "หมวกทรงกรวยหลากสี พร้อมลุยทุกเทศกาล" },
+  { id: "red_bow",     type: "accessory", name: "โบว์แดงน่ารัก",           icon: "🎀", image: "/assets/wardrobe/thumbs/red_bow.png", cost: 40,  reqLevel: 5, desc: "โบว์ผ้าซาตินสีแดงสด เพิ่มความหวาน" },
+  { id: "bell_collar", type: "accessory", name: "กระดิ่งทองกุ๊งกิ๊ง",       icon: "🔔", image: "/assets/wardrobe/thumbs/bell_collar.png", cost: 55,  reqLevel: 5, desc: "ปลอกคอกระดิ่งสีทอง เดินไปไหนมีเสียงกุ๊งกิ๊ง" },
+  { id: "star_badge",  type: "accessory", name: "เข็มกลัดดาวประกาย",       icon: "⭐", image: "/assets/wardrobe/thumbs/star_badge.png", cost: 45,  reqLevel: 5, desc: "เข็มกลัดรูปดาวส่องแสงวิบวับ" },
+  { id: "cloud_pajamas",type: "outfit",   name: "ชุดนอนปุยเมฆแฟนซี",       icon: "☁️", image: "/assets/wardrobe/thumbs/cloud_pajamas.png", cost: 250, reqLevel: 1, desc: "ชุดนอนขนนุ่มลายปุยเมฆ ลิมิเต็ด Season 1 Gold Pass Master" },
+  { id: "hoodie_special", type: "outfit", name: "ชุดฮู้ดดี้พิเศษ (Limited)", icon: "🧥", image: "/assets/wardrobe/thumbs/hoodie_special.png", cost: 150, reqLevel: 5, desc: "ฮู้ดดี้ขนปุยโทนพาสเทล อุ่นสบาย (ไอเทมลิมิเต็ด!)" },
+  { id: "cute_bib",    type: "outfit",    name: "ผ้ากันเปื้อนลายดาว",       icon: "⭐", image: "/assets/wardrobe/thumbs/cute_bib.png", cost: 65,  reqLevel: 5, desc: "ผ้ากันเปื้อนสำหรับเจ้าแฮมสเตอร์ตัวน้อย" },
+  { id: "cape_hero",   type: "outfit",    name: "ผ้าคลุมฮีโร่สีแดง",       icon: "🦸", image: "/assets/wardrobe/thumbs/cape_hero.png", cost: 120, reqLevel: 5, desc: "ผ้าคลุมยาวพลิ้วไหว สำหรับผู้พิทักษ์ความยุติธรรม" },
 ];
 
 // ============================================================
