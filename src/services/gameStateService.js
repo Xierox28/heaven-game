@@ -219,7 +219,14 @@ class GameStateService {
       unlockedBuddies: toSafeArray(val?.unlockedBuddies ?? this.currentState?.unlockedBuddies, ["buddy_piyo"]),
       mansionTheme: val?.mansionTheme || this.currentState?.mansionTheme || "default_grid",
       unlockedThemes: toSafeArray(val?.unlockedThemes ?? this.currentState?.unlockedThemes, ["default_grid"]),
-      playerTitle: val?.playerTitle || this.currentState?.playerTitle || "",
+      playerTitle: val?.playerTitle || this.currentState?.playerTitle || INITIAL_GAME_STATE.playerTitle,
+      playerAvatar: val?.playerAvatar || this.currentState?.playerAvatar || INITIAL_GAME_STATE.playerAvatar,
+      unlockedAvatars: toSafeArray(val?.unlockedAvatars ?? this.currentState?.unlockedAvatars, INITIAL_GAME_STATE.unlockedAvatars),
+      unlockedTitles: toSafeArray(val?.unlockedTitles ?? this.currentState?.unlockedTitles, INITIAL_GAME_STATE.unlockedTitles),
+      currentFloor: val?.currentFloor !== undefined ? Number(val.currentFloor) : (this.currentState?.currentFloor ?? 1),
+      diamonds: val?.diamonds !== undefined ? Number(val.diamonds) : (this.currentState?.diamonds ?? INITIAL_GAME_STATE.diamonds),
+      trickState: val?.trickState || this.currentState?.trickState || null,
+      diamondRequests: toSafeArray(val?.diamondRequests ?? this.currentState?.diamondRequests, []),
       mysteryBoxPending: val?.mysteryBoxPending !== undefined ? val.mysteryBoxPending : (this.currentState?.mysteryBoxPending || null),
       highScores: {
         ...INITIAL_GAME_STATE.highScores,
@@ -331,9 +338,21 @@ class GameStateService {
               box = g.globalMysteryDrop;
             }
           }
+          let ann = prev.announcement;
+          if (g.announcement) {
+            let dismissedId = null;
+            try { dismissedId = localStorage.getItem("last_dismissed_announcement_id"); } catch (e) {}
+            const isDismissed = dismissedId && String(dismissedId) === String(g.announcement.id);
+            if (!g.announcement.active || isDismissed) {
+              ann = { ...g.announcement, active: false };
+            } else {
+              ann = { ...g.announcement };
+            }
+          }
+
           return {
             ...prev,
-            announcement: g.announcement ? { ...prev.announcement, ...g.announcement } : prev.announcement,
+            announcement: ann,
             seedRainEvent: g.seedRainEvent ? { ...prev.seedRainEvent, ...g.seedRainEvent } : prev.seedRainEvent,
             serverFever: g.serverFever || prev.serverFever,
             mysteryBoxPending: box,
@@ -1254,6 +1273,11 @@ class GameStateService {
   }
 
   dismissAnnouncement() {
+    if (this.currentState?.announcement?.id) {
+      try {
+        localStorage.setItem("last_dismissed_announcement_id", String(this.currentState.announcement.id));
+      } catch (e) {}
+    }
     return this.updateState((prev) => ({
       ...prev,
       announcement: { ...prev.announcement, active: false },
@@ -1700,6 +1724,157 @@ class GameStateService {
         },
       };
     });
+  }
+
+  // 💎 ใช้เพชรเร่งโตแปลงผักเสร็จทันที (Instant Crop Acceleration)
+  instantHarvestPlot(plotIndex, costDiamonds = 5) {
+    if ((this.currentState?.diamonds || 0) < costDiamonds) {
+      sound.playClick();
+      return { success: false, reason: "เพชรไม่พอ ขอเพชรจากพี่ดิวเพิ่มก่อนน้า!" };
+    }
+
+    sound.playLevelUp();
+    this.updateState((prev) => ({
+      ...prev,
+      diamonds: Math.max(0, prev.diamonds - costDiamonds),
+      gardenPlots: prev.gardenPlots.map((plot, idx) =>
+        idx === plotIndex ? { ...plot, plantedAt: 1 } : plot
+      ),
+      speechBubble: {
+        text: `ใช้ ${costDiamonds} 💎 เร่งโตสำเร็จ! พืชโตเต็มวัยพร้อมเก็บเกี่ยวทันที! 🌾✨`,
+        timestamp: Date.now(),
+        duration: 4000,
+      },
+    }));
+
+    // Auto harvest after instant growth
+    setTimeout(() => {
+      this.harvestCrop(plotIndex);
+    }, 200);
+
+    return { success: true };
+  }
+
+  // 💎 ใช้เพชรฟื้นฟูสถานะ 100% ทันที (Full Recovery Shortcut)
+  instantRefreshStats(costDiamonds = 10) {
+    if ((this.currentState?.diamonds || 0) < costDiamonds) {
+      return { success: false, reason: "เพชรไม่พอจ้า" };
+    }
+    sound.playLevelUp();
+    this.updateState((prev) => ({
+      ...prev,
+      diamonds: Math.max(0, prev.diamonds - costDiamonds),
+      hunger: 100,
+      energy: 100,
+      cleanliness: 100,
+      happiness: 100,
+      poopCount: 0,
+      speechBubble: {
+        text: `ใช้ ${costDiamonds} 💎 ฟื้นฟูเต็ม 100%! สดชื่นกระปรี้กระเปร่าพร้อมลุยงับ! 💖✨`,
+        timestamp: Date.now(),
+        duration: 4000,
+      },
+    }));
+    return { success: true };
+  }
+
+  // 💬 อ้อนแอดมินดิวขอเพชร (Send Diamond Request Ticket)
+  async requestDiamonds(amount, message) {
+    sound.playClick();
+    const reqId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const username = this.currentUser?.username || "guest";
+    const hamsterName = this.currentState?.name || "น้องเฮเว่น";
+    const requestData = {
+      id: reqId,
+      username,
+      hamsterName,
+      amount: Number(amount) || 100,
+      message: message.trim(),
+      status: "pending",
+      reply: "",
+      timestamp: Date.now(),
+    };
+
+    if (isFirebaseConfigured() && database) {
+      try {
+        await set(ref(database, `global_events/diamond_requests/${reqId}`), requestData);
+      } catch (e) {}
+    }
+
+    this.updateState((prev) => ({
+      ...prev,
+      diamondRequests: [requestData, ...(prev.diamondRequests || []).slice(0, 15)],
+      speechBubble: {
+        text: `ส่งข้อความอ้อนพี่ดิวแล้วงับ! ขอ ${amount} 💎 รอพี่ดิวมาแจกน้า~ 🥺💖`,
+        timestamp: Date.now(),
+        duration: 5000,
+      },
+    }));
+
+    return { success: true, reqId };
+  }
+
+  // 🎭 สั่งให้น้องเล่นท่าทางพิเศษ (Hamster Tricks)
+  performTrick(trickType) {
+    sound.playPet();
+    const textMap = {
+      toss_seed: "ง่ำมมม! โดดงับเมล็ดทานตะวันกลางอากาศอย่างแม่นยำ! 🌻😋✨",
+      tickle: "ฮ่าๆๆๆๆ จั๊กจี้พุงจังเลยยย กลิ้งตัวไม่หยุดแย้ววว! 😆💖🐾",
+      spin_wings: "หมุนตัว 360 องศา โชว์ปีกกระพือระยิบระยับ สวยมั้ยงับบ! 🪽💫✨",
+    };
+
+    this.updateState((prev) => ({
+      ...prev,
+      trickState: { type: trickType, startedAt: Date.now() },
+      happiness: Math.min(100, prev.happiness + 15),
+      speechBubble: {
+        text: textMap[trickType] || "นู๋ทำท่าพิเศษให้ดูงับ! 🐹✨",
+        timestamp: Date.now(),
+        duration: 4000,
+      },
+    }));
+
+    // Reset trick after animation
+    setTimeout(() => {
+      this.updateState((prev) => ({
+        ...prev,
+        trickState: null,
+      }));
+    }, 3500);
+  }
+
+  // 🪜 สลับชั้นกรง (Floor 1: พื้นกรง / Floor 2: ระเบียงชั้นลอย)
+  switchFloor(floor) {
+    sound.playClick();
+    this.updateState((prev) => ({
+      ...prev,
+      currentFloor: floor,
+      speechBubble: {
+        text: floor === 2
+          ? "ปีนบันไดขึ้นมาชั้น 2 แล้วงับ! รับลมชมวิวสบายจังเลยยย~ 🪜✨"
+          : "ไต่ลงมาชั้นล่างแล้วงับ! พื้นกรงอบอุ่นเหมือนเดิม~ 🐾",
+        timestamp: Date.now(),
+        duration: 3500,
+      },
+    }));
+  }
+
+  // 👤 เปลี่ยนรูปโปรไฟล์ Avatar
+  setAvatar(avatarId) {
+    sound.playClick();
+    this.updateState((prev) => ({
+      ...prev,
+      playerAvatar: avatarId,
+    }));
+  }
+
+  // 👑 เปลี่ยนฉายาผู้เล่น
+  setTitle(title) {
+    sound.playClick();
+    this.updateState((prev) => ({
+      ...prev,
+      playerTitle: title,
+    }));
   }
 
   calculateLevelProgression(currentExp, currentLevel) {

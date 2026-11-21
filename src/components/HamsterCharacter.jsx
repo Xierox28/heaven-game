@@ -90,11 +90,21 @@ export default function HamsterCharacter({ state, onPet }) {
   if (isEating) animClass = "animate-eat-munch";
   if (isPetting) animClass = "animate-pet-shimmer";
 
+  // v6.0 Hamster Interactive Trick Animations
+  if (state.trickState?.type === "toss_seed") {
+    animClass = "animate-bounce";
+  } else if (state.trickState?.type === "tickle") {
+    animClass = "animate-tickle-roll";
+  } else if (state.trickState?.type === "spin_wings") {
+    animClass = "animate-spin-360";
+  }
+
   const tintClass = MOOD_TINT[mood] || "";
   const sleepTint = isSleeping ? "brightness-70 saturate-50" : "";
+  const floorOffset = state.currentFloor === 2 ? "-translate-y-10 sm:-translate-y-14" : "translate-y-0";
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none pt-2">
+    <div className={`relative flex flex-col items-center justify-center select-none pt-2 transition-transform duration-500 ease-out ${floorOffset}`}>
       {/* ============================================================
           1. SPEECH BUBBLE (อยู่เหนือน้องอย่างพอดี คมชัด 100% ไม่ตกขอบ)
       ============================================================ */}
@@ -256,8 +266,8 @@ export default function HamsterCharacter({ state, onPet }) {
               ? equipped
               : Object.values(equipped || {}).filter(Boolean);
 
-            // เรียงลำดับ Layer: Outfit (ล่าง) -> Accessory (กลาง) -> Hat / Glasses (บนสุด)
-            const layerOrder = { outfit: 1, accessory: 2, hat: 3 };
+            // เรียงลำดับ Layer: Wings (หลังสุด) -> Outfit (ล่าง) -> Accessory (กลาง) -> Hat / Glasses (บนสุด)
+            const layerOrder = { wings: 0, outfit: 1, accessory: 2, hat: 3 };
             const sortedList = [...rawEquipped].sort((a, b) => {
               const typeA = WARDROBE_ITEMS.find((w) => w.id === a)?.type || "outfit";
               const typeB = WARDROBE_ITEMS.find((w) => w.id === b)?.type || "outfit";
@@ -268,10 +278,14 @@ export default function HamsterCharacter({ state, onPet }) {
 
             return sortedList.map((itemId) => {
               const itemDef = WARDROBE_ITEMS.find((w) => w.id === itemId);
+              const isWings = itemDef?.type === "wings";
               const isAccessory = itemDef?.type === "accessory";
               const isHat = itemDef?.type === "hat";
-              const zClass = isHat ? "z-25" : isAccessory ? "z-20" : "z-15";
-              const anim = itemId === "bell_collar" ? "animate-bounce" : itemId === "star_glasses" ? "animate-pulse" : "";
+              const zClass = isWings ? "z-5" : isHat ? "z-25" : isAccessory ? "z-20" : "z-15";
+              let anim = "";
+              if (isWings || itemDef?.isAnimated) anim = "animate-wing-flap";
+              else if (itemId === "bell_collar") anim = "animate-bounce";
+              else if (itemId === "star_glasses") anim = "animate-pulse";
               const offset = offsets[itemId] || { x: 0, y: 0, scale: 1.0 };
 
               return (
@@ -282,7 +296,7 @@ export default function HamsterCharacter({ state, onPet }) {
                   className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none ${zClass} ${anim}`}
                   style={{
                     transform: `translate(${offset.x || 0}%, ${offset.y || 0}%) scale(${offset.scale || 1.0})`,
-                    transformOrigin: isHat ? "50% 25%" : isAccessory ? "50% 70%" : "50% 50%",
+                    transformOrigin: isWings ? "50% 50%" : isHat ? "50% 25%" : isAccessory ? "50% 70%" : "50% 50%",
                     transition: "transform 0.15s ease-out",
                   }}
                   draggable="false"
@@ -299,20 +313,29 @@ export default function HamsterCharacter({ state, onPet }) {
             </div>
           )}
 
-          {/* v5.0 Mini Buddy Pet walking next to hamster */}
+          {/* v6.0 Flying Seed on Toss Seed Trick */}
+          {state.trickState?.type === "toss_seed" && (
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-40 pointer-events-none animate-seed-toss">
+              <img src="/assets/props/flying_seed.png" alt="Flying Seed" className="w-8 h-8 object-contain pixel-art drop-shadow-md" />
+            </div>
+          )}
+
+          {/* v6.0 Mini Buddy Pet ROAMING across cage */}
           {(() => {
             const buddyDef = BUDDY_PETS.find((b) => b.id === state.equippedBuddy);
             if (!buddyDef) return null;
             return (
-              <div className="absolute -bottom-1 right-2 sm:right-4 z-35 pointer-events-none animate-cute-bounce flex flex-col items-center">
-                <img
-                  src={buddyDef.image}
-                  alt={buddyDef.name}
-                  className="w-10 h-10 sm:w-11 sm:h-11 object-contain pixel-art drop-shadow-md select-none"
-                />
-                <span className="text-[8px] font-black bg-white/90 text-slate-800 px-1 rounded-full border border-amber-300 shadow-2xs">
-                  {buddyDef.name.split(" ")[0]}
-                </span>
+              <div className="absolute -bottom-2 z-35 pointer-events-none flex flex-col items-center animate-buddy-roam" style={{ right: "12%" }}>
+                <div className="animate-cute-bounce flex flex-col items-center">
+                  <img
+                    src={buddyDef.image}
+                    alt={buddyDef.name}
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain pixel-art drop-shadow-md select-none"
+                  />
+                  <span className="text-[8px] font-black bg-white/90 text-slate-800 px-1 rounded-full border border-amber-300 shadow-2xs mt-0.5">
+                    {buddyDef.name.split(" ")[0]}
+                  </span>
+                </div>
               </div>
             );
           })()}

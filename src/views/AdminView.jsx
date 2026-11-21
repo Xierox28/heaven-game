@@ -45,6 +45,16 @@ export default function AdminView({ onNavigateToPlayer }) {
   const [targetHamster, setTargetHamster] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingPlayer, setLoadingPlayer] = useState(false);
+  const [diamondRequests, setDiamondRequests] = useState([]);
+  const [replyText, setReplyText] = useState("");
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const unsub = adminService.subscribeDiamondRequests((list) => {
+      setDiamondRequests(list);
+    });
+    return () => unsub();
+  }, [isAuthenticated]);
 
   // Edit custom stats inputs
   const [editCoins, setEditCoins] = useState(0);
@@ -628,12 +638,83 @@ export default function AdminView({ onNavigateToPlayer }) {
                 }
               }}
               disabled={!announceMessage.trim()}
-              className="mt-3 w-full py-2.5 bg-rose-500 hover:bg-rose-400 disabled:bg-slate-800 disabled:text-slate-600 text-white font-black text-xs rounded-xl transition-all active:scale-95 shadow-sm"
+              className="mt-3 w-full py-2.5 bg-rose-500 hover:bg-rose-400 disabled:bg-slate-800 disabled:text-slate-600 text-white font-black text-xs rounded-xl transition-all active:scale-95 shadow-sm cursor-pointer"
             >
               ยิง Pop-up แจ้งเตือน 📢
             </button>
+            <button
+              type="button"
+              onClick={async () => {
+                await adminService.clearAnnouncement();
+                triggerFeedback("ลบและยกเลิกประกาศสากลเรียบร้อยแล้ว!");
+              }}
+              className="mt-2 w-full py-2 bg-slate-800 hover:bg-slate-700 text-rose-300 font-black text-xs rounded-xl transition-all border border-rose-500/30 flex items-center justify-center space-x-1 active:scale-95 cursor-pointer"
+            >
+              <span>❌ ลบ/ยกเลิกประกาศสากล (แก้บัคค้าง)</span>
+            </button>
           </section>
         </div>
+
+        {/* ============================================================
+            💎 VIP DIAMOND REQUESTS (รายการคำขออ้อนขอเพชร)
+        ============================================================ */}
+        <section className="bg-slate-900/90 border border-cyan-800/60 rounded-3xl p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
+              <span>💎</span>
+              <span>คำขออ้อนขอเพชรจากผู้เล่น (Diamond Requests)</span>
+              <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full text-[10px]">
+                {diamondRequests.length} รายการ
+              </span>
+            </h3>
+          </div>
+
+          {diamondRequests.length === 0 ? (
+            <p className="text-xs text-slate-500 italic py-2">ยังไม่มีคำขอเพชรในขณะนี้</p>
+          ) : (
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {diamondRequests.map((req) => (
+                <div key={req.id} className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 text-xs flex flex-col space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-black text-cyan-300">@{req.username}</span>
+                      <span className="text-[10px] text-slate-400">({req.hamsterName})</span>
+                    </div>
+                    <span className="font-black text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full text-[11px]">
+                      ขอ +{req.amount} 💎
+                    </span>
+                  </div>
+
+                  <p className="text-slate-300 italic bg-slate-900/60 p-2 rounded-xl border border-slate-800/60">
+                    "{req.message}"
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800">
+                    <span className="text-[10px] text-slate-500">
+                      สถานะ: {req.status === "approved" ? "✓ อนุมัติแล้ว" : "⏳ รอดิวอนุมัติ"}
+                    </span>
+
+                    <div className="flex items-center space-x-1.5">
+                      {[req.amount || 100, 500, 1000].map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={async () => {
+                            await adminService.approveDiamondRequest(req.id, req.username, amt);
+                            triggerFeedback(`อนุมัติแจก +${amt} 💎 ให้ @${req.username} แล้ว!`);
+                          }}
+                          className="px-2.5 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                        >
+                          อนุมัติ +{amt} 💎
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* ============================================================
             🌐 SERVER-WIDE ACTIONS (คำสั่งระดับเซิร์ฟเวอร์)
@@ -719,6 +800,30 @@ export default function AdminView({ onNavigateToPlayer }) {
             >
               <Coins className="w-4 h-4" />
               <span>แจกอั่งเปา +500 🌻 ให้ทุกคน</span>
+            </button>
+
+            {/* 💎 v6.0: พี่ดิวแจกเพชรทุกคน +100 💎 */}
+            <button
+              onClick={async () => {
+                await adminService.massAddDiamonds(100);
+                triggerFeedback("พี่ดิวเสกเพชร +100 💎 ให้ทุกคนทั่วเซิร์ฟเวอร์เรียบร้อย!");
+              }}
+              className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+            >
+              <span>💎</span>
+              <span>พี่ดิวแจกเพชร +100 💎 ทุกคน</span>
+            </button>
+
+            {/* 💎 v6.0: พี่ดิวแจกเพชรทุกคน +500 💎 */}
+            <button
+              onClick={async () => {
+                await adminService.massAddDiamonds(500);
+                triggerFeedback("พี่ดิวเสกเพชร +500 💎 ให้ทุกคนทั่วเซิร์ฟเวอร์เรียบร้อย!");
+              }}
+              className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+            >
+              <span>💎</span>
+              <span>พี่ดิวแจกเพชร +500 💎 ทุกคน</span>
             </button>
           </div>
         </section>

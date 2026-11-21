@@ -156,6 +156,110 @@ class AdminService {
     return this.updatePlayerHamster(targetUser, { announcement: announceData });
   }
 
+  // ยกเลิก/ลบประกาศสากลทั้งหมด (แก้บัคประกาศค้าง)
+  async clearAnnouncement() {
+    sound.playClick();
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, "global_events/announcement"), {
+        id: Date.now(),
+        title: "",
+        message: "",
+        active: false,
+        timestamp: Date.now(),
+      });
+    }
+  }
+
+  // 💎 รับฟังคำขออ้อนขอเพชรแบบ Realtime
+  subscribeDiamondRequests(callback) {
+    if (!isFirebaseConfigured() || !database) {
+      callback([]);
+      return () => {};
+    }
+    const reqRef = ref(database, "global_events/diamond_requests");
+    const unsub = onValue(reqRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        callback([]);
+        return;
+      }
+      const list = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+      list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      callback(list);
+    });
+    return unsub;
+  }
+
+  // อนุมัติแจกเพชรให้ผู้เล่นตามคำขอ
+  async approveDiamondRequest(reqId, username, amount, reply = "พี่ดิวเสกเพชรให้แล้วนะงับ! 💎✨") {
+    sound.playLevelUp();
+    const curr = await this.getPlayerHamster(username);
+    const newDiamonds = (curr?.diamonds || 0) + Number(amount);
+    
+    // อัปเดตข้อมูลผู้เล่น
+    await this.updatePlayerHamster(username, {
+      diamonds: newDiamonds,
+      speechBubble: {
+        text: `เย้! พี่ดิวอนุมัติเพชรให้แล้ว +${amount} 💎 (${reply})`,
+        timestamp: Date.now(),
+        duration: 8000,
+      },
+    });
+
+    // อัปเดตสถานะคำขอใน Firebase
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, `global_events/diamond_requests/${reqId}/status`), "approved");
+      await set(ref(database, `global_events/diamond_requests/${reqId}/reply`), reply);
+      await set(ref(database, `global_events/diamond_requests/${reqId}/approvedAt`), Date.now());
+    }
+
+    return { success: true, newDiamonds };
+  }
+
+  // แจกเพชรให้ทุกคนพร้อมกัน (Mass Diamonds)
+  async massAddDiamonds(amount) {
+    sound.playLevelUp();
+    const players = await this.getAllPlayers();
+    for (const p of players) {
+      const curr = await this.getPlayerHamster(p.username);
+      if (curr) {
+        await this.updatePlayerHamster(p.username, {
+          diamonds: (curr.diamonds || 0) + amount,
+          speechBubble: {
+            text: `พี่ดิวแจกเพชรทั่วเซิร์ฟเวอร์ +${amount} 💎 รักพี่ดิวที่สุดเล้ยย!`,
+            timestamp: Date.now(),
+            duration: 8000,
+          },
+        });
+      }
+    }
+  }
+
+  // เสกไอเทม/คอสตูมส่งตรงเข้าตัวผู้เล่น
+  async grantItemToPlayer(username, itemId) {
+    sound.playLevelUp();
+    const curr = await this.getPlayerHamster(username);
+    if (!curr) return;
+    const inv = Array.isArray(curr.inventory) ? curr.inventory : [];
+    if (!inv.includes(itemId)) {
+      inv.push(itemId);
+      await this.updatePlayerHamster(username, {
+        inventory: inv,
+        speechBubble: {
+          text: `GM เสกไอเทม '${itemId}' ส่งตรงเข้ากระเป๋าคุณแล้ว! 🎁✨`,
+          timestamp: Date.now(),
+          duration: 6000,
+        },
+      });
+    }
+  }
+
+  // ปรับแต่งค่าสถานะผู้เล่นแบบเจาะจง
+  async setPlayerCustomStats(username, stats) {
+    sound.playLevelUp();
+    return this.updatePlayerHamster(username, stats);
+  }
+
   // เปิด Event ฝนเมล็ดทานตะวัน
   async triggerSeedRain() {
     sound.playNotification();

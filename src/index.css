@@ -282,3 +282,53 @@
   background: linear-gradient(90deg, #ef4444, #f87171, #ef4444) !important;
   background-size: 200% !important;
 }
+
+/* ============================================================
+   ANIMATED WINGS & ROAMING PETS & TRICKS (v6.0)
+   ============================================================ */
+@keyframes wingFlap {
+  0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
+  50% { transform: scale(1.08, 0.94) translateY(-4px) rotate(3deg); }
+}
+.animate-wing-flap {
+  animation: wingFlap 1.4s ease-in-out infinite;
+}
+
+@keyframes buddyRoam {
+  0% { transform: translateX(0) scaleX(1); }
+  45% { transform: translateX(-90px) scaleX(1); }
+  50% { transform: translateX(-90px) scaleX(-1); }
+  95% { transform: translateX(40px) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+.animate-buddy-roam {
+  animation: buddyRoam 14s ease-in-out infinite;
+}
+
+@keyframes spin360 {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.animate-spin-360 {
+  animation: spin360 0.8s ease-in-out infinite;
+}
+
+@keyframes seedToss {
+  0% { transform: translateY(10px) scale(0.5) rotate(0deg); opacity: 0; }
+  35% { transform: translateY(-50px) scale(1.15) rotate(180deg); opacity: 1; }
+  75% { transform: translateY(-25px) scale(0.9) rotate(320deg); opacity: 1; }
+  100% { transform: translateY(5px) scale(0.2) rotate(360deg); opacity: 0; }
+}
+.animate-seed-toss {
+  animation: seedToss 1.6s ease-out forwards;
+}
+
+@keyframes tickleRoll {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-16deg) translateY(3px) scale(1.04, 0.96); }
+  75% { transform: rotate(16deg) translateY(3px) scale(0.96, 1.04); }
+}
+.animate-tickle-roll {
+  animation: tickleRoll 0.45s ease-in-out infinite;
+}

@@ -119,7 +119,14 @@ export const INITIAL_GAME_STATE = {
   unlockedBuddies: ["buddy_piyo"],
   mansionTheme: "default_grid",
   unlockedThemes: ["default_grid"],
-  playerTitle: "",
+  playerTitle: "เด็กเส้นแอดมินดิว 💎",
+  playerAvatar: "avatar_hamster_classic",
+  unlockedAvatars: ["avatar_hamster_classic", "avatar_hamster_cool"],
+  unlockedTitles: ["แฮมสเตอร์ฝึกหัด", "เด็กเส้นแอดมินดิว 💎", "เพื่อนซี้พี่ดิว 👑", "นักบินอวกาศจิ๋ว 🚀", "มหาเศรษฐีเมล็ดทานตะวัน 🌻"],
+  currentFloor: 1, // 1 = ชั้น 1 (พื้นกรง), 2 = ชั้น 2 (ระเบียงชั้นลอย)
+  diamonds: 100, // 💎 หน่วยเงินพรีเมียมใหม่จากการอ้อนแอดมินดิว
+  trickState: null, // { type: 'toss_seed' | 'tickle' | 'spin_wings', startedAt: number }
+  diamondRequests: [], // ประวัติการขอเพชร
   mysteryBoxPending: null,
   highScores: {
     hamsterJump: 0,
@@ -322,7 +329,7 @@ export const GASHAPON_POOL = [
 ];
 
 // ============================================================
-// MANSION THEMES (อัพเกรดกรงคฤหาสน์หรู v5.0)
+// MANSION THEMES (อัพเกรดกรงคฤหาสน์หรู v5.0 & 2-Story Balcony)
 // ============================================================
 export const MANSION_THEMES = [
   {
@@ -330,28 +337,45 @@ export const MANSION_THEMES = [
     name: "กรงกระดาษกริดดั้งเดิม",
     cost: 0,
     bgStyle: "bg-amber-50/60",
+    bgClass: "bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100 border-amber-300 shadow-amber-200/50",
     desc: "ธีมกรงอบอุ่น เรียบง่าย คลาสสิก",
+    hasSecondFloor: false,
   },
   {
     id: "penthouse_wood",
     name: "เพนต์เฮาส์สองชั้นลายไม้โอ๊คหรู",
     cost: 1500,
     bgStyle: "bg-gradient-to-b from-amber-100/90 to-amber-200/90 border-amber-300",
+    bgClass: "bg-gradient-to-b from-amber-100 via-amber-200 to-amber-300 border-amber-500 shadow-amber-300/50",
     desc: "บ้านเพนต์เฮาส์สองชั้นลายไม้โอ๊คพรีเมียม สไตล์คฤหาสน์หรูหรา",
+    hasSecondFloor: true,
+    floorName: "ระเบียงไม้โอ๊คชั้น 2",
+    themeType: "wood",
+    ambientIcon: "🪵",
   },
   {
     id: "pastel_palace",
     name: "พระราชวังพาสเทลฟรุ้งฟริ้ง",
     cost: 3000,
     bgStyle: "bg-gradient-to-b from-pink-100/90 via-purple-100/90 to-indigo-100/90 border-pink-300",
+    bgClass: "bg-gradient-to-b from-pink-100 via-rose-100 to-purple-200 border-pink-400 shadow-pink-300/50",
     desc: "ปราสาทเจ้าหญิงสีชมพูพาสเทล ประดับประกายดาวระยิบระยับ",
+    hasSecondFloor: true,
+    floorName: "หอคอยเจ้าหญิงพาสเทล",
+    themeType: "pastel",
+    ambientIcon: "✨",
   },
   {
     id: "space_cyber",
     name: "สถานีอวกาศแฮมสเตอร์นีออน",
     cost: 5000,
     bgStyle: "bg-gradient-to-b from-slate-900/90 via-indigo-950/90 to-purple-950/90 text-white border-cyan-400",
+    bgClass: "bg-gradient-to-b from-slate-950 via-indigo-950 to-purple-950 border-cyan-400 shadow-cyan-500/40 text-white",
     desc: "ห้องควบคุมสถานีอวกาศธีมไซเบอร์พังก์ พร้อมวิวทางช้างเผือก",
+    hasSecondFloor: true,
+    floorName: "ดาดฟ้าชมทางช้างเผือก",
+    themeType: "cyber",
+    ambientIcon: "🚀",
   },
 ];
 
@@ -372,6 +396,11 @@ export const WARDROBE_ITEMS = [
   { id: "hoodie_special", type: "outfit", name: "ชุดฮู้ดดี้พิเศษ (Limited)", icon: "🧥", image: "/assets/wardrobe/thumbs/hoodie_special.png", cost: 150, reqLevel: 5, desc: "ฮู้ดดี้ขนปุยโทนพาสเทล อุ่นสบาย (ไอเทมลิมิเต็ด!)" },
   { id: "cute_bib",    type: "outfit",    name: "ผ้ากันเปื้อนลายดาว",       icon: "⭐", image: "/assets/wardrobe/thumbs/cute_bib.png", cost: 65,  reqLevel: 5, desc: "ผ้ากันเปื้อนสำหรับเจ้าแฮมสเตอร์ตัวน้อย" },
   { id: "cape_hero",   type: "outfit",    name: "ผ้าคลุมฮีโร่สีแดง",       icon: "🦸", image: "/assets/wardrobe/thumbs/cape_hero.png", cost: 120, reqLevel: 5, desc: "ผ้าคลุมยาวพลิ้วไหว สำหรับผู้พิทักษ์ความยุติธรรม" },
+  // 🪽 ANIMATED WINGS (คอสตูมปีกขยับได้ Pixel Art v6.0)
+  { id: "wings_angel",  type: "wings", name: "ปีกนางฟ้าปุกปุย",         icon: "🪽", image: "/assets/wardrobe/thumbs/wings_angel.png", cost: 600, reqLevel: 3, desc: "ปีกขนนกสีขาวบริสุทธิ์ กระพือปีกนุ่มฟูดุ๊กดิ๊กบนหลังน้อง", isAnimated: true },
+  { id: "wings_devil",  type: "wings", name: "ปีกค้างคาวปีศาจน้อย",     icon: "🦇", image: "/assets/wardrobe/thumbs/wings_devil.png", cost: 750, reqLevel: 4, desc: "ปีกค้างคาวปีศาจ ขยับกระพือดุ๊กดิ๊ก เพิ่มความซน", isAnimated: true },
+  { id: "wings_fairy",  type: "wings", name: "ปีกภูตแฟรี่ประกายรุ้ง",     icon: "🧚", image: "/assets/wardrobe/thumbs/wings_fairy.png", cost: 900, reqLevel: 5, desc: "ปีกภูตแฟรี่โปร่งแสง เปล่งประกายละอองเวทมนตร์", isAnimated: true },
+  { id: "wings_golden", type: "wings", name: "ปีกฟีนิกซ์ทองคำ (SSR)",   icon: "✨", image: "/assets/wardrobe/thumbs/wings_golden.png", cost: 2500, reqLevel: 6, desc: "ปีกทองคำเปล่งประกาย สัญลักษณ์แห่งความยิ่งใหญ่", isAnimated: true },
 ];
 
 // ============================================================
@@ -531,4 +560,26 @@ export const PERSONALITIES = [
       "ขอกอดแน่นๆ ทีหนึ่งได้มั้ยงับ~ 🐾",
     ],
   },
+];
+
+// ==============================================================================
+// 👤 PLAYER AVATARS & TITLES (v6.0)
+// ==============================================================================
+export const PLAYER_AVATARS = [
+  { id: "avatar_hamster_classic", name: "แฮมสเตอร์คลาสสิก", image: "/assets/avatars/avatar_hamster_classic.png", reqLevel: 1 },
+  { id: "avatar_hamster_cool",    name: "แฮมสเตอร์สุดคูล (แว่นดำ)", image: "/assets/avatars/avatar_hamster_cool.png", reqLevel: 2 },
+  { id: "avatar_hamster_crown",   name: "ราชาแฮมสเตอร์ (มงกุฎทอง)", image: "/assets/avatars/avatar_hamster_crown.png", reqLevel: 5 },
+  { id: "avatar_hamster_angel",   name: "ทูตสวรรค์น้อย (วงแหวน)", image: "/assets/avatars/avatar_hamster_angel.png", reqLevel: 7 },
+  { id: "avatar_dew_admin",       name: "แอดมินดิวสุดหล่อ (Admin)", image: "/assets/avatars/avatar_dew_admin.png", reqLevel: 1 },
+];
+
+export const PLAYER_TITLES = [
+  "แฮมสเตอร์ฝึกหัด",
+  "เด็กเส้นแอดมินดิว 💎",
+  "เพื่อนซี้พี่ดิว 👑",
+  "นักบินอวกาศจิ๋ว 🚀",
+  "มหาเศรษฐีเมล็ดทานตะวัน 🌻",
+  "ผู้พิทักษ์แห่งความน่ารัก ✨",
+  "เชฟกระทะร้อนกะเพราไข่ดาว 🍳",
+  "แชมป์กระโดดเมฆ Hamster Jump ☁️",
 ];

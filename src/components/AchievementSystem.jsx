@@ -9,7 +9,7 @@ import { ACHIEVEMENT_DEFS, RARITY_STYLES } from "../constants/gameData";
 // ==============================================================================
 export function AchievementToast({ achievement, onDone }) {
   useEffect(() => {
-    const t = setTimeout(onDone, 4000);
+    const t = setTimeout(onDone, 3500);
     return () => clearTimeout(t);
   }, [onDone]);
 
@@ -17,17 +17,22 @@ export function AchievementToast({ achievement, onDone }) {
   const style = RARITY_STYLES[achievement.rarity] || RARITY_STYLES.common;
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] animate-slide-in-down pointer-events-none max-w-sm w-full px-4">
+    <div
+      onClick={onDone}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] animate-slide-in-down pointer-events-auto cursor-pointer max-w-sm w-full px-4 active:scale-95 transition-transform"
+      title="แตะเพื่อปิดการแจ้งเตือนทันที"
+    >
       <div className={`${style.bg} border-2 ${style.border} rounded-2xl p-3 shadow-xl flex items-center space-x-3 ${style.glow}`}>
         <div className="text-3xl animate-badge-pop">{achievement.icon}</div>
-        <div>
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-            🏆 Achievement ปลดล็อคแล้ว!
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+            <span>🏆 Achievement ปลดล็อคแล้ว!</span>
+            <span className="text-[9px] text-slate-400 font-normal">แตะเพื่อปิด ✕</span>
           </div>
-          <div className={`font-black text-sm ${style.text}`}>{achievement.name}</div>
-          <div className="text-xs text-slate-600">{achievement.desc}</div>
+          <div className={`font-black text-sm ${style.text} truncate`}>{achievement.name}</div>
+          <div className="text-xs text-slate-600 line-clamp-1">{achievement.desc}</div>
         </div>
-        <div className={`ml-auto text-[9px] font-black px-2 py-0.5 rounded-full border ${style.border} ${style.text} bg-white/60 uppercase`}>
+        <div className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${style.border} ${style.text} bg-white/60 uppercase flex-shrink-0`}>
           {style.label}
         </div>
       </div>

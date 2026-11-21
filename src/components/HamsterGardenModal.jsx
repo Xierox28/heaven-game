@@ -3,7 +3,7 @@ import { X, Sprout, Droplets, Sparkles, ChefHat, Clock, Plus, Flame, Check } fro
 import { GARDEN_CROPS, COOKING_RECIPES } from "../constants/gameData";
 import { sound } from "../utils/audio";
 
-export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, onWater, onHarvest, onCook }) {
+export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, onWater, onHarvest, onCook, onInstantHarvest }) {
   const [activeTab, setActiveTab] = useState("garden"); // 'garden' | 'kitchen'
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [now, setNow] = useState(Date.now());
@@ -68,10 +68,10 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
         </div>
 
         {/* Pantry Quick Ribbon */}
-        <div className="flex items-center justify-around py-2 px-3 my-2 bg-white/90 rounded-2xl border border-amber-200 shadow-xs text-xs font-black text-amber-950">
+        <div className="flex flex-wrap items-center justify-around gap-2 py-2 px-3 my-2 bg-white/90 rounded-2xl border border-amber-200 shadow-xs text-xs font-black text-amber-950">
           <div className="flex items-center space-x-1">
             <span className="text-base">🌿</span>
-            <span>ใบกะเพรา: <span className="text-emerald-700">{pantry.basil_leaf || 0}</span></span>
+            <span>กะเพรา: <span className="text-emerald-700">{pantry.basil_leaf || 0}</span></span>
           </div>
           <div className="flex items-center space-x-1">
             <span className="text-base">🌶️</span>
@@ -79,7 +79,11 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
           </div>
           <div className="flex items-center space-x-1">
             <span className="text-base">🍓</span>
-            <span>สตรอว์เบอร์รี: <span className="text-pink-700">{pantry.fresh_strawberry || 0}</span></span>
+            <span>เบอร์รี: <span className="text-pink-700">{pantry.fresh_strawberry || 0}</span></span>
+          </div>
+          <div className="flex items-center space-x-1 bg-cyan-100 border border-cyan-300 px-2 py-0.5 rounded-full text-cyan-900">
+            <span>💎</span>
+            <span>{state?.diamonds || 0} เม็ด</span>
           </div>
         </div>
 
@@ -174,18 +178,29 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
                         <span>เก็บเกี่ยว!</span>
                       </button>
                     ) : (
-                      <button
-                        disabled={isWatered}
-                        onClick={() => { sound.playClean(); onWater(plot.id); }}
-                        className={`w-full py-1.5 font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1 ${
-                          isWatered
-                            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                            : "bg-sky-400 hover:bg-sky-500 text-white active:scale-95 shadow-sm"
-                        }`}
-                      >
-                        <Droplets className="w-3.5 h-3.5" />
-                        <span>{isWatered ? "รดน้ำแล้ว 💧" : "รดน้ำเร่งโต"}</span>
-                      </button>
+                      <div className="w-full space-y-1">
+                        <button
+                          disabled={isWatered}
+                          onClick={() => { sound.playClean(); onWater(plot.id); }}
+                          className={`w-full py-1 font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1 ${
+                            isWatered
+                              ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                              : "bg-sky-400 hover:bg-sky-500 text-white active:scale-95 shadow-sm"
+                          }`}
+                        >
+                          <Droplets className="w-3.5 h-3.5" />
+                          <span>{isWatered ? "รดน้ำแล้ว 💧" : "รดน้ำเร่งโต"}</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (onInstantHarvest) onInstantHarvest(plot.id);
+                          }}
+                          className="w-full py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
+                          title="ใช้ 5 เพชรเพื่อเร่งโตทันที"
+                        >
+                          <span>⚡ เร่งโต (5 💎)</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 );

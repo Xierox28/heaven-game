@@ -24,6 +24,8 @@ import CageDecorModal from "../components/CageDecorModal";
 import HamsterGardenModal from "../components/HamsterGardenModal";
 import LuckyGashaponModal from "../components/LuckyGashaponModal";
 import HamsterJumpMiniGame from "../components/HamsterJumpMiniGame";
+import AskDewDiamondModal from "../components/AskDewDiamondModal";
+import PlayerProfileModal from "../components/PlayerProfileModal";
 import { MANSION_THEMES } from "../constants/gameData";
 import { AchievementToast, AchievementPanel } from "../components/AchievementSystem";
 
@@ -43,6 +45,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isGardenOpen, setIsGardenOpen] = useState(false);
   const [isGashaponOpen, setIsGashaponOpen] = useState(false);
   const [isJumpOpen, setIsJumpOpen] = useState(false);
+  const [isDiamondModalOpen, setIsDiamondModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isTricksMenuOpen, setIsTricksMenuOpen] = useState(false);
   const [isMoveMode, setIsMoveMode] = useState(false);
   const [selectedDecor, setSelectedDecor] = useState("house");
   const [pendingAchievement, setPendingAchievement] = useState(null);
@@ -313,9 +318,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
               <header className={`bg-white/95 backdrop-blur-md border border-amber-200/90 rounded-3xl px-3.5 py-2.5 shadow-sm flex items-center justify-between ${isNight ? "bg-slate-900/95 border-slate-700 text-white" : "text-slate-900"}`}>
                 {/* Logo + User info */}
                 <div className="flex items-center space-x-2">
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 border-2 border-white/80 flex items-center justify-center text-xl shadow-xs">
-                      🐹
+                  <div
+                    onClick={() => { sound.playClick(); setIsProfileModalOpen(true); }}
+                    className="relative cursor-pointer group"
+                    title="แตะเพื่อเปลี่ยนรูปโปรไฟล์และฉายา"
+                  >
+                    <div className="w-10 h-10 rounded-2xl bg-white border-2 border-amber-300 flex items-center justify-center p-0.5 shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
+                      <img
+                        src={`/assets/avatars/${gameState.playerAvatar || "avatar_hamster_classic"}.png`}
+                        alt="Avatar"
+                        className="w-full h-full object-contain pixel-art"
+                      />
                     </div>
                     <div
                       className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
@@ -326,9 +339,18 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   </div>
 
                   <div>
-                    <h1 className="font-black text-sm leading-tight text-amber-950 flex items-center">
-                      <span>{gameState.name || "Heaven (เฮเว่น)"}</span>
-                    </h1>
+                    <div className="flex items-center space-x-1">
+                      <h1 className="font-black text-sm leading-tight text-amber-950 flex items-center">
+                        <span>{gameState.name || "Heaven (เฮเว่น)"}</span>
+                      </h1>
+                      <button
+                        onClick={() => { sound.playClick(); setIsProfileModalOpen(true); }}
+                        className="text-[9px] bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold px-1.5 py-0.2 rounded-full cursor-pointer max-w-[110px] truncate"
+                        title="แตะเพื่อเปลี่ยนฉายา"
+                      >
+                        {gameState.playerTitle || "เด็กเส้นแอดมินดิว 💎"}
+                      </button>
+                    </div>
                     {/* Username / Account button */}
                     <button
                       onClick={() => setIsAuthOpen(true)}
@@ -343,12 +365,23 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 </div>
 
                 {/* Right actions */}
-                <div className="flex items-center space-x-1.5">
+                <div className="flex items-center space-x-1 sm:space-x-1.5">
                   {/* Coin wallet */}
-                  <div className="bg-gradient-to-r from-amber-300 to-yellow-300 border border-amber-400 rounded-xl px-2.5 py-1 flex items-center space-x-1 shadow-xs">
+                  <div className="bg-gradient-to-r from-amber-300 to-yellow-300 border border-amber-400 rounded-xl px-2 py-1 flex items-center space-x-1 shadow-xs">
                     <span className="text-sm">🌻</span>
                     <span className="font-black text-xs text-amber-950">{gameState.coins}</span>
                   </div>
+
+                  {/* 💎 Diamond Wallet */}
+                  <button
+                    onClick={() => { sound.playClick(); setIsDiamondModalOpen(true); }}
+                    className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 text-white rounded-xl px-2 py-1 flex items-center space-x-1 shadow-xs active:scale-95 transition-all cursor-pointer"
+                    title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
+                  >
+                    <span className="text-sm animate-pulse">💎</span>
+                    <span className="font-black text-xs">{gameState.diamonds || 0}</span>
+                    <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5">+</span>
+                  </button>
 
                   {/* Leaderboard Button 🏆 */}
                   <button
@@ -559,6 +592,64 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         <span className="hidden sm:inline">Jump</span>
                       </button>
 
+                      {/* 🎭 เล่นกับน้อง Tricks Dropdown */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sound.playClick();
+                            setIsTricksMenuOpen((prev) => !prev);
+                          }}
+                          className="px-2 sm:px-2.5 py-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 text-white border border-pink-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                          title="สั่งทำท่าทางพิเศษเล่นกับน้องเฮเว่น"
+                        >
+                          <span>🎭</span>
+                          <span>เล่นกับน้อง</span>
+                        </button>
+
+                        {isTricksMenuOpen && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-8 z-40 bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-2 shadow-xl flex flex-col space-y-1 w-44 animate-slide-in-down"
+                          >
+                            <div className="text-[10px] font-black text-pink-900 border-b border-pink-100 pb-1 mb-0.5">
+                              ✨ ท่าพิเศษกับน้องเฮเว่น:
+                            </div>
+                            <button
+                              onClick={() => {
+                                gameStateService.performTrick("toss_seed");
+                                setIsTricksMenuOpen(false);
+                              }}
+                              className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                            >
+                              <span>🌻</span>
+                              <span>โยนเมล็ดให้งับ</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                gameStateService.performTrick("tickle");
+                                setIsTricksMenuOpen(false);
+                              }}
+                              className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                            >
+                              <span>🖐️</span>
+                              <span>จั๊กจี้พุงกลิ้งตัว</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                gameStateService.performTrick("spin_wings");
+                                setIsTricksMenuOpen(false);
+                              }}
+                              className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                            >
+                              <span>🪽</span>
+                              <span>หมุนตัวโชว์ปีก 360°</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
                       <button
                         type="button"
                         onClick={(e) => {
@@ -587,6 +678,43 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         <span>ย้ายของ</span>
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {/* 🏰 2-Story Balcony when Mansion Theme is active */}
+                {mansionDef?.hasSecondFloor && !isMoveMode && (
+                  <div className="absolute top-12 left-4 right-16 h-11 pointer-events-none z-10 animate-fade-in">
+                    <img
+                      src="/assets/cage/cage_balcony.png"
+                      alt="2nd Floor Balcony"
+                      className="w-full h-full object-fill pixel-art drop-shadow-sm opacity-95"
+                    />
+                    <div className="absolute top-1 left-2 bg-amber-950/70 text-amber-200 text-[8px] font-black px-1.5 py-0.2 rounded-full border border-amber-400/40">
+                      {mansionDef.floorName || "ระเบียงชั้น 2"}
+                    </div>
+                  </div>
+                )}
+
+                {/* 🪜 Interactive Ladder to climb to 2nd Floor */}
+                {mansionDef?.hasSecondFloor && !isMoveMode && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      gameStateService.switchFloor(gameState.currentFloor === 2 ? 1 : 2);
+                    }}
+                    className="absolute top-10 right-4 w-10 h-28 z-25 cursor-pointer group flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"
+                    title={gameState.currentFloor === 2 ? "แตะบันไดเพื่อลงมาชั้น 1" : "แตะบันไดเพื่อปีนขึ้นชั้น 2"}
+                  >
+                    <img
+                      src="/assets/cage/cage_ladder.png"
+                      alt="Cage Ladder"
+                      className="w-full h-full object-contain pixel-art drop-shadow-md"
+                    />
+                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-full mt-0.5 shadow-xs transition-colors ${
+                      gameState.currentFloor === 2 ? "bg-amber-700 text-white" : "bg-emerald-500 text-white animate-bounce"
+                    }`}>
+                      {gameState.currentFloor === 2 ? "ลงชั้น 1" : "ปีนชั้น 2 🪜"}
+                    </span>
                   </div>
                 )}
 
@@ -1008,7 +1136,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1"
             >
               <Scroll className="w-3 h-3 text-amber-700" />
-              <span>ประวัติอัปเดต (v5.0)</span>
+              <span>ประวัติอัปเดต (v6.0 Luxury)</span>
             </button>
           </div>
         </div>
@@ -1107,7 +1235,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
         onDismiss={() => gameStateService.dismissAnnouncement()}
       />
 
-      {/* Mega Update v5 Modals */}
+      {/* Mega Update v5 & v6 Modals */}
       <HamsterGardenModal
         state={gameState}
         isOpen={isGardenOpen}
@@ -1116,6 +1244,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
         onWater={(id) => gameStateService.waterCrop(id)}
         onHarvest={(id) => gameStateService.harvestCrop(id)}
         onCook={(id) => gameStateService.cookRecipe(id)}
+        onInstantHarvest={(id) => gameStateService.instantHarvestPlot(id)}
       />
 
       <LuckyGashaponModal
@@ -1133,6 +1262,25 @@ export default function PlayerView({ onNavigateToAdmin }) {
         isOpen={isJumpOpen}
         onClose={() => setIsJumpOpen(false)}
         onFinish={(score, seeds) => gameStateService.recordJumpScore(score, seeds)}
+      />
+
+      {/* 💎 v6.0 VIP Ask Dew Diamond Modal */}
+      <AskDewDiamondModal
+        state={gameState}
+        isOpen={isDiamondModalOpen}
+        onClose={() => setIsDiamondModalOpen(false)}
+        onRequest={(amount, msg) => gameStateService.requestDiamonds(amount, msg)}
+      />
+
+      {/* 👤 v6.0 Player Profile & Title Customizer */}
+      <PlayerProfileModal
+        state={gameState}
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onSave={(avatar, title) => {
+          gameStateService.setAvatar(avatar);
+          gameStateService.setTitle(title);
+        }}
       />
     </div>
   );

@@ -59,18 +59,19 @@ export default function WardrobeModal({
         </div>
 
         {/* Tabs แยกประเภท */}
-        <div className="flex bg-white/70 p-1 rounded-2xl border border-purple-200 mb-3 text-xs font-bold text-slate-600">
+        <div className="flex flex-wrap bg-white/70 p-1 rounded-2xl border border-purple-200 mb-3 text-xs font-bold text-slate-600 gap-1">
           {[
             { id: "all", label: "ทั้งหมด" },
+            { id: "wings", label: "ปีก 🪽" },
             { id: "hat", label: "หมวก/แว่น 🐸" },
             { id: "accessory", label: "โบว์/คอ 🎀" },
             { id: "outfit", label: "ชุดฮู้ดดี้ 🧥" },
-            { id: "breed", label: "สายพันธุ์ & นิสัย 🐹" },
+            { id: "breed", label: "สายพันธุ์ 🐹" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-1.5 rounded-xl transition-all ${
+              className={`flex-1 min-w-[50px] py-1.5 rounded-xl transition-all ${
                 activeTab === tab.id
                   ? "bg-purple-500 text-white shadow-xs font-black"
                   : "hover:bg-purple-100"
