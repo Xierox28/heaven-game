@@ -207,7 +207,7 @@ export default function HamsterCharacter({ state, onPet }) {
         return (
           <div
             onClick={handleHamsterClick}
-            className={`relative cursor-pointer transition-all duration-300 active:scale-95 group ${animClass} ${stageScale}`}
+            className={`relative cursor-pointer transition-all duration-300 active:scale-95 group pointer-events-auto select-none ${animClass} ${stageScale}`}
             title="กดที่น้องเพื่อลูบหัว"
           >
             {/* เงาใต้น้อง */}
@@ -269,9 +269,9 @@ export default function HamsterCharacter({ state, onPet }) {
                   <div className="absolute top-[64%] left-[34%] z-15 w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
                   <div className="absolute top-[66%] left-[59%] z-15 w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
 
-                  {/* Personality Icon Floater (z-25) */}
+                  {/* Personality Icon Floater (z-25) ชิดข้างหัวน้อง ไม่ลอยออกไปบังปุ่มด้านข้าง */}
                   {pDef && !isSleeping && (
-                    <div className="absolute -top-1 -right-1 z-25 pointer-events-none text-xs bg-white/90 border border-amber-300 rounded-full w-5 h-5 flex items-center justify-center shadow-xs animate-bounce">
+                    <div className="absolute top-2 right-12 z-25 pointer-events-none text-xs bg-white/90 border border-amber-300 rounded-full w-5 h-5 flex items-center justify-center shadow-xs animate-bounce">
                       {pDef.icon}
                     </div>
                   )}

@@ -537,7 +537,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
                 {/* Room Badge & Decor Action (Hidden in Move Mode to prevent blocking) */}
                 {!isMoveMode && (
-                  <div className="relative z-10 flex items-center justify-between gap-1.5 w-full">
+                  <div className="relative z-40 pointer-events-auto flex items-center justify-between gap-1.5 w-full">
                     <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
                       isNight || equippedFurniture.wallpaper === "galaxy_stars"
                         ? "bg-slate-800/90 border-slate-600 text-indigo-200"
@@ -547,7 +547,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     </span>
 
                     {/* Top Right: Only Decor & Move Room tools for a clean, non-cluttered view */}
-                    <div className="flex items-center space-x-1 sm:space-x-1.5">
+                    <div className="flex items-center space-x-1 sm:space-x-1.5 pointer-events-auto">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -555,7 +555,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsDecorOpen(true);
                         }}
-                        className="px-2.5 sm:px-3 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        className="px-2.5 sm:px-3 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 pointer-events-auto"
                         title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
                       >
                         <span>🛋️</span>
@@ -569,7 +569,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsMoveMode(true);
                         }}
-                        className="px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300"
+                        className="px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300 pointer-events-auto"
                         title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
                       >
                         <span>📍</span>
@@ -581,7 +581,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
                 {/* 🧭 Vertical Side Action Dock (ไว้ด้านข้างกรง ไม่บังน้องแฮมสเตอร์และปุ่มน้ำ) */}
                 {!isMoveMode && (
-                  <div className="absolute right-2.5 top-12 z-30 flex flex-col items-center gap-2 select-none animate-fade-in">
+                  <div className="absolute right-2.5 top-12 z-40 flex flex-col items-center gap-2 select-none animate-fade-in pointer-events-auto">
                     {/* 🌱 สวนผัก & ครัว Shortcut */}
                     <button
                       type="button"
@@ -590,11 +590,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsGardenOpen(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40"
                       title="สวนผักออร์แกนิก & ครัวปรุงอาหาร"
                     >
-                      <span className="text-base sm:text-lg leading-none">🌱</span>
-                      <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5">สวน</span>
+                      <span className="text-base sm:text-lg leading-none pointer-events-none">🌱</span>
+                      <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">สวน</span>
                     </button>
 
                     {/* 🎰 กาชาปอง Shortcut */}
@@ -605,11 +605,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsGashaponOpen(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40"
                       title="ตู้สุ่มกาชาปอง & คฤหาสน์"
                     >
-                      <span className="text-base sm:text-lg leading-none">🎰</span>
-                      <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5">กาชา</span>
+                      <span className="text-base sm:text-lg leading-none pointer-events-none">🎰</span>
+                      <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">กาชา</span>
                     </button>
 
                     {/* 🚀 Hamster Jump Shortcut */}
@@ -620,15 +620,15 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsJumpOpen(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40"
                       title="มินิเกม Hamster Jump ไต่เมฆ"
                     >
-                      <span className="text-base sm:text-lg leading-none">🚀</span>
-                      <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5">Jump</span>
+                      <span className="text-base sm:text-lg leading-none pointer-events-none">🚀</span>
+                      <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">Jump</span>
                     </button>
 
                     {/* 🎭 เล่นกับน้อง Tricks Dropdown (เปิดออกทางซ้ายไม่บังน้อง) */}
-                    <div className="relative">
+                    <div className="relative pointer-events-auto">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -636,25 +636,25 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsTricksMenuOpen((prev) => !prev);
                         }}
-                        className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer ${
+                        className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40 ${
                           isTricksMenuOpen ? "ring-2 ring-pink-400 ring-offset-1" : ""
                         }`}
                         title="สั่งทำท่าทางพิเศษเล่นกับน้องเฮเว่น"
                       >
-                        <span className="text-base sm:text-lg leading-none">🎭</span>
-                        <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5">เล่น</span>
+                        <span className="text-base sm:text-lg leading-none pointer-events-none">🎭</span>
+                        <span className="text-[8px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">เล่น</span>
                       </button>
 
                       {isTricksMenuOpen && (
                         <div
                           onClick={(e) => e.stopPropagation()}
-                          className="absolute right-12 top-0 z-40 bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-2 shadow-2xl flex flex-col space-y-1 w-44 animate-fade-in"
+                          className="absolute right-12 top-0 z-50 bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-2 shadow-2xl flex flex-col space-y-1 w-44 animate-fade-in pointer-events-auto"
                         >
                           <div className="text-[10px] font-black text-pink-900 border-b border-pink-100 pb-1 mb-0.5 flex items-center justify-between">
                             <span>✨ ท่าพิเศษกับน้อง:</span>
                             <button
                               onClick={() => setIsTricksMenuOpen(false)}
-                              className="text-pink-400 hover:text-pink-600 text-xs font-bold leading-none"
+                              className="text-pink-400 hover:text-pink-600 text-xs font-bold leading-none cursor-pointer"
                             >
                               ✕
                             </button>
@@ -664,7 +664,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                               gameStateService.performTrick("toss_seed");
                               setIsTricksMenuOpen(false);
                             }}
-                            className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                            className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer pointer-events-auto"
                           >
                             <span>🌻</span>
                             <span>โยนเมล็ดให้งับ</span>
@@ -674,7 +674,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                               gameStateService.performTrick("tickle");
                               setIsTricksMenuOpen(false);
                             }}
-                            className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                            className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer pointer-events-auto"
                           >
                             <span>🖐️</span>
                             <span>จั๊กจี้พุงกลิ้งตัว</span>
@@ -684,7 +684,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                               gameStateService.performTrick("spin_wings");
                               setIsTricksMenuOpen(false);
                             }}
-                            className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                            className="w-full text-left p-1.5 hover:bg-pink-50 rounded-xl text-xs font-black text-slate-800 flex items-center space-x-1.5 transition-colors cursor-pointer pointer-events-auto"
                           >
                             <span>🪽</span>
                             <span>หมุนตัวโชว์ปีก 360°</span>
@@ -776,7 +776,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! 💧🐹", timestamp: Date.now(), duration: 3000 },
                       }));
                     }}
-                    className="absolute top-12 left-3 z-20 cursor-pointer group flex flex-col items-center"
+                    className="absolute top-12 left-3 z-40 pointer-events-auto cursor-pointer group flex flex-col items-center"
                     title="กดเพื่อดื่มน้ำ"
                   >
                     <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
@@ -961,8 +961,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   );
                 })()}
 
-                {/* Hamster Character — ALWAYS ON TOP (z-30) */}
-                <div className={`relative z-30 my-auto py-1 ${isMoveMode ? "pointer-events-none" : ""}`} onClick={(e) => e.stopPropagation()}>
+                {/* Hamster Character — pointer-events-none on container so side dock and top buttons are never blocked */}
+                <div className="relative z-20 my-auto py-1 pointer-events-none flex justify-center w-full">
                   <HamsterCharacter
                     state={gameState}
                     onPet={() => gameStateService.pet()}
