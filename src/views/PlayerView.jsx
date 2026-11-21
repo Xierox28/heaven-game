@@ -64,12 +64,19 @@ export default function PlayerView({ onNavigateToAdmin }) {
     }
   };
 
-  // 🏡 FURNITURE POSITION HELPERS
+  // 🏡 FURNITURE POSITION & SCALE HELPERS
   const currentPositions = {
     house: { x: 18, y: 3 },
     toy: { x: 82, y: 3 },
     rug: { x: 50, y: 6 },
     ...(gameState.furniture?.positions || {}),
+  };
+
+  const currentScales = {
+    house: 1.0,
+    toy: 1.0,
+    rug: 1.0,
+    ...(gameState.furniture?.scales || {}),
   };
 
   const handleNudgeDecor = (category, dx, dy) => {
@@ -88,6 +95,26 @@ export default function PlayerView({ onNavigateToAdmin }) {
           rug: { x: 50, y: 6 },
           ...(prev.furniture?.positions || {}),
           [category]: { x: newX, y: newY },
+        },
+      },
+    }));
+  };
+
+  const handleScaleDecor = (category, delta) => {
+    sound.playClick();
+    const current = currentScales[category] || 1.0;
+    const newScale = Math.max(0.6, Math.min(1.6, Math.round((current + delta) * 10) / 10));
+
+    gameStateService.updateState((prev) => ({
+      ...prev,
+      furniture: {
+        ...prev.furniture,
+        scales: {
+          house: 1.0,
+          toy: 1.0,
+          rug: 1.0,
+          ...(prev.furniture?.scales || {}),
+          [category]: newScale,
         },
       },
     }));
@@ -120,6 +147,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
           house: { x: 18, y: 3 },
           toy: { x: 82, y: 3 },
           rug: { x: 50, y: 6 },
+        },
+        scales: {
+          house: 1.0,
+          toy: 1.0,
+          rug: 1.0,
         },
       },
     }));
@@ -423,11 +455,12 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
                 </div>
 
-                {/* 🏡 House / Bed Slot (วางบนพื้นกรง ปรับตำแหน่งได้อิสระ) */}
+                {/* 🏡 House / Bed Slot (วางบนพื้นกรง ปรับตำแหน่ง & ขนาดได้อิสระ) */}
                 {(() => {
                   const houseDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.house);
                   if (!houseDef) return null;
                   const isSelected = isMoveMode && selectedDecor === "house";
+                  const scale = currentScales.house || 1.0;
                   return (
                     <div
                       onClick={(e) => {
@@ -442,16 +475,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                       style={{
                         left: `${currentPositions.house.x}%`,
                         bottom: `${currentPositions.house.y}%`,
-                        transform: "translateX(-50%)",
+                        transform: `translateX(-50%) scale(${scale})`,
+                        transformOrigin: "bottom center",
                       }}
                       className={`absolute z-10 cursor-pointer group flex flex-col items-center select-none transition-all duration-200 ${
-                        isSelected ? "ring-4 ring-amber-400 ring-offset-2 rounded-2xl scale-105" : ""
+                        isSelected ? "ring-4 ring-amber-400 ring-offset-2 ring-offset-amber-50 rounded-2xl scale-105 shadow-lg shadow-amber-400/40" : ""
                       }`}
                       title={isMoveMode ? "คลิกเพื่อเลือกย้ายบ้าน" : `${houseDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
                       {isMoveMode && (
                         <span className="text-[9px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-full mb-1 shadow-xs animate-bounce">
-                          🏠 บ้าน
+                          🏠 บ้าน ({Math.round(scale * 100)}%)
                         </span>
                       )}
                       <div className="relative w-26 h-26 sm:w-32 sm:h-32 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
@@ -471,11 +505,12 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   );
                 })()}
 
-                {/* 🎠 Toy Slot (วางบนพื้นกรง ปรับตำแหน่งได้อิสระ) */}
+                {/* 🎠 Toy Slot (วางบนพื้นกรง ปรับตำแหน่ง & ขนาดได้อิสระ) */}
                 {(() => {
                   const toyDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.toy);
                   if (!toyDef) return null;
                   const isSelected = isMoveMode && selectedDecor === "toy";
+                  const scale = currentScales.toy || 1.0;
                   return (
                     <div
                       onClick={(e) => {
@@ -490,16 +525,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                       style={{
                         left: `${currentPositions.toy.x}%`,
                         bottom: `${currentPositions.toy.y}%`,
-                        transform: "translateX(-50%)",
+                        transform: `translateX(-50%) scale(${scale})`,
+                        transformOrigin: "bottom center",
                       }}
                       className={`absolute z-10 cursor-pointer group flex flex-col items-center select-none transition-all duration-200 ${
-                        isSelected ? "ring-4 ring-amber-400 ring-offset-2 rounded-2xl scale-105" : ""
+                        isSelected ? "ring-4 ring-orange-400 ring-offset-2 ring-offset-orange-50 rounded-2xl scale-105 shadow-lg shadow-orange-400/40" : ""
                       }`}
                       title={isMoveMode ? "คลิกเพื่อเลือกย้ายของเล่น" : `${toyDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
                       {isMoveMode && (
                         <span className="text-[9px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-full mb-1 shadow-xs animate-bounce">
-                          🎠 ของเล่น
+                          🎠 ของเล่น ({Math.round(scale * 100)}%)
                         </span>
                       )}
                       <div className="relative w-22 h-22 sm:w-26 sm:h-26 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
@@ -544,6 +580,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   const rugDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.rug);
                   if (!rugDef) return null;
                   const isSelected = isMoveMode && selectedDecor === "rug";
+                  const scale = currentScales.rug || 1.0;
                   return (
                     <div
                       onClick={(e) => {
@@ -556,11 +593,12 @@ export default function PlayerView({ onNavigateToAdmin }) {
                       style={{
                         left: `${currentPositions.rug.x}%`,
                         bottom: `${currentPositions.rug.y}%`,
-                        transform: "translateX(-50%)",
+                        transform: `translateX(-50%) scale(${scale})`,
+                        transformOrigin: "bottom center",
                       }}
                       className={`absolute z-0 filter drop-shadow-xs flex items-center justify-center transition-all duration-200 ${
                         isMoveMode ? "cursor-pointer" : "pointer-events-none"
-                      } ${isSelected ? "ring-4 ring-amber-400 ring-offset-2 rounded-2xl scale-105" : ""}`}
+                      } ${isSelected ? "ring-4 ring-amber-400 ring-offset-2 ring-offset-amber-50 rounded-2xl scale-105 shadow-lg shadow-amber-400/40" : ""}`}
                     >
                       {rugDef.image ? (
                         <img
@@ -594,14 +632,14 @@ export default function PlayerView({ onNavigateToAdmin }) {
             );
           })()}
 
-          {/* 📍 MOVE FURNITURE TOOLBAR (แผงควบคุมเลื่อนจัดวางตำแหน่งของตกแต่ง) */}
+          {/* 📍 MOVE & SCALE FURNITURE TOOLBAR (แผงควบคุมเลื่อนจัดวาง & ปรับขนาดของตกแต่ง) */}
           {isMoveMode && (
-            <div className="mt-2.5 bg-white/95 backdrop-blur-md border-2 border-amber-300 rounded-2xl p-3 shadow-lg flex flex-col space-y-2 animate-slide-in-down">
+            <div className="mt-2.5 bg-white/95 backdrop-blur-md border-2 border-amber-300 rounded-2xl p-3 shadow-lg flex flex-col space-y-2.5 animate-slide-in-down">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1">
-                  <span className="text-xs font-black text-amber-900">📍 จัดวาง:</span>
-                  <span className="text-xs text-amber-800 font-bold">
-                    {selectedDecor === "house" ? "บ้าน/ที่นอน" : selectedDecor === "toy" ? "ของเล่น" : "พรม"}
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-xs font-black text-amber-950">📍 กำลังจัดวาง:</span>
+                  <span className="text-xs text-amber-800 font-extrabold bg-amber-100 px-2 py-0.5 rounded-lg border border-amber-200">
+                    {selectedDecor === "house" ? "🏠 บ้าน/ที่นอน" : selectedDecor === "toy" ? "🎠 ของเล่น" : "🧶 พรม"}
                   </span>
                 </div>
 
@@ -630,8 +668,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 </div>
               </div>
 
-              {/* Nudge & Presets */}
-              <div className="flex items-center justify-between pt-1 border-t border-amber-200">
+              {/* Controls: Movement + Scale + Presets */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-amber-200">
                 {/* D-Pad Buttons */}
                 <div className="flex items-center space-x-1">
                   <button
@@ -664,8 +702,30 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   </button>
                 </div>
 
-                {/* Preset shortcuts */}
-                <div className="flex items-center space-x-1">
+                {/* Scale buttons */}
+                <div className="flex items-center space-x-1.5 bg-amber-50 border border-amber-200 px-2 py-1 rounded-xl">
+                  <span className="text-[10px] font-black text-amber-900">ขนาด:</span>
+                  <button
+                    onClick={() => handleScaleDecor(selectedDecor, -0.15)}
+                    className="w-6 h-6 rounded-lg bg-white hover:bg-amber-100 text-amber-950 font-black text-xs border border-amber-300 flex items-center justify-center active:scale-90 shadow-2xs"
+                    title="ย่อขนาด (-15%)"
+                  >
+                    -
+                  </button>
+                  <span className="text-[10px] font-black text-amber-900 min-w-[34px] text-center">
+                    {Math.round((currentScales[selectedDecor] || 1.0) * 100)}%
+                  </span>
+                  <button
+                    onClick={() => handleScaleDecor(selectedDecor, 0.15)}
+                    className="w-6 h-6 rounded-lg bg-white hover:bg-amber-100 text-amber-950 font-black text-xs border border-amber-300 flex items-center justify-center active:scale-90 shadow-2xs"
+                    title="ขยายขนาด (+15%)"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Preset shortcuts & Swap button */}
+                <div className="flex items-center space-x-1 ml-auto">
                   <button
                     onClick={() => handleSetDecorPreset(selectedDecor, 18, 3)}
                     className="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-black"
@@ -685,11 +745,15 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     ขวา
                   </button>
                   <button
-                    onClick={handleResetAllPositions}
-                    className="px-2 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-[10px] font-black ml-1"
-                    title="รีเซ็ตกลับค่าเริ่มต้น"
+                    onClick={() => {
+                      sound.playClick();
+                      setIsDecorOpen(true);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black flex items-center space-x-0.5 active:scale-95 shadow-xs"
+                    title="เปลี่ยนเป็นไอเทมชิ้นอื่น"
                   >
-                    รีเซ็ต
+                    <span>🔄</span>
+                    <span>เปลี่ยนชิ้น</span>
                   </button>
                 </div>
               </div>
@@ -794,8 +858,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
         coins={gameState.coins}
         inventory={gameState.inventory || []}
         equipped={gameState.equipped || {}}
+        wardrobeOffsets={gameState.wardrobeOffsets || {}}
         onBuyItem={(id) => gameStateService.buyItem(id)}
         onToggleEquip={(type, id) => gameStateService.toggleEquip(type, id)}
+        onAdjustOffset={(id, dx, dy, ds) => gameStateService.adjustWardrobeOffset(id, dx, dy, ds)}
+        onResetOffset={(id) => gameStateService.resetWardrobeOffset(id)}
       />
 
       <AchievementPanel

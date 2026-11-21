@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
+import { WARDROBE_ITEMS } from "../constants/gameData";
 
 // Mood → animation class map
 const MOOD_ANIMATIONS = {
@@ -230,42 +231,47 @@ export default function HamsterCharacter({ state, onPet }) {
           )}
 
           {/* ============================================================
-              4. WARDROBE LAYERS (สวมใส่ชุดและไอเทม Pixel Art พอดีสรีระ 100%)
+              4. WARDROBE LAYERS (Multi-wear stacking สวมใส่ได้หลายชิ้นพร้อมกัน)
           ============================================================ */}
+          {(() => {
+            const rawEquipped = Array.isArray(equipped)
+              ? equipped
+              : Object.values(equipped || {}).filter(Boolean);
 
-          {/* OUTFIT LAYER (ชุดนอนปุยเมฆ, ฮู้ดดี้, ผ้าคลุมฮีโร่, ผ้ากันเปื้อน) */}
-          {equipped.outfit && (
-            <img
-              src={`/assets/wardrobe/${equipped.outfit}.png`}
-              alt={equipped.outfit}
-              className="absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-15"
-              draggable="false"
-            />
-          )}
+            // เรียงลำดับ Layer: Outfit (ล่าง) -> Accessory (กลาง) -> Hat / Glasses (บนสุด)
+            const layerOrder = { outfit: 1, accessory: 2, hat: 3 };
+            const sortedList = [...rawEquipped].sort((a, b) => {
+              const typeA = WARDROBE_ITEMS.find((w) => w.id === a)?.type || "outfit";
+              const typeB = WARDROBE_ITEMS.find((w) => w.id === b)?.type || "outfit";
+              return (layerOrder[typeA] || 1) - (layerOrder[typeB] || 1);
+            });
 
-          {/* ACCESSORY LAYER (โบว์แดง, กระดิ่งทอง, เข็มกลัดดาว) */}
-          {equipped.accessory && (
-            <img
-              src={`/assets/wardrobe/${equipped.accessory}.png`}
-              alt={equipped.accessory}
-              className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-20 ${
-                equipped.accessory === "bell_collar" ? "animate-bounce" : ""
-              }`}
-              draggable="false"
-            />
-          )}
+            const offsets = state.wardrobeOffsets || {};
 
-          {/* HAT / GLASSES LAYER (หมวกกบ, หมวกปาร์ตี้, ยูนิคอร์น, แว่นกันแดด, มงกุฎดอกไม้, แว่นดาว) */}
-          {equipped.hat && (
-            <img
-              src={`/assets/wardrobe/${equipped.hat}.png`}
-              alt={equipped.hat}
-              className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none z-25 ${
-                equipped.hat === "star_glasses" ? "animate-pulse" : ""
-              }`}
-              draggable="false"
-            />
-          )}
+            return sortedList.map((itemId) => {
+              const itemDef = WARDROBE_ITEMS.find((w) => w.id === itemId);
+              const isAccessory = itemDef?.type === "accessory";
+              const isHat = itemDef?.type === "hat";
+              const zClass = isHat ? "z-25" : isAccessory ? "z-20" : "z-15";
+              const anim = itemId === "bell_collar" ? "animate-bounce" : itemId === "star_glasses" ? "animate-pulse" : "";
+              const offset = offsets[itemId] || { x: 0, y: 0, scale: 1.0 };
+
+              return (
+                <img
+                  key={itemId}
+                  src={`/assets/wardrobe/${itemId}.png`}
+                  alt={itemId}
+                  className={`absolute inset-0 w-full h-full object-contain pixel-art pointer-events-none filter drop-shadow-sm select-none ${zClass} ${anim}`}
+                  style={{
+                    transform: `translate(${offset.x || 0}%, ${offset.y || 0}%) scale(${offset.scale || 1.0})`,
+                    transformOrigin: isHat ? "50% 25%" : isAccessory ? "50% 70%" : "50% 50%",
+                    transition: "transform 0.15s ease-out",
+                  }}
+                  draggable="false"
+                />
+              );
+            });
+          })()}
 
           {/* Eating bowl */}
           {isEating && (

@@ -18,12 +18,10 @@ export const INITIAL_GAME_STATE = {
   actionExpiry: 0,
   mood: "happy",
 
-  equipped: {
-    hat: null,
-    accessory: null,
-    outfit: null,
-  },
+  // 👗 WARDROBE (Multi-wear stacking: รองรับสวมใส่หลายชิ้นพร้อมกัน)
+  equipped: ["frog_hat"],
   inventory: ["frog_hat"],
+  wardrobeOffsets: {}, // { [itemId]: { x: 0, y: 0, scale: 1.0 } }
 
   // 🏡 CAGE FURNITURE & DECORATIONS
   furniture: {
@@ -37,6 +35,11 @@ export const INITIAL_GAME_STATE = {
       house: { x: 18, y: 3 },
       toy: { x: 82, y: 3 },
       rug: { x: 50, y: 6 },
+    },
+    scales: {
+      house: 1.0,
+      toy: 1.0,
+      rug: 1.0,
     },
     inventory: ["default_grid"],
   },

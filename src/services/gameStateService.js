@@ -134,11 +134,12 @@ class GameStateService {
       happiness: Math.max(20, Math.min(100, isNaN(rawHappy) ? 85 : rawHappy)),
       cleanliness: Math.max(20, Math.min(100, isNaN(rawClean) ? 75 : rawClean)),
       energy: Math.max(15, Math.min(100, isNaN(rawEnergy) ? 90 : rawEnergy)),
-      equipped: {
-        hat: val?.equipped?.hat !== undefined ? val.equipped.hat : (this.currentState?.equipped?.hat ?? null),
-        accessory: val?.equipped?.accessory !== undefined ? val.equipped.accessory : (this.currentState?.equipped?.accessory ?? null),
-        outfit: val?.equipped?.outfit !== undefined ? val.equipped.outfit : (this.currentState?.equipped?.outfit ?? null),
-      },
+      // 👗 Multi-wear stacking: รองรับทั้ง Array ของไอเทมหลายชิ้น หรือ Object เดิม
+      equipped: Array.isArray(val?.equipped)
+        ? val.equipped
+        : (val?.equipped && typeof val.equipped === "object"
+            ? Object.values(val.equipped).filter(Boolean)
+            : (Array.isArray(this.currentState?.equipped) ? this.currentState.equipped : ["frog_hat"])),
       inventory: mergedInventory.length > 0 ? mergedInventory : INITIAL_GAME_STATE.inventory,
       stats: { ...INITIAL_GAME_STATE.stats, ...(this.currentState?.stats || {}), ...(val?.stats || {}) },
       achievements: mergedAchievements,
@@ -173,7 +174,18 @@ class GameStateService {
           ...(this.currentState?.furniture?.positions || {}),
           ...(val?.furniture?.positions || {}),
         },
+        scales: {
+          house: 1.0,
+          toy: 1.0,
+          rug: 1.0,
+          ...(this.currentState?.furniture?.scales || {}),
+          ...(val?.furniture?.scales || {}),
+        },
         inventory: mergedFurnitureInv.length > 0 ? mergedFurnitureInv : INITIAL_GAME_STATE.furniture.inventory,
+      },
+      wardrobeOffsets: {
+        ...(this.currentState?.wardrobeOffsets || {}),
+        ...(val?.wardrobeOffsets || {}),
       },
       lastDecayTime: Date.now(),
       lastUpdated: Math.max(Number(val?.lastUpdated) || 0, Number(this.currentState?.lastUpdated) || 0, Date.now()),
@@ -912,15 +924,61 @@ class GameStateService {
     });
   }
 
-  toggleEquip(type, itemId) {
+  toggleEquip(typeOrId, explicitId) {
+    const id = explicitId || typeOrId;
     sound.playClick();
-    return this.updateState((prev) => ({
-      ...prev,
-      equipped: {
-        ...prev.equipped,
-        [type]: prev.equipped[type] === itemId ? null : itemId,
-      },
-    }));
+    return this.updateState((prev) => {
+      let currentEquipped = [];
+      if (Array.isArray(prev.equipped)) {
+        currentEquipped = [...prev.equipped];
+      } else if (prev.equipped && typeof prev.equipped === "object") {
+        currentEquipped = Object.values(prev.equipped).filter(Boolean);
+      }
+
+      let nextEquipped;
+      if (currentEquipped.includes(id)) {
+        // ถอดออก (Toggle OFF)
+        nextEquipped = currentEquipped.filter((x) => x !== id);
+      } else {
+        // สวมใส่เพิ่มได้หลายชิ้นพร้อมกัน (Multi-wear stacking อิสระเต็มรูปแบบ)
+        nextEquipped = [...currentEquipped, id];
+      }
+
+      return {
+        ...prev,
+        equipped: nextEquipped,
+      };
+    });
+  }
+
+  adjustWardrobeOffset(itemId, deltaX = 0, deltaY = 0, deltaScale = 0) {
+    sound.playClick();
+    return this.updateState((prev) => {
+      const current = prev.wardrobeOffsets?.[itemId] || { x: 0, y: 0, scale: 1.0 };
+      const newX = Math.max(-30, Math.min(30, Math.round(((current.x || 0) + deltaX) * 10) / 10));
+      const newY = Math.max(-30, Math.min(30, Math.round(((current.y || 0) + deltaY) * 10) / 10));
+      const newScale = Math.max(0.6, Math.min(1.8, Math.round(((current.scale || 1.0) + deltaScale) * 100) / 100));
+
+      return {
+        ...prev,
+        wardrobeOffsets: {
+          ...(prev.wardrobeOffsets || {}),
+          [itemId]: { x: newX, y: newY, scale: newScale },
+        },
+      };
+    });
+  }
+
+  resetWardrobeOffset(itemId) {
+    sound.playClick();
+    return this.updateState((prev) => {
+      const updated = { ...(prev.wardrobeOffsets || {}) };
+      delete updated[itemId];
+      return {
+        ...prev,
+        wardrobeOffsets: updated,
+      };
+    });
   }
 
   // ==============================================================================
