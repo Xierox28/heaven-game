@@ -94,7 +94,24 @@ class GameStateService {
       this.unsubFirebase();
       this.unsubFirebase = null;
     }
-    this.currentState = this.loadInitialFromStorage();
+
+    // โหลดข้อมูลที่มีอยู่ของบัญชีนี้
+    let loadedState = this.loadInitialFromStorage();
+
+    // กฎป้องกันเลเวลลด/ข้อมูลหาย: ถ้าผู้ใช้ใหม่เพิ่งสมัครแล้วในเครื่องมีข้อมูลเดิม (Guest) ที่มีเลเวล > 1 หรือมีของ/เหรียญ
+    // ให้นำความก้าวหน้านั้นย้ายมาเป็นของบัญชีใหม่ทันที เลเวลจะได้ไม่ลดลงเหลือ 1
+    if (this.currentState && (this.currentState.level > 1 || this.currentState.coins > 60 || this.currentState.exp > 0)) {
+      if (!loadedState || (loadedState.level <= 1 && loadedState.coins <= 60 && loadedState.exp === 0)) {
+        loadedState = {
+          ...this.currentState,
+          name: user?.hamsterName || this.currentState.name,
+          lastUpdated: Date.now(),
+        };
+        this.saveToStorage(loadedState);
+      }
+    }
+
+    this.currentState = loadedState;
     if (user && user.hamsterName) {
       this.currentState.name = user.hamsterName;
     }
@@ -107,7 +124,7 @@ class GameStateService {
 
     if (this.channel) {
       this.channel.onmessage = (event) => {
-        if (event.data?.type === "STATE_UPDATE") {
+        if (event.data?.type === "STATE_UPDATE" && event.data.state) {
           this.applyIncomingState(event.data.state, false);
         }
       };
@@ -138,8 +155,9 @@ class GameStateService {
     get(gameRef).then((snapshot) => {
       if (!snapshot.exists()) {
         const initData = {
-          ...INITIAL_GAME_STATE,
-          name: this.currentUser?.hamsterName || INITIAL_GAME_STATE.name,
+          ...this.currentState,
+          name: this.currentUser?.hamsterName || this.currentState.name,
+          lastUpdated: Date.now(),
         };
         set(gameRef, initData);
         this.updateLeaderboard(initData);
@@ -149,6 +167,10 @@ class GameStateService {
     this.unsubFirebase = onValue(gameRef, (snapshot) => {
       const val = snapshot.val();
       if (val) {
+        // Timestamp Guard: ป้องกันข้อมูลเก่ากว่ามาเขียนทับ
+        if (this.currentState?.lastUpdated && val.lastUpdated && val.lastUpdated < this.currentState.lastUpdated) {
+          return;
+        }
         const merged = this.mergeState(val);
         this.applyIncomingState(merged, false);
       }
@@ -186,11 +208,31 @@ class GameStateService {
   }
 
   applyIncomingState(newState, broadcast = true) {
-    this.currentState = newState;
-    this.saveToStorage(newState);
+    if (!newState) return;
+
+    // 1. Timestamp Guard: ถ้าข้อมูลที่ได้รับมี lastUpdated เก่ากว่าของปัจจุบัน ไม่ยอมให้เขียนทับ
+    if (this.currentState?.lastUpdated && newState.lastUpdated && newState.lastUpdated < this.currentState.lastUpdated) {
+      return;
+    }
+
+    // 2. Strict Level Monotonic Guard: ป้องกันเลเวลลดลงเองโดยเด็ดขาด!
+    const currentLevel = Math.max(1, Number(this.currentState?.level) || 1);
+    const incomingLevel = Math.max(1, Number(newState.level) || 1);
+    const finalLevel = Math.max(currentLevel, incomingLevel);
+    const finalMaxExp = finalLevel * 100;
+
+    const validatedState = {
+      ...newState,
+      level: finalLevel,
+      maxExp: finalMaxExp,
+      coins: Math.max(0, newState.coins ?? this.currentState?.coins ?? 60),
+    };
+
+    this.currentState = validatedState;
+    this.saveToStorage(validatedState);
     this.notify();
     if (broadcast && this.channel) {
-      this.channel.postMessage({ type: "STATE_UPDATE", state: newState });
+      this.channel.postMessage({ type: "STATE_UPDATE", state: validatedState });
     }
   }
 
@@ -584,60 +626,80 @@ class GameStateService {
     }));
   }
 
-  claimFreePass(level, reward) {
+  claimFreePass(levelToClaim, reward) {
     // ป้องกันรับซ้ำ
-    if (this.currentState.pass?.claimedFree?.includes(level)) return;
+    if (this.currentState.pass?.claimedFree?.includes(levelToClaim)) return;
 
     sound.playCoin();
     return this.updateState((prev) => {
-      if (prev.pass?.claimedFree?.includes(level)) return prev;
+      if (prev.pass?.claimedFree?.includes(levelToClaim)) return prev;
 
       let coins = prev.coins;
       let exp = prev.exp;
+      let level = prev.level;
+      let maxExp = prev.maxExp || level * 100;
       let inv = prev.inventory || [];
 
       if (reward.type === "coins") coins += reward.amount;
-      if (reward.type === "exp") exp += reward.amount;
+      if (reward.type === "exp") {
+        const res = this.calculateExp(exp + reward.amount, level, maxExp);
+        exp = res.exp;
+        level = res.level;
+        maxExp = res.maxExp;
+        if (res.leveledUp) sound.playLevelUp();
+      }
       if (reward.type === "item" && !inv.includes(reward.id)) inv = [...inv, reward.id];
 
       return {
         ...prev,
         coins,
         exp,
+        level,
+        maxExp,
         inventory: inv,
         pass: {
           ...(prev.pass || {}),
-          claimedFree: [...(prev.pass?.claimedFree || []), level],
+          claimedFree: [...(prev.pass?.claimedFree || []), levelToClaim],
         },
       };
     });
   }
 
-  claimGoldPass(level, reward) {
+  claimGoldPass(levelToClaim, reward) {
     if (!this.currentState.pass?.hasGoldPass) return;
     // ป้องกันรับซ้ำ
-    if (this.currentState.pass?.claimedGold?.includes(level)) return;
+    if (this.currentState.pass?.claimedGold?.includes(levelToClaim)) return;
 
     sound.playCoin();
     return this.updateState((prev) => {
-      if (prev.pass?.claimedGold?.includes(level)) return prev;
+      if (prev.pass?.claimedGold?.includes(levelToClaim)) return prev;
 
       let coins = prev.coins;
       let exp = prev.exp;
+      let level = prev.level;
+      let maxExp = prev.maxExp || level * 100;
       let inv = prev.inventory || [];
 
       if (reward.type === "coins") coins += reward.amount;
-      if (reward.type === "exp") exp += reward.amount;
+      if (reward.type === "exp") {
+        const res = this.calculateExp(exp + reward.amount, level, maxExp);
+        exp = res.exp;
+        level = res.level;
+        maxExp = res.maxExp;
+        if (res.leveledUp) sound.playLevelUp();
+      }
       if (reward.type === "item" && !inv.includes(reward.id)) inv = [...inv, reward.id];
 
       return {
         ...prev,
         coins,
         exp,
+        level,
+        maxExp,
         inventory: inv,
         pass: {
           ...(prev.pass || {}),
-          claimedGold: [...(prev.pass?.claimedGold || []), level],
+          claimedGold: [...(prev.pass?.claimedGold || []), levelToClaim],
         },
       };
     });
@@ -686,16 +748,26 @@ class GameStateService {
       const nextDays = (prev.streak?.days || 0) + 1;
       let coins = prev.coins;
       let exp = prev.exp;
+      let level = prev.level;
+      let maxExp = prev.maxExp || level * 100;
       let inv = prev.inventory || [];
 
       if (item.type === "coins") coins += item.amount;
-      if (item.type === "exp") exp += item.amount;
+      if (item.type === "exp") {
+        const res = this.calculateExp(exp + item.amount, level, maxExp);
+        exp = res.exp;
+        level = res.level;
+        maxExp = res.maxExp;
+        if (res.leveledUp) sound.playLevelUp();
+      }
       if (item.type === "item" && !inv.includes(item.id)) inv = [...inv, item.id];
 
       return {
         ...prev,
         coins,
         exp,
+        level,
+        maxExp,
         inventory: inv,
         streak: {
           days: nextDays,
@@ -894,9 +966,9 @@ class GameStateService {
   }
 
   calculateExp(currentExp, currentLevel, currentMaxExp) {
-    let exp = currentExp;
-    let level = currentLevel;
-    let maxExp = currentMaxExp || level * 100;
+    let exp = Math.max(0, Number(currentExp) || 0);
+    let level = Math.max(1, Number(currentLevel) || 1);
+    let maxExp = level * 100;
     let leveledUp = false;
 
     while (exp >= maxExp) {

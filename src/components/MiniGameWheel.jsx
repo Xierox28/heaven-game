@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Play, RotateCw, Trophy, Zap } from "lucide-react";
 import confetti from "canvas-confetti";
 import { sound } from "../utils/audio";
@@ -9,62 +9,113 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
   const [taps, setTaps] = useState(0);
   const [wheelRotation, setWheelRotation] = useState(0);
   const [gameResult, setGameResult] = useState(null);
+  const [hasClaimed, setHasClaimed] = useState(false);
 
-  // Timer countdown
+  const tapsRef = useRef(0);
+  const endTimeRef = useRef(0);
+
+  // เมื่อเปิดหรือปิด Modal ให้รีเซ็ตค่าเสมอเพื่อป้องกันบัครับของรางวัลค้าง
   useEffect(() => {
-    let timer = null;
-    if (isPlaying && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (isPlaying && timeLeft === 0) {
-      // หมดเวลา คำนวณรางวัล
+    if (!isOpen) {
       setIsPlaying(false);
-      const earnedCoins = Math.max(5, Math.floor(taps * 0.8));
-      const earnedExp = Math.max(10, Math.floor(taps * 1.2));
-      setGameResult({ coins: earnedCoins, exp: earnedExp, taps });
-
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-      sound.playLevelUp();
+      setGameResult(null);
+      setTaps(0);
+      setTimeLeft(10);
+      setHasClaimed(false);
+      tapsRef.current = 0;
     }
-    return () => clearInterval(timer);
-  }, [isPlaying, timeLeft, taps]);
+  }, [isOpen]);
+
+  // ระบบนาฬิกานับถอยหลัง 10 วินาทีแบบแม่นยำตามเวลาจริง (Wall-clock Time)
+  // ไม่ผูกกับ taps ทำให้เวลานับลดลงคงที่ 10 วินาทีแน่นอน แม้ผู้เล่นจะรัวนิ้วถี่แค่ไหนก็ตาม
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const remainingMs = endTimeRef.current - now;
+      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+      setTimeLeft(remainingSec);
+
+      if (remainingMs <= 0) {
+        clearInterval(interval);
+        setIsPlaying(false);
+        setTimeLeft(0);
+
+        const finalTaps = tapsRef.current;
+        const earnedCoins = Math.max(5, Math.floor(finalTaps * 0.8));
+        const earnedExp = Math.max(10, Math.floor(finalTaps * 1.2));
+
+        setGameResult({ coins: earnedCoins, exp: earnedExp, taps: finalTaps });
+        setHasClaimed(false);
+
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+        sound.playLevelUp();
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   if (!isOpen) return null;
 
   const handleStart = () => {
-    setTimeLeft(10);
+    tapsRef.current = 0;
     setTaps(0);
     setWheelRotation(0);
     setGameResult(null);
+    setHasClaimed(false);
+    setTimeLeft(10);
+    endTimeRef.current = Date.now() + 10000;
     setIsPlaying(true);
     sound.playClick();
   };
 
   const handleTap = () => {
     if (!isPlaying) return;
-    setTaps((prev) => prev + 1);
+    tapsRef.current += 1;
+    setTaps(tapsRef.current);
     setWheelRotation((prev) => prev + 35);
     sound.playClick();
   };
 
   const handleClaim = () => {
-    if (gameResult && onFinish) {
+    // ป้องกันการกดรับรางวัลซ้ำ หรือรับรัวๆ
+    if (!gameResult || hasClaimed) return;
+    setHasClaimed(true);
+
+    if (onFinish) {
       onFinish(gameResult.coins, gameResult.exp);
     }
+
+    // ล้างผลลัพธ์ทันที เพื่อให้ครั้งต่อไปต้องเริ่มเล่นใหม่
+    setGameResult(null);
+    setTaps(0);
+    setTimeLeft(10);
+    tapsRef.current = 0;
+    onClose();
+  };
+
+  const handleClose = () => {
+    setIsPlaying(false);
+    setGameResult(null);
+    setTaps(0);
+    setTimeLeft(10);
+    setHasClaimed(false);
+    tapsRef.current = 0;
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-sm bg-gradient-to-b from-amber-50 to-orange-50 border-4 border-amber-300 rounded-3xl p-5 shadow-2xl text-slate-800 text-center">
+      <div className="relative w-full max-w-sm bg-gradient-to-b from-amber-50 to-orange-50 border-4 border-amber-300 rounded-3xl p-5 shadow-2xl text-slate-800 text-center font-['Itim',sans-serif]">
         {/* ปิดหน้าต่าง */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-900 flex items-center justify-center font-bold text-sm transition-transform active:scale-90"
         >
           <X className="w-5 h-5" />
@@ -94,9 +145,14 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
             </div>
             <button
               onClick={handleClaim}
-              className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-black text-sm shadow-md hover:from-emerald-600 hover:to-teal-600 active:scale-95 transition-all"
+              disabled={hasClaimed}
+              className={`w-full py-2.5 rounded-xl font-black text-sm shadow-md transition-all ${
+                hasClaimed
+                  ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 active:scale-95"
+              }`}
             >
-              รับรางวัลเข้ากระเป๋า 🎉
+              {hasClaimed ? "รับรางวัลเรียบร้อยแล้ว ✨" : "รับรางวัลเข้ากระเป๋า 🎉"}
             </button>
           </div>
         ) : (
@@ -161,7 +217,7 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
             ) : (
               <button
                 onClick={handleTap}
-                className="w-full py-5 bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500 text-white rounded-2xl font-black text-xl shadow-xl active:scale-90 transition-transform flex items-center justify-center space-x-2 animate-pulse"
+                className="w-full py-5 bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500 text-white rounded-2xl font-black text-xl shadow-xl active:scale-90 transition-transform flex items-center justify-center space-x-2 animate-pulse select-none cursor-pointer"
               >
                 <Zap className="w-6 h-6 fill-yellow-300 text-yellow-300" />
                 <span>รัวนิ้วตรงนี้เล้ยยย! 💨</span>
