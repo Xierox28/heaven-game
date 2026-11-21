@@ -96,12 +96,43 @@ export const INITIAL_GAME_STATE = {
   seedRainEvent: {
     id: 0, active: false, timestamp: 0,
   },
+
+  // 🌾 v5.0 GARDEN & PANTRY
+  gardenPlots: [
+    { id: 0, cropId: null, plantedAt: 0, watered: false },
+    { id: 1, cropId: null, plantedAt: 0, watered: false },
+    { id: 2, cropId: null, plantedAt: 0, watered: false },
+    { id: 3, cropId: null, plantedAt: 0, watered: false },
+  ],
+  pantry: {
+    basil_leaf: 0,
+    chili_pepper: 0,
+    fresh_strawberry: 0,
+  },
+
+  // ⚡ v5.0 BUFFS & BUDDIES & MANSION
+  activeBuffs: {
+    doubleCoinUntil: 0,
+    slowHungerUntil: 0,
+  },
+  equippedBuddy: "buddy_piyo",
+  unlockedBuddies: ["buddy_piyo"],
+  mansionTheme: "default_grid",
+  unlockedThemes: ["default_grid"],
+  playerTitle: "",
+  mysteryBoxPending: null,
+  highScores: {
+    hamsterJump: 0,
+  },
+
   lastDecayTime: Date.now(),
   lastUpdated: Date.now(),
 };
 
 // ============================================================
 // FOOD ITEMS
+// ============================================================
+// FOOD ITEMS (รวมอาหารปกติ และอาหารพรีเมียมบัฟพิเศษ v5.0)
 // ============================================================
 export const FOOD_ITEMS = [
   {
@@ -128,6 +159,199 @@ export const FOOD_ITEMS = [
     id: "cheesecake", name: "ชีสเค้กเนียนนุ่ม", icon: "🧀",
     cost: 25, reqLevel: 3, hunger: 70, happiness: 50, exp: 40,
     desc: "ของหวานพรีเมียม กินแล้วฟินจนแก้มตุ่ย",
+  },
+  // v5.0 Premium Foods
+  {
+    id: "kaprao_rice", name: "ข้าวกะเพราหมูสับไข่ดาวกรอบ", icon: "🍳",
+    image: "/assets/food/kaprao_rice.png",
+    cost: 120, reqLevel: 3, hunger: 60, happiness: 45, exp: 50,
+    buff: { type: "double_coin", label: "🔥 ไฟลุก! มินิเกมได้เหรียญ x2", duration: 15 * 60 * 1000 },
+    desc: "อาหารไทยยอดฮิตสูตรลับ ไข่ดาวกรอบเยิ้มๆ ให้บัฟเหรียญมินิเกม x2 นาน 15 นาที!",
+  },
+  {
+    id: "boba_tea", name: "ชานมไข่มุกไต้หวัน", icon: "🧋",
+    image: "/assets/food/boba_tea.png",
+    cost: 65, reqLevel: 3, hunger: 45, happiness: 40, exp: 35,
+    buff: { type: "slow_hunger", label: "🧋 อิ่มนานขึ้น 2 เท่า (ลดความหิวช้าลง 50%)", duration: 30 * 60 * 1000 },
+    desc: "ชานมหอมละมุนพร้อมไข่มุกหนึบหนับ ช่วยให้น้องอิ่มนานขึ้น 2 เท่า!",
+  },
+  {
+    id: "watermelon", name: "แตงโมหวานฉ่ำเย็นเจี๊ยบ", icon: "🍉",
+    image: "/assets/food/watermelon.png",
+    cost: 40, reqLevel: 3, hunger: 35, happiness: 50, exp: 25,
+    desc: "แตงโมแดงสดหวานเจี๊ยบ ดับร้อน ฟื้นฟูความสุขและความสะอาดทันที!",
+  },
+  {
+    id: "shabu_pot", name: "ชาบูหม้อไฟทองเหลืองจิ๋ว", icon: "🍲",
+    image: "/assets/food/shabu_pot.png",
+    cost: 250, reqLevel: 5, hunger: 100, happiness: 100, exp: 100,
+    desc: "ปาร์ตี้หม้อไฟสุดหรู ฟื้นฟูค่าสถานะของน้องเฮเว่นทุกหลอดเต็ม 100% ทันที!",
+  },
+];
+
+// ============================================================
+// GARDEN CROPS (พืชสวนผักหลังบ้าน v5.0)
+// ============================================================
+export const GARDEN_CROPS = [
+  {
+    id: "sunflower",
+    name: "ต้นทานตะวันยักษ์",
+    icon: "🌻",
+    image: "/assets/garden/sunflower.png",
+    seedCost: 10,
+    growTime: 120, // 2 นาที
+    yieldType: "coins",
+    yieldAmount: 40,
+    desc: "ปลูกง่าย ผลิตเมล็ดทานตะวันทองคำเป็นเหรียญก้อนโต",
+  },
+  {
+    id: "basil",
+    name: "ต้นกะเพราหอม",
+    icon: "🌿",
+    image: "/assets/garden/basil_leaf.png",
+    seedCost: 15,
+    growTime: 180, // 3 นาที
+    yieldType: "item",
+    yieldItem: "basil_leaf",
+    yieldAmount: 2,
+    desc: "ใบกะเพราสดกลิ่นหอมกรุ่น วัตถุดิบหลักสำหรับผัดข้าวกะเพรา",
+  },
+  {
+    id: "chili",
+    name: "ต้นพริกขี้หนูสวน",
+    icon: "🌶️",
+    image: "/assets/garden/chili_pepper.png",
+    seedCost: 15,
+    growTime: 180, // 3 นาที
+    yieldType: "item",
+    yieldItem: "chili_pepper",
+    yieldAmount: 2,
+    desc: "พริกแดงรสแซ่บ เติมความจี๊ดจ๊าดให้จานเด็ด",
+  },
+  {
+    id: "strawberry",
+    name: "ต้นสตรอว์เบอร์รีหวาน",
+    icon: "🍓",
+    image: "/assets/garden/strawberry.png",
+    seedCost: 25,
+    growTime: 300, // 5 นาที
+    yieldType: "item",
+    yieldItem: "fresh_strawberry",
+    yieldAmount: 2,
+    desc: "สตรอว์เบอร์รีสีแดงฉ่ำ ใช้ทำชานมและของหวาน",
+  },
+];
+
+// ============================================================
+// COOKING RECIPES (สูตรอาหารปรุงสดในห้องครัว v5.0)
+// ============================================================
+export const COOKING_RECIPES = [
+  {
+    id: "cook_kaprao",
+    name: "ข้าวกะเพราหมูสับไข่ดาวกรอบ",
+    resultFoodId: "kaprao_rice",
+    icon: "🍳",
+    image: "/assets/food/kaprao_rice.png",
+    reqIngredients: { basil_leaf: 2, chili_pepper: 1 },
+    desc: "ใช้ใบกะเพรา 2 ใบ + พริกขี้หนู 1 เม็ด ปรุงเป็นข้าวกะเพราไข่ดาวฟรี!",
+  },
+  {
+    id: "cook_boba",
+    name: "ชานมไข่มุกไต้หวัน",
+    resultFoodId: "boba_tea",
+    icon: "🧋",
+    image: "/assets/food/boba_tea.png",
+    reqIngredients: { fresh_strawberry: 1, basil_leaf: 1 },
+    desc: "ใช้สตรอว์เบอร์รี 1 ผล + ใบชาหอม 1 ใบ ชงเป็นชานมไข่มุกอิ่มนาน 2 เท่า!",
+  },
+];
+
+// ============================================================
+// MINI BUDDY PETS (สัตว์เลี้ยงคู่หูตัวจิ๋ว v5.0)
+// ============================================================
+export const BUDDY_PETS = [
+  {
+    id: "buddy_piyo",
+    name: "ลูกเจี๊ยบปิโย๊ะ (Piyo)",
+    icon: "🐥",
+    image: "/assets/buddies/buddy_piyo.png",
+    rarity: "uncommon",
+    cost: 0,
+    perk: "ช่วยเก็บเหรียญตกในกรงอัตโนมัติ (+15 เหรียญทุก 3 นาที)",
+    desc: "ลูกเจี๊ยบขนปุยสีเหลือง คอยเดินดุ๊กดิ๊กเก็บเมล็ดทานตะวันช่วยเจ้านาย",
+  },
+  {
+    id: "buddy_ladybug",
+    name: "เต่าทองนำโชค (Ladybug)",
+    icon: "🐞",
+    image: "/assets/buddies/buddy_ladybug.png",
+    rarity: "rare",
+    cost: 500,
+    perk: "เพิ่มโอกาสเก็บเกี่ยวผลผลิตในสวนผักได้ x2 (+50% Double Harvest)",
+    desc: "เต่าทองนำโชคที่จะช่วยดูแลสวนผักของคุณให้อุดมสมบูรณ์",
+  },
+  {
+    id: "buddy_mimi",
+    name: "น้องแมวจิ๋วมิมี่ (Mimi)",
+    icon: "🐱",
+    image: "/assets/buddies/buddy_mimi.png",
+    rarity: "legendary",
+    cost: 800,
+    perk: "เพิ่มค่าความสุขให้น้องเฮเว่นเรื่อยๆ (+10 ทุก 5 นาที)",
+    desc: "ลูกแมวตัวจิ๋วเพื่อนซี้ของน้องเฮเว่น อยู่ด้วยกันแล้วมีความสุขที่สุด",
+  },
+];
+
+// ============================================================
+// GASHAPON REWARD POOL (ตู้สุ่มกาชาปอง v5.0)
+// ============================================================
+export const GASHAPON_POOL = [
+  // SSR (3%)
+  { id: "ssr_golden_crown", name: "มงกุฎราชาทองคำแท้", type: "wardrobe", itemId: "flower_crown", icon: "👑", rarity: "SSR", rate: 1.0 },
+  { id: "ssr_buddy_mimi", name: "คู่หู: น้องแมวจิ๋วมิมี่", type: "buddy", itemId: "buddy_mimi", icon: "🐱", rarity: "SSR", rate: 1.0 },
+  { id: "ssr_title_tycoon", name: "ฉายาสีทอง: 'มหาเศรษฐีทานตะวัน'", type: "title", title: "มหาเศรษฐีทานตะวัน", icon: "🏆", rarity: "SSR", rate: 1.0 },
+  // SR (17%)
+  { id: "sr_buddy_ladybug", name: "คู่หู: เต่าทองนำโชค", type: "buddy", itemId: "buddy_ladybug", icon: "🐞", rarity: "SR", rate: 5.0 },
+  { id: "sr_shabu_pot", name: "ชาบูหม้อไฟจิ๋ว x2", type: "food", foodId: "shabu_pot", count: 2, icon: "🍲", rarity: "SR", rate: 6.0 },
+  { id: "sr_title_spender", name: "ฉายา: 'สายเปย์แห่งปี'", type: "title", title: "สายเปย์แห่งปี", icon: "💎", rarity: "SR", rate: 6.0 },
+  // Common (80%)
+  { id: "com_kaprao", name: "ข้าวกะเพราหมูสับไข่ดาว", type: "food", foodId: "kaprao_rice", count: 1, icon: "🍳", rarity: "Common", rate: 20.0 },
+  { id: "com_boba", name: "ชานมไข่มุกไต้หวัน", type: "food", foodId: "boba_tea", count: 1, icon: "🧋", rarity: "Common", rate: 20.0 },
+  { id: "com_seeds_200", name: "ถุงเมล็ดทานตะวัน 200 เมล็ด", type: "coins", amount: 200, icon: "🌻", rarity: "Common", rate: 20.0 },
+  { id: "com_seeds_100", name: "ถุงเมล็ดทานตะวัน 100 เมล็ด", type: "coins", amount: 100, icon: "🌻", rarity: "Common", rate: 20.0 },
+];
+
+// ============================================================
+// MANSION THEMES (อัพเกรดกรงคฤหาสน์หรู v5.0)
+// ============================================================
+export const MANSION_THEMES = [
+  {
+    id: "default_grid",
+    name: "กรงกระดาษกริดดั้งเดิม",
+    cost: 0,
+    bgStyle: "bg-amber-50/60",
+    desc: "ธีมกรงอบอุ่น เรียบง่าย คลาสสิก",
+  },
+  {
+    id: "penthouse_wood",
+    name: "เพนต์เฮาส์สองชั้นลายไม้โอ๊คหรู",
+    cost: 1500,
+    bgStyle: "bg-gradient-to-b from-amber-100/90 to-amber-200/90 border-amber-300",
+    desc: "บ้านเพนต์เฮาส์สองชั้นลายไม้โอ๊คพรีเมียม สไตล์คฤหาสน์หรูหรา",
+  },
+  {
+    id: "pastel_palace",
+    name: "พระราชวังพาสเทลฟรุ้งฟริ้ง",
+    cost: 3000,
+    bgStyle: "bg-gradient-to-b from-pink-100/90 via-purple-100/90 to-indigo-100/90 border-pink-300",
+    desc: "ปราสาทเจ้าหญิงสีชมพูพาสเทล ประดับประกายดาวระยิบระยับ",
+  },
+  {
+    id: "space_cyber",
+    name: "สถานีอวกาศแฮมสเตอร์นีออน",
+    cost: 5000,
+    bgStyle: "bg-gradient-to-b from-slate-900/90 via-indigo-950/90 to-purple-950/90 text-white border-cyan-400",
+    desc: "ห้องควบคุมสถานีอวกาศธีมไซเบอร์พังก์ พร้อมวิวทางช้างเผือก",
   },
 ];
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
-import { WARDROBE_ITEMS, HAMSTER_BREEDS, PERSONALITIES } from "../constants/gameData";
+import { WARDROBE_ITEMS, HAMSTER_BREEDS, PERSONALITIES, BUDDY_PETS } from "../constants/gameData";
 
 // Mood → animation class map
 const MOOD_ANIMATIONS = {
@@ -296,6 +296,31 @@ export default function HamsterCharacter({ state, onPet }) {
             <div className="absolute top-[68%] left-[50%] z-20 pointer-events-none animate-bounce flex items-center">
               <span className="text-2xl sm:text-3xl">🥣</span>
               <span className="absolute -top-1.5 -right-1 text-xs">✨</span>
+            </div>
+          )}
+
+          {/* v5.0 Mini Buddy Pet walking next to hamster */}
+          {(() => {
+            const buddyDef = BUDDY_PETS.find((b) => b.id === state.equippedBuddy);
+            if (!buddyDef) return null;
+            return (
+              <div className="absolute -bottom-1 right-2 sm:right-4 z-35 pointer-events-none animate-cute-bounce flex flex-col items-center">
+                <img
+                  src={buddyDef.image}
+                  alt={buddyDef.name}
+                  className="w-10 h-10 sm:w-11 sm:h-11 object-contain pixel-art drop-shadow-md select-none"
+                />
+                <span className="text-[8px] font-black bg-white/90 text-slate-800 px-1 rounded-full border border-amber-300 shadow-2xs">
+                  {buddyDef.name.split(" ")[0]}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* v5.0 Active Buff Badge */}
+          {state.activeBuffs?.doubleCoinUntil > Date.now() && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-35 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow-md animate-pulse border border-yellow-200 flex items-center space-x-1">
+              <span>🔥 บัฟเหรียญ x2</span>
             </div>
           )}
         </div>

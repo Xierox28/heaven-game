@@ -21,6 +21,10 @@ import LeaderboardModal from "../components/LeaderboardModal";
 import HamsterPassModal from "../components/HamsterPassModal";
 import UpdateLogModal from "../components/UpdateLogModal";
 import CageDecorModal from "../components/CageDecorModal";
+import HamsterGardenModal from "../components/HamsterGardenModal";
+import LuckyGashaponModal from "../components/LuckyGashaponModal";
+import HamsterJumpMiniGame from "../components/HamsterJumpMiniGame";
+import { MANSION_THEMES } from "../constants/gameData";
 import { AchievementToast, AchievementPanel } from "../components/AchievementSystem";
 
 export default function PlayerView({ onNavigateToAdmin }) {
@@ -36,13 +40,32 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isPassOpen, setIsPassOpen] = useState(false);
   const [isUpdateLogOpen, setIsUpdateLogOpen] = useState(false);
+  const [isGardenOpen, setIsGardenOpen] = useState(false);
+  const [isGashaponOpen, setIsGashaponOpen] = useState(false);
+  const [isJumpOpen, setIsJumpOpen] = useState(false);
   const [isMoveMode, setIsMoveMode] = useState(false);
   const [selectedDecor, setSelectedDecor] = useState("house");
   const [pendingAchievement, setPendingAchievement] = useState(null);
+  const [feverRemaining, setFeverRemaining] = useState(0);
 
   // Double-tap Quick Feed state
   const lastTapRef = useRef(0);
   const DOUBLE_TAP_MS = 350;
+
+  // Golden Fever Timer live countdown
+  useEffect(() => {
+    const checkFever = () => {
+      if (gameState?.serverFever?.active && gameState?.serverFever?.expiresAt) {
+        const diff = Math.max(0, Math.floor((gameState.serverFever.expiresAt - Date.now()) / 1000));
+        setFeverRemaining(diff);
+      } else {
+        setFeverRemaining(0);
+      }
+    };
+    checkFever();
+    const timer = setInterval(checkFever, 1000);
+    return () => clearInterval(timer);
+  }, [gameState?.serverFever]);
 
   useEffect(() => {
     const unsub = gameStateService.subscribe((s) => setGameState({ ...s }));
@@ -415,10 +438,29 @@ export default function PlayerView({ onNavigateToAdmin }) {
           {/* ============================================================
               2. CAGE STAGE
           ============================================================ */}
+          {/* Golden Fever Live Event Banner */}
+          {feverRemaining > 0 && (
+            <div className="w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-yellow-200 shadow-lg shadow-yellow-500/30 flex items-center justify-between px-4 animate-pulse">
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl animate-bounce">🔥</span>
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-wider text-amber-950">LIVE EVENT ON AIR!</div>
+                  <div className="text-xs font-black">GOLDEN FEVER TIME: รับเหรียญและ EXP x2 ทุกกิจกรรม!</div>
+                </div>
+              </div>
+              <div className="bg-slate-950/80 text-yellow-300 px-3 py-1 rounded-xl text-xs font-black font-mono border border-yellow-400 shadow-inner">
+                ⏳ {Math.floor(feverRemaining / 60)}:{(feverRemaining % 60).toString().padStart(2, "0")}
+              </div>
+            </div>
+          )}
+
           {(() => {
             const equippedFurniture = gameState.furniture?.equipped || {};
             let wallpaperStyle = "bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100 border-amber-300 shadow-amber-200/50";
-            if (isNight) {
+            const mansionDef = MANSION_THEMES?.find((t) => t.id === gameState.mansionTheme);
+            if (mansionDef) {
+              wallpaperStyle = mansionDef.bgClass;
+            } else if (isNight) {
               wallpaperStyle = "bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border-slate-700 shadow-indigo-950/40";
             } else if (equippedFurniture.wallpaper === "sakura_blossom") {
               wallpaperStyle = "bg-gradient-to-b from-pink-100 via-rose-50 to-pink-200 border-pink-300 shadow-pink-200/50";
@@ -462,7 +504,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
                 {/* Room Badge & Decor Action (Hidden in Move Mode to prevent blocking) */}
                 {!isMoveMode && (
-                  <div className="relative z-10 flex items-center justify-between w-full">
+                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 w-full">
                     <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
                       isNight || equippedFurniture.wallpaper === "galaxy_stars"
                         ? "bg-slate-800/90 border-slate-600 text-indigo-200"
@@ -471,7 +513,52 @@ export default function PlayerView({ onNavigateToAdmin }) {
                       {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
                     </span>
 
-                    <div className="flex items-center space-x-1.5">
+                    <div className="flex flex-wrap items-center space-x-1 sm:space-x-1.5">
+                      {/* 🌱 สวนผัก & ครัว Shortcut */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playClick();
+                          setIsGardenOpen(true);
+                        }}
+                        className="px-2 sm:px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 text-white border border-emerald-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        title="สวนผักออร์แกนิก & ครัวปรุงอาหาร"
+                      >
+                        <span>🌱</span>
+                        <span className="hidden sm:inline">สวน&ครัว</span>
+                      </button>
+
+                      {/* 🎰 กาชาปอง Shortcut */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playClick();
+                          setIsGashaponOpen(true);
+                        }}
+                        className="px-2 sm:px-2.5 py-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 text-white border border-purple-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        title="ตู้สุ่มกาชาปอง & คฤหาสน์"
+                      >
+                        <span>🎰</span>
+                        <span className="hidden sm:inline">กาชา</span>
+                      </button>
+
+                      {/* 🚀 Hamster Jump Shortcut */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playClick();
+                          setIsJumpOpen(true);
+                        }}
+                        className="px-2 sm:px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 text-white border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        title="มินิเกม Hamster Jump ไต่เมฆ"
+                      >
+                        <span>🚀</span>
+                        <span className="hidden sm:inline">Jump</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={(e) => {
@@ -479,7 +566,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsDecorOpen(true);
                         }}
-                        className="px-2.5 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        className="px-2 sm:px-2.5 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
                         title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
                       >
                         <span>🛋️</span>
@@ -493,17 +580,41 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsMoveMode(true);
                         }}
-                        className="px-2.5 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300"
+                        className="px-2 sm:px-2.5 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300"
                         title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
                       >
                         <span>📍</span>
                         <span>ย้ายของ</span>
                       </button>
+                    </div>
+                  </div>
+                )}
 
-                      <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full hidden sm:inline-block">
-                        👆👆 ดับเบิ้ลแทปให้อาหารด่วน
+                {/* 🎁 Pending Mystery Box Drop from GM */}
+                {gameState.mysteryBoxPending && !isMoveMode && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sound.playLevelUp();
+                      gameStateService.claimMysteryBox();
+                    }}
+                    className="absolute top-14 right-3 z-25 cursor-pointer flex flex-col items-center animate-bounce hover:scale-110 active:scale-95 transition-transform"
+                    title="กล่องของขวัญปริศนาจากแอดมิน! แตะเพื่อเปิดรับรางวัลทันที"
+                  >
+                    <div className="relative w-12 h-12 filter drop-shadow-lg">
+                      <img
+                        src="/assets/events/mystery_box.png"
+                        alt="Mystery Box"
+                        className="w-full h-full object-contain pixel-art animate-pulse"
+                      />
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                       </span>
                     </div>
+                    <span className="text-[9px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-full mt-0.5 border border-white shadow-xs">
+                      รับกล่องสุ่ม! 🎁
+                    </span>
                   </div>
                 )}
 
@@ -848,6 +959,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     <span>🔄</span>
                     <span>เปลี่ยนชิ้น</span>
                   </button>
+                  <button
+                    onClick={() => {
+                      sound.playClick();
+                      setIsMoveMode(false);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black flex items-center space-x-0.5 active:scale-95 shadow-xs cursor-pointer"
+                    title="บันทึกและออกจากโหมดย้ายของ"
+                  >
+                    <Check className="w-3 h-3 stroke-[3]" />
+                    <span>เสร็จสิ้น</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -871,6 +993,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
             onOpenFoodShop={() => setIsFoodShopOpen(true)}
             onOpenDecor={() => setIsDecorOpen(true)}
             onOpenWardrobe={() => setIsWardrobeOpen(true)}
+            onOpenGarden={() => setIsGardenOpen(true)}
+            onOpenGashapon={() => setIsGashaponOpen(true)}
+            onOpenJump={() => setIsJumpOpen(true)}
           />
 
           {/* Quick feed hint & Update Log shortcut */}
@@ -883,7 +1008,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1"
             >
               <Scroll className="w-3 h-3 text-amber-700" />
-              <span>ประวัติอัปเดต (v3.1)</span>
+              <span>ประวัติอัปเดต (v5.0)</span>
             </button>
           </div>
         </div>
@@ -980,6 +1105,34 @@ export default function PlayerView({ onNavigateToAdmin }) {
       <AnnouncementModal
         announcement={gameState.announcement}
         onDismiss={() => gameStateService.dismissAnnouncement()}
+      />
+
+      {/* Mega Update v5 Modals */}
+      <HamsterGardenModal
+        state={gameState}
+        isOpen={isGardenOpen}
+        onClose={() => setIsGardenOpen(false)}
+        onPlant={(id, cropId) => gameStateService.plantCrop(id, cropId)}
+        onWater={(id) => gameStateService.waterCrop(id)}
+        onHarvest={(id) => gameStateService.harvestCrop(id)}
+        onCook={(id) => gameStateService.cookRecipe(id)}
+      />
+
+      <LuckyGashaponModal
+        state={gameState}
+        isOpen={isGashaponOpen}
+        onClose={() => setIsGashaponOpen(false)}
+        onSpin={(count) => gameStateService.spinGashapon(count)}
+        onEquipBuddy={(id) => gameStateService.equipBuddy(id)}
+        onBuyTheme={(id) => gameStateService.buyMansionTheme(id)}
+        onEquipTheme={(id) => gameStateService.equipMansionTheme(id)}
+      />
+
+      <HamsterJumpMiniGame
+        state={gameState}
+        isOpen={isJumpOpen}
+        onClose={() => setIsJumpOpen(false)}
+        onFinish={(score, seeds) => gameStateService.recordJumpScore(score, seeds)}
       />
     </div>
   );

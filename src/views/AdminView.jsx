@@ -657,16 +657,56 @@ export default function AdminView({ onNavigateToPlayer }) {
               <span>โปรยฝนเมล็ดทานตะวันให้ทุกคน</span>
             </button>
 
-            {/* แจกอั่งเปา 100 เหรียญทุกคน */}
+            {/* v5.0: ดรอปกล่องสมบัติปริศนา (Mystery Box) */}
             <button
               onClick={async () => {
-                await adminService.massAddCoins(100);
-                triggerFeedback("แจกอั่งเปา +100 เหรียญให้ผู้เล่นทุกคนสำเร็จ!");
+                await adminService.dropMysteryBox(selectedTarget);
+                triggerFeedback(
+                  selectedTarget === "all"
+                    ? "ดรอปกล่องสมบัติปริศนาลงกรงผู้เล่นทุกคนแล้ว! 🎁✨"
+                    : `ดรอปกล่องสมบัติปริศนาลงกรงของ @${selectedTarget} แล้ว! 🎁`
+                );
               }}
-              className="p-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 text-slate-950 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+              className="p-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
             >
-              <Coins className="w-4 h-4" />
-              <span>แจกอั่งเปา +100 🌻 ให้ทุกคน</span>
+              <Gift className="w-4 h-4" />
+              <span>ดรอปกล่องสมบัติลงกรง 🎁</span>
+            </button>
+
+            {/* v5.0: เปิด Golden Fever Time 15 นาที */}
+            <button
+              onClick={async () => {
+                await adminService.triggerServerFever(15);
+                triggerFeedback("เปิด Golden Fever Time (x2 ทั้งเซิร์ฟ 15 นาที) เรียบร้อย! 🔥⚡");
+              }}
+              className="p-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm animate-pulse"
+            >
+              <Zap className="w-4 h-4" />
+              <span>เปิด Fever Time (x2 ทั่วเซิร์ฟ 15น.)</span>
+            </button>
+
+            {/* v5.0: เปิด Golden Fever Time 30 นาที */}
+            <button
+              onClick={async () => {
+                await adminService.triggerServerFever(30);
+                triggerFeedback("เปิด Golden Fever Time (x2 ทั้งเซิร์ฟ 30 นาที) เรียบร้อย! 🔥⚡");
+              }}
+              className="p-3 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 text-slate-950 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+            >
+              <Flame className="w-4 h-4" />
+              <span>เปิด Fever Time (x2 ทั่วเซิร์ฟ 30น.)</span>
+            </button>
+
+            {/* v5.0: ปิด Fever Time */}
+            <button
+              onClick={async () => {
+                await adminService.stopServerFever();
+                triggerFeedback("ปิด Server Fever Time เรียบร้อย!");
+              }}
+              className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>ปิด Fever Time</span>
             </button>
 
             {/* แจกอั่งเปา 500 เหรียญทุกคน */}
@@ -677,8 +717,8 @@ export default function AdminView({ onNavigateToPlayer }) {
               }}
               className="p-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
             >
-              <Gift className="w-4 h-4" />
-              <span>แจกอั่งเปา +500 🌻 ก้อนโต</span>
+              <Coins className="w-4 h-4" />
+              <span>แจกอั่งเปา +500 🌻 ให้ทุกคน</span>
             </button>
           </div>
         </section>

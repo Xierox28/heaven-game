@@ -216,6 +216,64 @@ class AdminService {
       },
     });
   }
+
+  // ==============================================================================
+  // ⚡ v5.0 GM LIVE EVENT & MYSTERY DROP MASTER
+  // ==============================================================================
+  // เปิด Server Fever Time (เหรียญและ EXP x2 ทั้งเซิร์ฟเวอร์)
+  async triggerServerFever(durationMinutes = 15) {
+    sound.playLevelUp();
+    const expiresAt = Date.now() + durationMinutes * 60 * 1000;
+    const feverData = {
+      active: true,
+      multiplier: 2,
+      expiresAt,
+      message: `⚡ GM ได้เปิดใช้งาน Golden Fever Time (${durationMinutes} นาที)! รับเหรียญและ EXP x2 ทุกกิจกรรม!`,
+      timestamp: Date.now(),
+    };
+
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, "global_events/serverFever"), feverData);
+    }
+    return feverData;
+  }
+
+  // ปิด Server Fever Time
+  async stopServerFever() {
+    const feverData = { active: false, expiresAt: 0, timestamp: Date.now() };
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, "global_events/serverFever"), feverData);
+    }
+    return feverData;
+  }
+
+  // ดรอปกล่องสมบัติปริศนาลงในกรง (Mystery Box Drop)
+  async dropMysteryBox(targetUser = "all") {
+    sound.playNotification();
+    const boxId = Date.now();
+    const boxData = {
+      id: boxId,
+      active: true,
+      timestamp: Date.now(),
+      message: "🎁 GM ส่งกล่องสมบัติเซอร์ไพรส์ลงในกรง! แตะเพื่อเปิดรับของขวัญ!",
+    };
+
+    if (targetUser === "all") {
+      if (isFirebaseConfigured() && database) {
+        await set(ref(database, "global_events/globalMysteryDrop"), boxData);
+      }
+      return boxData;
+    }
+
+    return this.updatePlayerHamster(targetUser, {
+      mysteryBoxPending: boxData,
+      speechBubble: {
+        text: "เฮ้ยยย! มีกล่องสมบัติปริศนาตกลงมาในกรงด้วย รีบแตะเปิดดูเร็ว! 🎁✨",
+        timestamp: Date.now(),
+        duration: 5000,
+      },
+    });
+  }
 }
 
 export const adminService = new AdminService();

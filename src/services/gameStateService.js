@@ -12,6 +12,11 @@ import {
   ACHIEVEMENT_DEFS,
   HAMSTER_BREEDS,
   PERSONALITIES,
+  GARDEN_CROPS,
+  COOKING_RECIPES,
+  BUDDY_PETS,
+  GASHAPON_POOL,
+  MANSION_THEMES,
 } from "../constants/gameData";
 import { FURNITURE_ITEMS, MYSTERY_BOXES } from "../constants/furnitureData";
 import { sound } from "../utils/audio";
@@ -197,6 +202,31 @@ class GameStateService {
         return Array.from(new Set([...raw, ...levelUnlocked]));
       })(),
       personality: val?.personality || this.currentState?.personality || INITIAL_GAME_STATE.personality,
+      // 🌾 v5.0 Garden & Pantry
+      gardenPlots: val?.gardenPlots || this.currentState?.gardenPlots || INITIAL_GAME_STATE.gardenPlots,
+      pantry: {
+        ...INITIAL_GAME_STATE.pantry,
+        ...(this.currentState?.pantry || {}),
+        ...(val?.pantry || {}),
+      },
+      // ⚡ v5.0 Buffs & Buddies & Mansion Themes
+      activeBuffs: {
+        ...INITIAL_GAME_STATE.activeBuffs,
+        ...(this.currentState?.activeBuffs || {}),
+        ...(val?.activeBuffs || {}),
+      },
+      equippedBuddy: val?.equippedBuddy || this.currentState?.equippedBuddy || "buddy_piyo",
+      unlockedBuddies: toSafeArray(val?.unlockedBuddies ?? this.currentState?.unlockedBuddies, ["buddy_piyo"]),
+      mansionTheme: val?.mansionTheme || this.currentState?.mansionTheme || "default_grid",
+      unlockedThemes: toSafeArray(val?.unlockedThemes ?? this.currentState?.unlockedThemes, ["default_grid"]),
+      playerTitle: val?.playerTitle || this.currentState?.playerTitle || "",
+      mysteryBoxPending: val?.mysteryBoxPending !== undefined ? val.mysteryBoxPending : (this.currentState?.mysteryBoxPending || null),
+      highScores: {
+        ...INITIAL_GAME_STATE.highScores,
+        ...(this.currentState?.highScores || {}),
+        ...(val?.highScores || {}),
+      },
+      serverFever: val?.serverFever || this.currentState?.serverFever || { active: false, multiplier: 2, expiresAt: 0 },
       lastDecayTime: Date.now(),
       lastUpdated: Math.max(Number(val?.lastUpdated) || 0, Number(this.currentState?.lastUpdated) || 0, Date.now()),
     };
@@ -294,14 +324,24 @@ class GameStateService {
     this.unsubGlobal = onValue(globalRef, (snapshot) => {
       const g = snapshot.val();
       if (g) {
-        this.updateState((prev) => ({
-          ...prev,
-          announcement: g.announcement ? { ...prev.announcement, ...g.announcement } : prev.announcement,
-          seedRainEvent: g.seedRainEvent ? { ...prev.seedRainEvent, ...g.seedRainEvent } : prev.seedRainEvent,
-          speechBubble: g.globalSpeech && Date.now() - g.globalSpeech.timestamp < 10000
-            ? g.globalSpeech
-            : prev.speechBubble,
-        }));
+        this.updateState((prev) => {
+          let box = prev.mysteryBoxPending;
+          if (g.globalMysteryDrop && (Date.now() - (g.globalMysteryDrop.timestamp || 0) < 120000)) {
+            if (!box || box.id !== g.globalMysteryDrop.id) {
+              box = g.globalMysteryDrop;
+            }
+          }
+          return {
+            ...prev,
+            announcement: g.announcement ? { ...prev.announcement, ...g.announcement } : prev.announcement,
+            seedRainEvent: g.seedRainEvent ? { ...prev.seedRainEvent, ...g.seedRainEvent } : prev.seedRainEvent,
+            serverFever: g.serverFever || prev.serverFever,
+            mysteryBoxPending: box,
+            speechBubble: g.globalSpeech && Date.now() - g.globalSpeech.timestamp < 10000
+              ? g.globalSpeech
+              : prev.speechBubble,
+          };
+        });
       }
     }, () => {});
   }
@@ -555,6 +595,7 @@ class GameStateService {
       if (prev.coins < foodItem.cost) return prev;
       const hunger = Math.min(100, prev.hunger + foodItem.hunger);
       const happiness = Math.min(100, prev.happiness + foodItem.happiness);
+      const cleanliness = foodItem.cleanliness ? Math.min(100, prev.cleanliness + foodItem.cleanliness) : prev.cleanliness;
       const coins = prev.coins - foodItem.cost;
       const { exp, level, maxExp, leveledUp } = this.calculateExp(prev.exp + foodItem.exp, prev.level, prev.maxExp);
       const newStats = { ...prev.stats, totalFed: (prev.stats?.totalFed || 0) + 1 };
@@ -563,6 +604,16 @@ class GameStateService {
       if (Math.random() < 0.3 && newPoop < 4) newPoop += 1;
       if (leveledUp) sound.playLevelUp();
 
+      // v5.0 Active Buffs
+      let activeBuffs = { ...(prev.activeBuffs || {}) };
+      if (foodItem.buff) {
+        if (foodItem.buff.type === "double_coin") {
+          activeBuffs.doubleCoinUntil = Date.now() + foodItem.buff.duration;
+        } else if (foodItem.buff.type === "slow_hunger") {
+          activeBuffs.slowHungerUntil = Date.now() + foodItem.buff.duration;
+        }
+      }
+
       const newDailyProgress = {
         ...(prev.pass?.dailyProgress || {}),
         feed_twice: ((prev.pass?.dailyProgress?.feed_twice || 0) + 1),
@@ -570,8 +621,9 @@ class GameStateService {
 
       return {
         ...prev,
-        hunger, happiness, coins, exp, level, maxExp,
+        hunger, happiness, cleanliness, coins, exp, level, maxExp,
         poopCount: newPoop,
+        activeBuffs,
         stats: newStats,
         pass: {
           ...(prev.pass || {}),
@@ -581,7 +633,7 @@ class GameStateService {
         actionExpiry: Date.now() + 2500,
         speechBubble: leveledUp
           ? { text: `เย้ๆ! เลเวลอัปเป็น Lv.${level} แล้วจ้า! 🎉✨`, timestamp: Date.now(), duration: 5000 }
-          : { text: `งั่มๆ! ${foodItem.name} อร่อยม๊ากกกก 😋`, timestamp: Date.now(), duration: 3500 },
+          : { text: foodItem.buff ? `งั่มมม! ${foodItem.name} อร่อยม๊าก! [ได้รับบัฟ ${foodItem.buff.label}] 🔥✨` : `งั่มๆ! ${foodItem.name} อร่อยม๊ากกกก 😋`, timestamp: Date.now(), duration: 4000 },
       };
     });
   }
@@ -705,12 +757,20 @@ class GameStateService {
   rewardMiniGame(earnedCoins, earnedExp) {
     sound.playCoin();
     return this.updateState((prev) => {
+      // v5.0 Multiplier: Server Fever & Food Buffs
+      const isFever = prev.serverFever?.active && ((prev.serverFever.expiresAt || 0) > Date.now());
+      const hasDoubleBuff = (prev.activeBuffs?.doubleCoinUntil || 0) > Date.now();
+      let multiplier = 1;
+      if (isFever) multiplier *= (prev.serverFever.multiplier || 2);
+      if (hasDoubleBuff) multiplier *= 2;
+      const finalEarnedCoins = earnedCoins * multiplier;
+
       const { exp, level, maxExp, leveledUp } = this.calculateExp(prev.exp + earnedExp, prev.level, prev.maxExp);
       if (leveledUp) sound.playLevelUp();
       const newStats = {
         ...prev.stats,
         miniGamesPlayed: (prev.stats?.miniGamesPlayed || 0) + 1,
-        totalCoinsEarned: (prev.stats?.totalCoinsEarned || 0) + earnedCoins,
+        totalCoinsEarned: (prev.stats?.totalCoinsEarned || 0) + finalEarnedCoins,
       };
 
       const newDailyProgress = {
@@ -720,7 +780,7 @@ class GameStateService {
 
       return {
         ...prev,
-        coins: prev.coins + earnedCoins,
+        coins: prev.coins + finalEarnedCoins,
         exp, level, maxExp,
         energy: Math.max(10, prev.energy - 15),
         happiness: Math.min(100, prev.happiness + 20),
@@ -732,7 +792,9 @@ class GameStateService {
         actionState: "happy",
         actionExpiry: Date.now() + 2500,
         speechBubble: {
-          text: `ปั่นวงล้อสนุกมากกก! ได้มา ${earnedCoins} เมล็ดทานตะวันเลยงับ 🏃‍♂️💨`,
+          text: multiplier > 1
+            ? `ปั่นวงล้อสนุกมากกก! ได้บัฟ x${multiplier} รับไปเต็มๆ ${finalEarnedCoins} เมล็ดทานตะวัน! 🏃‍♂️💨🔥`
+            : `ปั่นวงล้อสนุกมากกก! ได้มา ${finalEarnedCoins} เมล็ดทานตะวันเลยงับ 🏃‍♂️💨`,
           timestamp: Date.now(), duration: 4000,
         },
       };
@@ -1337,7 +1399,310 @@ class GameStateService {
     }));
   }
 
-  calculateExp(currentExp, currentLevel, currentMaxExp) {
+  // ==============================================================================
+  // 🌾 v5.0 GARDEN & COOKING HANDLERS
+  // ==============================================================================
+  plantCrop(plotId, cropId) {
+    const crop = GARDEN_CROPS.find((c) => c.id === cropId);
+    if (!crop) return;
+    if (this.currentState.coins < crop.seedCost) return;
+
+    sound.playEat();
+    return this.updateState((prev) => {
+      if (prev.coins < crop.seedCost) return prev;
+      const plots = [...(prev.gardenPlots || INITIAL_GAME_STATE.gardenPlots)];
+      plots[plotId] = {
+        id: plotId,
+        cropId,
+        plantedAt: Date.now(),
+        watered: false,
+      };
+      return {
+        ...prev,
+        coins: prev.coins - crop.seedCost,
+        gardenPlots: plots,
+        speechBubble: {
+          text: `หว่านเมล็ด ${crop.name} เรียบร้อยแล้ว รดน้ำให้น้องโตเร็วๆ นะงับ! 🌱💧`,
+          timestamp: Date.now(),
+          duration: 3500,
+        },
+      };
+    });
+  }
+
+  waterCrop(plotId) {
+    sound.playClean();
+    return this.updateState((prev) => {
+      const plots = [...(prev.gardenPlots || INITIAL_GAME_STATE.gardenPlots)];
+      if (!plots[plotId] || !plots[plotId].cropId) return prev;
+      plots[plotId] = {
+        ...plots[plotId],
+        watered: true,
+      };
+      return {
+        ...prev,
+        gardenPlots: plots,
+        happiness: Math.min(100, prev.happiness + 5),
+        speechBubble: {
+          text: "รดน้ำชุ่มฉ่ำ! พืชผักสดชื่นเติบโตไวขึ้นแล้วจ้า 💦🌱",
+          timestamp: Date.now(),
+          duration: 3000,
+        },
+      };
+    });
+  }
+
+  harvestCrop(plotId) {
+    sound.playLevelUp();
+    return this.updateState((prev) => {
+      const plots = [...(prev.gardenPlots || INITIAL_GAME_STATE.gardenPlots)];
+      const plot = plots[plotId];
+      if (!plot || !plot.cropId) return prev;
+
+      const crop = GARDEN_CROPS.find((c) => c.id === plot.cropId);
+      if (!crop) return prev;
+
+      // สัตว์เลี้ยงเต่าทอง (Ladybug) มีโอกาสได้ผลผลิต 2 เท่า 50%
+      const isLadybug = prev.equippedBuddy === "buddy_ladybug";
+      const hasDoubleYield = isLadybug && Math.random() < 0.5;
+      const multiplier = hasDoubleYield ? 2 : 1;
+
+      let newCoins = prev.coins;
+      let newPantry = { ...(prev.pantry || INITIAL_GAME_STATE.pantry) };
+      let harvestText = "";
+
+      if (crop.yieldType === "coins") {
+        const earned = crop.yieldAmount * multiplier;
+        newCoins += earned;
+        harvestText = `เก็บเกี่ยว ${crop.name} สำเร็จ! ได้รับ ${earned} เมล็ดทานตะวัน! 🌻${hasDoubleYield ? " (โบนัสเต่าทอง x2! 🐞)" : ""}`;
+      } else if (crop.yieldType === "item") {
+        const earned = crop.yieldAmount * multiplier;
+        newPantry[crop.yieldItem] = (newPantry[crop.yieldItem] || 0) + earned;
+        harvestText = `เก็บเกี่ยว ${crop.name} สำเร็จ! ได้รับ +${earned} ชิ้นเข้าคลังครัว! 🌿${hasDoubleYield ? " (โบนัสเต่าทอง x2! 🐞)" : ""}`;
+      }
+
+      plots[plotId] = { id: plotId, cropId: null, plantedAt: 0, watered: false };
+
+      return {
+        ...prev,
+        coins: newCoins,
+        pantry: newPantry,
+        gardenPlots: plots,
+        happiness: Math.min(100, prev.happiness + 15),
+        exp: prev.exp + 15,
+        speechBubble: {
+          text: harvestText,
+          timestamp: Date.now(),
+          duration: 4000,
+        },
+      };
+    });
+  }
+
+  cookRecipe(recipe) {
+    sound.playLevelUp();
+    return this.updateState((prev) => {
+      const pantry = { ...(prev.pantry || INITIAL_GAME_STATE.pantry) };
+      // Check ingredients
+      for (const [item, reqCount] of Object.entries(recipe.reqIngredients || {})) {
+        if ((pantry[item] || 0) < reqCount) return prev;
+      }
+      // Deduct ingredients
+      for (const [item, reqCount] of Object.entries(recipe.reqIngredients || {})) {
+        pantry[item] -= reqCount;
+      }
+
+      const foodItem = FOOD_ITEMS.find((f) => f.id === recipe.resultFoodId);
+      let hunger = prev.hunger;
+      let happiness = prev.happiness;
+      let activeBuffs = { ...(prev.activeBuffs || {}) };
+
+      if (foodItem) {
+        hunger = Math.min(100, prev.hunger + foodItem.hunger);
+        happiness = Math.min(100, prev.happiness + foodItem.happiness);
+        if (foodItem.buff) {
+          if (foodItem.buff.type === "double_coin") {
+            activeBuffs.doubleCoinUntil = Date.now() + foodItem.buff.duration;
+          } else if (foodItem.buff.type === "slow_hunger") {
+            activeBuffs.slowHungerUntil = Date.now() + foodItem.buff.duration;
+          }
+        }
+      }
+
+      return {
+        ...prev,
+        pantry,
+        hunger,
+        happiness,
+        activeBuffs,
+        exp: prev.exp + 30,
+        actionState: "eating",
+        actionExpiry: Date.now() + 3000,
+        speechBubble: {
+          text: `ปรุง ${recipe.name} สำเร็จและกินทันที! อร่อยฟินสุดๆ! 🍳🔥`,
+          timestamp: Date.now(),
+          duration: 4500,
+        },
+      };
+    });
+  }
+
+  // ==============================================================================
+  // 🎰 v5.0 LUCKY GASHAPON HANDLERS
+  // ==============================================================================
+  spinGashapon(count = 1) {
+    const cost = count === 10 ? 1350 : 150;
+    if (this.currentState.coins < cost) return null;
+
+    sound.playLevelUp();
+    const results = [];
+    const pool = GASHAPON_POOL;
+
+    for (let i = 0; i < count; i++) {
+      const rand = Math.random() * 100;
+      let selected = pool[pool.length - 1];
+      let accum = 0;
+      for (const item of pool) {
+        accum += item.rate;
+        if (rand <= accum) {
+          selected = item;
+          break;
+        }
+      }
+      results.push(selected);
+    }
+
+    this.updateState((prev) => {
+      let coins = prev.coins - cost;
+      let inv = [...(prev.inventory || [])];
+      let unlockedBuddies = [...(prev.unlockedBuddies || ["buddy_piyo"])];
+      let playerTitle = prev.playerTitle || "";
+
+      for (const r of results) {
+        if (r.type === "coins") coins += r.amount;
+        if (r.type === "wardrobe" && !inv.includes(r.itemId)) inv.push(r.itemId);
+        if (r.type === "buddy" && !unlockedBuddies.includes(r.itemId)) unlockedBuddies.push(r.itemId);
+        if (r.type === "title") playerTitle = r.title;
+      }
+
+      return {
+        ...prev,
+        coins,
+        inventory: inv,
+        unlockedBuddies,
+        playerTitle,
+        speechBubble: {
+          text: `หมุนกาชาปองได้ของขวัญสุดเจ๋ง! ลุ้นรางวัลกันมันส์สุดๆ! 🎰✨`,
+          timestamp: Date.now(),
+          duration: 4000,
+        },
+      };
+    });
+
+    return results;
+  }
+
+  // ==============================================================================
+  // 🐥 v5.0 BUDDY PETS & MANSION THEMES
+  // ==============================================================================
+  equipBuddy(buddyId) {
+    sound.playNotification();
+    return this.updateState((prev) => ({
+      ...prev,
+      equippedBuddy: buddyId,
+      speechBubble: {
+        text: `เปลี่ยนคู่หูตัวจิ๋วเรียบร้อย! คอยดูแลน้องเฮเว่นนะงับ 🐾`,
+        timestamp: Date.now(),
+        duration: 3500,
+      },
+    }));
+  }
+
+  buyMansionTheme(themeId) {
+    const theme = MANSION_THEMES.find((t) => t.id === themeId);
+    if (!theme) return;
+    if (this.currentState.coins < theme.cost) return;
+
+    sound.playLevelUp();
+    return this.updateState((prev) => {
+      const unlockedThemes = [...(prev.unlockedThemes || ["default_grid"])];
+      if (!unlockedThemes.includes(themeId)) unlockedThemes.push(themeId);
+      return {
+        ...prev,
+        coins: prev.coins - theme.cost,
+        unlockedThemes,
+        mansionTheme: themeId,
+        speechBubble: {
+          text: `อัปเกรดกรงคฤหาสน์เป็น '${theme.name}' แล้วจ้า! หรูหราอลังการที่สุด! 🏰✨`,
+          timestamp: Date.now(),
+          duration: 5000,
+        },
+      };
+    });
+  }
+
+  equipMansionTheme(themeId) {
+    return this.updateState((prev) => ({
+      ...prev,
+      mansionTheme: themeId,
+    }));
+  }
+
+  // ==============================================================================
+  // 🎁 v5.0 MYSTERY BOX & HAMSTER JUMP
+  // ==============================================================================
+  claimMysteryBox() {
+    sound.playLevelUp();
+    return this.updateState((prev) => {
+      const bonusSeeds = Math.floor(Math.random() * 300) + 200;
+      return {
+        ...prev,
+        coins: prev.coins + bonusSeeds,
+        mysteryBoxPending: null,
+        happiness: 100,
+        speechBubble: {
+          text: `ว้าววว! เปิดกล่องสมบัติ GM ได้รับ ${bonusSeeds} เมล็ดทานตะวันทองคำ! ขอบคุณ GM ค้าบบบ! 🎁🌻🎉`,
+          timestamp: Date.now(),
+          duration: 5000,
+        },
+      };
+    });
+  }
+
+  recordJumpScore(score, earnedSeeds) {
+    sound.playCoin();
+    return this.updateState((prev) => {
+      const isFever = prev.serverFever?.active && ((prev.serverFever.expiresAt || 0) > Date.now());
+      const hasDoubleBuff = (prev.activeBuffs?.doubleCoinUntil || 0) > Date.now();
+      let multiplier = 1;
+      if (isFever) multiplier *= (prev.serverFever.multiplier || 2);
+      if (hasDoubleBuff) multiplier *= 2;
+      const totalSeeds = earnedSeeds * multiplier;
+
+      const currentBest = prev.highScores?.hamsterJump || 0;
+      const newBest = Math.max(currentBest, score);
+
+      return {
+        ...prev,
+        coins: prev.coins + totalSeeds,
+        highScores: {
+          ...(prev.highScores || {}),
+          hamsterJump: newBest,
+        },
+        energy: Math.max(10, prev.energy - 10),
+        happiness: Math.min(100, prev.happiness + 25),
+        speechBubble: {
+          text: score > currentBest
+            ? `NEW RECORD! กระโดดเมฆได้สูงถึง ${score} เมตร! ได้รับ ${totalSeeds} เมล็ดทานตะวัน! 🚀☁️`
+            : `กระโดดเมฆสนุกมากกก! ไต่ได้ ${score} เมตร ได้รับ ${totalSeeds} เมล็ดทานตะวันงับ! 🐹✨`,
+          timestamp: Date.now(),
+          duration: 4000,
+        },
+      };
+    });
+  }
+
+  calculateLevelProgression(currentExp, currentLevel) {
     let exp = Math.max(0, Number(currentExp) || 0);
     let level = Math.max(1, Number(currentLevel) || 1);
     let maxExp = level * 100;

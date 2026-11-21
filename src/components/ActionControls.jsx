@@ -11,6 +11,9 @@ export default function ActionControls({
   onOpenFoodShop,
   onOpenDecor,
   onOpenWardrobe,
+  onOpenGarden,
+  onOpenGashapon,
+  onOpenJump,
 }) {
   const { level, isSleeping, poopCount, cleanliness } = state;
 
@@ -187,6 +190,54 @@ export default function ActionControls({
             ) : (
               <span className="text-[8px] sm:text-[9px] text-purple-600 font-bold mt-0.5">แต่งตัว</span>
             )}
+          </button>
+        </div>
+
+        {/* 3. มินิเกม & ระบบผจญภัย Mega Update v5.0 */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mt-2 pt-2 border-t border-amber-200/70">
+          {/* สวนผัก & ครัว (Lv.2) */}
+          <button
+            onClick={onOpenGarden}
+            disabled={level < 2 || isSleeping}
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
+              level >= 2 && !isSleeping
+                ? "bg-gradient-to-b from-emerald-50 to-teal-100 border-emerald-300 text-emerald-950 hover:shadow-sm active:scale-95 cursor-pointer"
+                : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+            }`}
+          >
+            <div className="text-lg sm:text-xl mb-0.5">🌱</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">สวน & ครัว</span>
+            <span className="text-[8px] sm:text-[9px] text-emerald-700 font-bold mt-0.5">ปลูกผัก/กะเพรา</span>
+          </button>
+
+          {/* ตู้สุ่มกาชาปอง & สัตว์เลี้ยง (Lv.2) */}
+          <button
+            onClick={onOpenGashapon}
+            disabled={level < 2 || isSleeping}
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
+              level >= 2 && !isSleeping
+                ? "bg-gradient-to-b from-purple-50 to-pink-100 border-purple-300 text-purple-950 hover:shadow-sm active:scale-95 cursor-pointer"
+                : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+            }`}
+          >
+            <div className="text-lg sm:text-xl mb-0.5">🎰</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">กาชาปอง</span>
+            <span className="text-[8px] sm:text-[9px] text-purple-700 font-bold mt-0.5">คู่หู/คฤหาสน์</span>
+          </button>
+
+          {/* Hamster Jump (Lv.1) */}
+          <button
+            onClick={onOpenJump}
+            disabled={isSleeping}
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
+              !isSleeping
+                ? "bg-gradient-to-b from-amber-50 to-orange-100 border-orange-300 text-orange-950 hover:shadow-sm active:scale-95 cursor-pointer"
+                : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+            }`}
+          >
+            <div className="text-lg sm:text-xl mb-0.5">🚀</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">Hamster Jump</span>
+            <span className="text-[8px] sm:text-[9px] text-orange-700 font-bold mt-0.5">ไต่เมฆเก็บเหรียญ</span>
           </button>
         </div>
       </div>
