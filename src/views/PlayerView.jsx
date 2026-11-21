@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star } from "lucide-react";
+import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star, Scroll } from "lucide-react";
 
 import { gameStateService } from "../services/gameStateService";
 import { authService } from "../services/authService";
@@ -18,6 +18,7 @@ import AnnouncementModal from "../components/AnnouncementModal";
 import AuthModal from "../components/AuthModal";
 import LeaderboardModal from "../components/LeaderboardModal";
 import HamsterPassModal from "../components/HamsterPassModal";
+import UpdateLogModal from "../components/UpdateLogModal";
 import { AchievementToast, AchievementPanel } from "../components/AchievementSystem";
 
 export default function PlayerView({ onNavigateToAdmin }) {
@@ -31,6 +32,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isPassOpen, setIsPassOpen] = useState(false);
+  const [isUpdateLogOpen, setIsUpdateLogOpen] = useState(false);
   const [pendingAchievement, setPendingAchievement] = useState(null);
 
   // Double-tap Quick Feed state
@@ -161,6 +163,15 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 <Trophy className="w-4 h-4 fill-amber-700 text-amber-950" />
               </button>
 
+              {/* Update Log Button 📜 */}
+              <button
+                onClick={() => setIsUpdateLogOpen(true)}
+                className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300 transition-all active:scale-90 shadow-xs"
+                title="ประวัติการอัปเดต (Update Log v2.3)"
+              >
+                <Scroll className="w-4 h-4 text-amber-800" />
+              </button>
+
               {/* Mute button */}
               <button
                 onClick={toggleSound}
@@ -182,10 +193,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
           </header>
 
           {/* ============================================================
-              ⭐ PASS & DAILY STREAK QUICK BANNER (กระตุ้นให้กดเล่นทุกวัน)
+              ⭐ PASS & DAILY STREAK QUICK BANNER
           ============================================================ */}
           <div className="grid grid-cols-2 gap-2">
-            {/* ปุ่มเปิด Hamster Pass */}
             <button
               onClick={() => setIsPassOpen(true)}
               className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
@@ -202,7 +212,6 @@ export default function PlayerView({ onNavigateToAdmin }) {
               </span>
             </button>
 
-            {/* ปุ่มเช็คชื่อประจำวัน (Daily Streak) */}
             <button
               onClick={() => setIsPassOpen(true)}
               className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
@@ -231,7 +240,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
           </div>
 
           {/* ============================================================
-              2. CAGE STAGE (กรงของน้องเฮเว่น พร้อมกล่องข้อความไม่ตกขอบ)
+              2. CAGE STAGE
           ============================================================ */}
           <div
             className={`relative w-full rounded-3xl border-4 shadow-lg min-h-[330px] flex flex-col justify-between p-4 cursor-pointer transition-all duration-700 ${
@@ -242,12 +251,12 @@ export default function PlayerView({ onNavigateToAdmin }) {
             onClick={handleCageTap}
             title="ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"
           >
-            {/* ซี่กรง background overlay */}
+            {/* Background grid pattern */}
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
               <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:18px_18px]"></div>
             </div>
 
-            {/* Top Room Badge & Double-tap hint */}
+            {/* Room Badge */}
             <div className="relative z-10 flex items-center justify-between w-full">
               <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
                 isNight
@@ -284,7 +293,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
             </div>
 
-            {/* Poop objects — click to clean */}
+            {/* Poop objects */}
             <div className="absolute bottom-3 left-6 right-6 flex items-end pointer-events-auto z-20">
               {Array.from({ length: gameState.poopCount || 0 }).map((_, idx) => (
                 <div
@@ -310,7 +319,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               />
             </div>
 
-            {/* Floor seed decoration */}
+            {/* Floor decoration */}
             <div className="relative z-10 self-end mr-2 flex items-center space-x-1 pointer-events-none">
               <span className="text-xl">🌻</span>
               <div className="w-12 h-2.5 bg-amber-900/20 rounded-full blur-[1px]"></div>
@@ -336,11 +345,18 @@ export default function PlayerView({ onNavigateToAdmin }) {
             onOpenWardrobe={() => setIsWardrobeOpen(true)}
           />
 
-          {/* Quick feed hint */}
-          <div className="text-center pointer-events-none pt-1">
-            <span className="text-[11px] text-amber-900 font-bold bg-amber-100/80 px-3 py-1 rounded-full inline-block border border-amber-200">
-              💡 ดับเบิ้ลแทปที่กรงเพื่อให้อาหารด่วน | คลิกที่ตัวน้องเพื่อลูบหัว
+          {/* Quick feed hint & Update Log shortcut */}
+          <div className="flex items-center justify-between pt-1 px-1">
+            <span className="text-[11px] text-amber-900 font-bold bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-200">
+              💡 ดับเบิ้ลแทปที่กรงเพื่อให้อาหารด่วน
             </span>
+            <button
+              onClick={() => setIsUpdateLogOpen(true)}
+              className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1"
+            >
+              <Scroll className="w-3 h-3 text-amber-700" />
+              <span>ประวัติอัปเดต (v2.3)</span>
+            </button>
           </div>
         </div>
       </div>
@@ -358,6 +374,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
         isOpen={isLeaderboardOpen}
         onClose={() => setIsLeaderboardOpen(false)}
         currentUsername={currentUser?.username}
+      />
+
+      <UpdateLogModal
+        isOpen={isUpdateLogOpen}
+        onClose={() => setIsUpdateLogOpen(false)}
       />
 
       <HamsterPassModal

@@ -14,7 +14,7 @@ export default function StatusBars({ state }) {
   return (
     <div className="w-full space-y-2.5">
       {/* EXP / Level Bar */}
-      <div className="glass-pastel rounded-2xl p-2.5 shadow-xs border border-amber-200/80">
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-2.5 shadow-xs border border-amber-200/80">
         <div className="flex items-center justify-between mb-1 text-xs">
           <div className="flex items-center space-x-1.5 font-black">
             <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl px-2.5 py-0.5 text-xs shadow-xs flex items-center space-x-1">
@@ -69,7 +69,7 @@ export default function StatusBars({ state }) {
               {/* Bar */}
               <div className="w-full h-2 bg-white/70 rounded-full overflow-hidden border border-black/5">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
+                  className={`h-full rounded-full transition-all duration-300 ${
                     isCritical ? "bar-critical" : isLow ? "bg-orange-400" : barColor
                   }`}
                   style={{ width: `${val}%` }}
@@ -78,7 +78,9 @@ export default function StatusBars({ state }) {
 
               {/* Sleep charging indicator */}
               {key === "energy" && isSleeping && (
-                <div className="text-[9px] text-indigo-600 font-bold mt-0.5">💤 กำลังชาร์จ...</div>
+                <div className="text-[9px] text-indigo-700 font-black mt-0.5 animate-pulse flex items-center space-x-1">
+                  <span>⚡ ชาร์จไว 10 วิเต็ม! ({val}%)</span>
+                </div>
               )}
             </div>
           );

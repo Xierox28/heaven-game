@@ -1,5 +1,5 @@
 // ==============================================================================
-// 🐹 HEAVEN GAME STATE SERVICE — WITH PASS & STREAK ACTIONS
+// 🐹 HEAVEN GAME STATE SERVICE — WITH 10S ENERGY RECHARGE & STRICT CLAIM GUARDS
 // ==============================================================================
 import { ref, onValue, set, get } from "firebase/database";
 import { database, isFirebaseConfigured } from "../firebaseConfig";
@@ -24,6 +24,7 @@ class GameStateService {
         ? new BroadcastChannel("heaven_game_channel")
         : null;
     this.decayInterval = null;
+    this.sleepRechargeInterval = null;
     this.unsubFirebase = null;
     this.unsubGlobal = null;
 
@@ -123,6 +124,9 @@ class GameStateService {
     }
 
     this.startDecayTimer();
+    if (this.currentState.isSleeping) {
+      this.startSleepRecharge();
+    }
   }
 
   initFirebase() {
@@ -276,6 +280,47 @@ class GameStateService {
     return state;
   }
 
+  // ==============================================================================
+  // ⚡ 10-SECOND SLEEP ENERGY RECHARGE SYSTEM
+  // ==============================================================================
+  startSleepRecharge() {
+    if (this.sleepRechargeInterval) clearInterval(this.sleepRechargeInterval);
+
+    // ทำงานทุกๆ 1 วินาที เติมพลังงาน +10% (10 วินาทีเต็ม 100%)
+    this.sleepRechargeInterval = setInterval(() => {
+      if (!this.currentState.isSleeping) {
+        clearInterval(this.sleepRechargeInterval);
+        this.sleepRechargeInterval = null;
+        return;
+      }
+
+      const currentEnergy = this.currentState.energy || 0;
+      if (currentEnergy >= 100) return;
+
+      const newEnergy = Math.min(100, currentEnergy + 10);
+      const isNowFull = newEnergy === 100 && currentEnergy < 100;
+
+      this.updateState((prev) => ({
+        ...prev,
+        energy: newEnergy,
+        speechBubble: isNowFull
+          ? { text: "พลังงานชาร์จเต็ม 100% แล้ว พร้อมตื่นแล้วงับ! ⚡☀️", timestamp: Date.now(), duration: 4000 }
+          : prev.speechBubble,
+      }));
+
+      if (isNowFull) {
+        sound.playLevelUp();
+      }
+    }, 1000);
+  }
+
+  stopSleepRecharge() {
+    if (this.sleepRechargeInterval) {
+      clearInterval(this.sleepRechargeInterval);
+      this.sleepRechargeInterval = null;
+    }
+  }
+
   startDecayTimer() {
     if (this.decayInterval) clearInterval(this.decayInterval);
 
@@ -289,7 +334,8 @@ class GameStateService {
         let { hunger, happiness, cleanliness, energy, poopCount, isSleeping } = prev;
 
         if (isSleeping) {
-          energy = Math.min(100, energy + elapsedSeconds * 0.15);
+          // พลังงานเติมเร็ว 10 วินาทีเต็ม (+10 ต่อวินาที)
+          energy = Math.min(100, energy + elapsedSeconds * 10);
           hunger = Math.max(0, hunger - elapsedSeconds * 0.03);
           cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.02);
         } else {
@@ -340,7 +386,6 @@ class GameStateService {
       if (Math.random() < 0.3 && newPoop < 4) newPoop += 1;
       if (leveledUp) sound.playLevelUp();
 
-      // Advance daily quest
       const newDailyProgress = {
         ...(prev.pass?.dailyProgress || {}),
         feed_twice: ((prev.pass?.dailyProgress?.feed_twice || 0) + 1),
@@ -462,12 +507,19 @@ class GameStateService {
     sound.playClick();
     return this.updateState((prev) => {
       const nextSleeping = !prev.isSleeping;
+
+      if (nextSleeping) {
+        this.startSleepRecharge();
+      } else {
+        this.stopSleepRecharge();
+      }
+
       return {
         ...prev,
         isSleeping: nextSleeping,
         actionState: nextSleeping ? "sleeping" : "idle",
         speechBubble: nextSleeping
-          ? { text: "ปิดไฟแล้ว... ฝันดีนะงับ ฟี้~ 💤", timestamp: Date.now(), duration: 3000 }
+          ? { text: "ปิดไฟแล้ว... กำลังชาร์จพลังงาน 10 วิเต็มงับ! 💤⚡", timestamp: Date.now(), duration: 3500 }
           : { text: "ตื่นแล้วจ้า! สดชื่นสุดๆ พร้อมวิ่งเล่นแล้ว ☀️🐹", timestamp: Date.now(), duration: 3500 },
       };
     });
@@ -511,10 +563,11 @@ class GameStateService {
   }
 
   // ==============================================================================
-  // 🎟️ HAMSTER PASS & STREAK CLAIM HANDLERS
+  // 🎟️ HAMSTER PASS & STREAK CLAIM HANDLERS (WITH STRICT DUPLICATION GUARDS)
   // ==============================================================================
   unlockGoldPass() {
     if (this.currentState.coins < 200) return;
+    if (this.currentState.pass?.hasGoldPass) return; // มีอยู่แล้ว
     sound.playLevelUp();
     return this.updateState((prev) => ({
       ...prev,
@@ -532,8 +585,13 @@ class GameStateService {
   }
 
   claimFreePass(level, reward) {
+    // ป้องกันรับซ้ำ
+    if (this.currentState.pass?.claimedFree?.includes(level)) return;
+
     sound.playCoin();
     return this.updateState((prev) => {
+      if (prev.pass?.claimedFree?.includes(level)) return prev;
+
       let coins = prev.coins;
       let exp = prev.exp;
       let inv = prev.inventory || [];
@@ -557,8 +615,13 @@ class GameStateService {
 
   claimGoldPass(level, reward) {
     if (!this.currentState.pass?.hasGoldPass) return;
+    // ป้องกันรับซ้ำ
+    if (this.currentState.pass?.claimedGold?.includes(level)) return;
+
     sound.playCoin();
     return this.updateState((prev) => {
+      if (prev.pass?.claimedGold?.includes(level)) return prev;
+
       let coins = prev.coins;
       let exp = prev.exp;
       let inv = prev.inventory || [];
@@ -581,8 +644,13 @@ class GameStateService {
   }
 
   claimQuest(questId, passExpReward, coinsReward) {
+    // ป้องกันรับซ้ำ
+    if (this.currentState.pass?.claimedQuests?.includes(questId)) return;
+
     sound.playCoin();
     return this.updateState((prev) => {
+      if (prev.pass?.claimedQuests?.includes(questId)) return prev;
+
       const currentPassExp = (prev.pass?.exp || 0) + passExpReward;
       const claimed = [...(prev.pass?.claimedQuests || []), questId];
 
@@ -604,9 +672,17 @@ class GameStateService {
   }
 
   claimDailyStreak(item) {
-    sound.playLevelUp();
     const todayStr = new Date().toDateString();
+    // ป้องกันรับซ้ำในวันเดียวกัน หรือรับเลเวลเดิมซ้ำ
+    if (this.currentState.streak?.lastClaimDate === todayStr) return;
+    if (this.currentState.streak?.claimedDays?.includes(item.day)) return;
+
+    sound.playLevelUp();
     return this.updateState((prev) => {
+      if (prev.streak?.lastClaimDate === todayStr || prev.streak?.claimedDays?.includes(item.day)) {
+        return prev;
+      }
+
       const nextDays = (prev.streak?.days || 0) + 1;
       let coins = prev.coins;
       let exp = prev.exp;

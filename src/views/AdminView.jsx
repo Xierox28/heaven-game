@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { adminService } from "../services/adminService";
 import { isFirebaseConfigured } from "../firebaseConfig";
 import { sound } from "../utils/audio";
+import UpdateLogModal from "../components/UpdateLogModal";
 import {
   Shield,
   KeyRound,
@@ -26,7 +27,8 @@ import {
   Sun,
   Crown,
   Eye,
-  EyeOff
+  EyeOff,
+  Scroll
 } from "lucide-react";
 
 export default function AdminView({ onNavigateToPlayer }) {
@@ -57,6 +59,7 @@ export default function AdminView({ onNavigateToPlayer }) {
   const [announceTitle, setAnnounceTitle] = useState("🔔 ข้อความด่วนจาก GM!");
   const [announceMessage, setAnnounceMessage] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [isUpdateLogOpen, setIsUpdateLogOpen] = useState(false);
 
   // Load players roster
   const loadRoster = async () => {
@@ -220,6 +223,15 @@ export default function AdminView({ onNavigateToPlayer }) {
 
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => setIsUpdateLogOpen(true)}
+              className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-xl text-xs font-bold transition-all flex items-center space-x-1 border border-amber-500/40"
+              title="ประวัติการอัปเดต"
+            >
+              <Scroll className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Update Log (v2.3)</span>
+            </button>
+
+            <button
               onClick={onNavigateToPlayer}
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center space-x-1 border border-slate-700"
             >
@@ -236,6 +248,11 @@ export default function AdminView({ onNavigateToPlayer }) {
             </button>
           </div>
         </header>
+
+        <UpdateLogModal
+          isOpen={isUpdateLogOpen}
+          onClose={() => setIsUpdateLogOpen(false)}
+        />
 
         {/* Feedback Banner */}
         {feedback && (
