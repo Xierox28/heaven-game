@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn } from "lucide-react";
+import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star } from "lucide-react";
 
 import { gameStateService } from "../services/gameStateService";
 import { authService } from "../services/authService";
@@ -17,6 +17,7 @@ import SeedRainOverlay from "../components/SeedRainOverlay";
 import AnnouncementModal from "../components/AnnouncementModal";
 import AuthModal from "../components/AuthModal";
 import LeaderboardModal from "../components/LeaderboardModal";
+import HamsterPassModal from "../components/HamsterPassModal";
 import { AchievementToast, AchievementPanel } from "../components/AchievementSystem";
 
 export default function PlayerView({ onNavigateToAdmin }) {
@@ -29,6 +30,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isAchievementOpen, setIsAchievementOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [isPassOpen, setIsPassOpen] = useState(false);
   const [pendingAchievement, setPendingAchievement] = useState(null);
 
   // Double-tap Quick Feed state
@@ -55,7 +57,6 @@ export default function PlayerView({ onNavigateToAdmin }) {
     }
   };
 
-  // Double-tap on cage = Quick Feed
   const handleCageTap = useCallback(() => {
     if (gameState.isSleeping) return;
     const now = Date.now();
@@ -69,7 +70,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
   const isNight = gameState.isSleeping;
   const isCloud = isFirebaseConfigured();
-  const achievedCount = (gameState.achievements || []).length;
+  const streakDays = gameState.streak?.days || 0;
+  const todayStr = new Date().toDateString();
+  const hasStreakToClaim = gameState.streak?.lastClaimDate !== todayStr;
 
   return (
     <div
@@ -80,7 +83,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
           : "linear-gradient(135deg, #fff7ed 0%, #fef3c7 35%, #fff1f2 65%, #f0fdf4 100%)",
       }}
     >
-      {/* Animated Background Blobs */}
+      {/* Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div
           className={`absolute -top-32 -left-32 w-80 h-80 rounded-full blur-3xl opacity-30 bg-blob-1 ${
@@ -103,13 +106,13 @@ export default function PlayerView({ onNavigateToAdmin }) {
       )}
 
       {/* Main Container */}
-      <div className="relative z-10 flex flex-col items-center justify-start p-3 sm:p-5 pb-12">
+      <div className="relative z-10 flex flex-col items-center justify-start p-3 sm:p-5 pb-14">
         <div className="w-full max-w-md space-y-3">
 
           {/* ============================================================
-              1. HEADER BAR (User Profile, Leaderboard, Coins, GM, Sound)
+              1. HEADER BAR
           ============================================================ */}
-          <header className={`bg-white/90 backdrop-blur-md border border-amber-200/90 rounded-3xl px-3.5 py-2.5 shadow-sm flex items-center justify-between ${isNight ? "bg-slate-900/90 border-slate-700 text-white" : "text-slate-900"}`}>
+          <header className={`bg-white/95 backdrop-blur-md border border-amber-200/90 rounded-3xl px-3.5 py-2.5 shadow-sm flex items-center justify-between ${isNight ? "bg-slate-900/95 border-slate-700 text-white" : "text-slate-900"}`}>
             {/* Logo + User info */}
             <div className="flex items-center space-x-2">
               <div className="relative">
@@ -120,7 +123,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
                     isCloud ? "bg-emerald-400" : "bg-blue-400"
                   }`}
-                  title={isCloud ? "Cloud Connected" : "Local Sync"}
+                  title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
                 ></div>
               </div>
 
@@ -128,7 +131,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 <h1 className="font-black text-sm leading-tight text-amber-950 flex items-center">
                   <span>{gameState.name || "Heaven (เฮเว่น)"}</span>
                 </h1>
-                {/* Username badge button */}
+                {/* Username / Account button */}
                 <button
                   onClick={() => setIsAuthOpen(true)}
                   className="flex items-center space-x-1 text-[11px] font-bold text-amber-800 hover:text-amber-950 transition-colors mt-0.5"
@@ -179,6 +182,55 @@ export default function PlayerView({ onNavigateToAdmin }) {
           </header>
 
           {/* ============================================================
+              ⭐ PASS & DAILY STREAK QUICK BANNER (กระตุ้นให้กดเล่นทุกวัน)
+          ============================================================ */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* ปุ่มเปิด Hamster Pass */}
+            <button
+              onClick={() => setIsPassOpen(true)}
+              className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
+            >
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl group-hover:scale-110 transition-transform">🎟️</span>
+                <div>
+                  <div className="text-[10px] font-black uppercase text-amber-900 tracking-wider">SEASON 1</div>
+                  <div className="text-xs font-black leading-tight text-slate-950">Hamster Pass</div>
+                </div>
+              </div>
+              <span className="text-[10px] bg-white/80 font-black px-2 py-0.5 rounded-full border border-amber-300">
+                เควสต์
+              </span>
+            </button>
+
+            {/* ปุ่มเช็คชื่อประจำวัน (Daily Streak) */}
+            <button
+              onClick={() => setIsPassOpen(true)}
+              className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
+            >
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
+                <div>
+                  <div className="text-[10px] font-black uppercase text-purple-100 tracking-wider">
+                    {hasStreakToClaim ? "ยังไม่เช็คชื่อ" : "เช็คชื่อแล้ว"}
+                  </div>
+                  <div className="text-xs font-black leading-tight">
+                    วันที่ {streakDays}/7 วัน
+                  </div>
+                </div>
+              </div>
+              {hasStreakToClaim ? (
+                <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs">
+                  รับ!
+                </span>
+              ) : (
+                <span className="text-[9px] bg-white/30 text-white font-black px-2 py-0.5 rounded-full">
+                  ✓
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* ============================================================
               2. CAGE STAGE (กรงของน้องเฮเว่น พร้อมกล่องข้อความไม่ตกขอบ)
           ============================================================ */}
           <div
@@ -190,7 +242,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
             onClick={handleCageTap}
             title="ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"
           >
-            {/* ซี่กรง background overlay (ใส่ overflow-hidden เฉพาะ layer นี้เพื่อไม่ให้ล้น) */}
+            {/* ซี่กรง background overlay */}
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
               <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:18px_18px]"></div>
             </div>
@@ -250,7 +302,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               ))}
             </div>
 
-            {/* Hamster Character (with clear visible Speech Bubble) */}
+            {/* Hamster Character */}
             <div className="relative z-10 my-auto py-1" onClick={(e) => e.stopPropagation()}>
               <HamsterCharacter
                 state={gameState}
@@ -266,7 +318,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
           </div>
 
           {/* ============================================================
-              3. STATUS BARS (4 หลอด: หิว, สุข, สะอาด, พลังงาน)
+              3. STATUS BARS
           ============================================================ */}
           <StatusBars state={gameState} />
 
@@ -299,15 +351,24 @@ export default function PlayerView({ onNavigateToAdmin }) {
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onSuccess={(user) => {
-          // Handled via authService subscriber
-        }}
+        onSuccess={() => {}}
       />
 
       <LeaderboardModal
         isOpen={isLeaderboardOpen}
         onClose={() => setIsLeaderboardOpen(false)}
         currentUsername={currentUser?.username}
+      />
+
+      <HamsterPassModal
+        isOpen={isPassOpen}
+        onClose={() => setIsPassOpen(false)}
+        gameState={gameState}
+        onUnlockGoldPass={() => gameStateService.unlockGoldPass()}
+        onClaimFreePass={(level, reward) => gameStateService.claimFreePass(level, reward)}
+        onClaimGoldPass={(level, reward) => gameStateService.claimGoldPass(level, reward)}
+        onClaimQuest={(id, exp, coins) => gameStateService.claimQuest(id, exp, coins)}
+        onClaimDailyStreak={(item) => gameStateService.claimDailyStreak(item)}
       />
 
       <MiniGameWheel

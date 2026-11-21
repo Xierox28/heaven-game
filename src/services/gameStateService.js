@@ -1,5 +1,5 @@
 // ==============================================================================
-// 🐹 HEAVEN GAME STATE SERVICE — WITH USER & LEADERBOARD SYNC
+// 🐹 HEAVEN GAME STATE SERVICE — WITH PASS & STREAK ACTIONS
 // ==============================================================================
 import { ref, onValue, set, get } from "firebase/database";
 import { database, isFirebaseConfigured } from "../firebaseConfig";
@@ -27,7 +27,6 @@ class GameStateService {
     this.unsubFirebase = null;
     this.unsubGlobal = null;
 
-    // Listen to Auth changes
     authService.subscribe((user) => {
       this.bindUser(user);
     });
@@ -80,6 +79,8 @@ class GameStateService {
       inventory: Array.isArray(val?.inventory) ? val.inventory : INITIAL_GAME_STATE.inventory,
       stats: { ...INITIAL_GAME_STATE.stats, ...(val?.stats || {}) },
       achievements: Array.isArray(val?.achievements) ? val.achievements : [],
+      pass: { ...INITIAL_GAME_STATE.pass, ...(val?.pass || {}) },
+      streak: { ...INITIAL_GAME_STATE.streak, ...(val?.streak || {}) },
       speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val?.speechBubble || {}) },
       announcement: { ...INITIAL_GAME_STATE.announcement, ...(val?.announcement || {}) },
       seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(val?.seedRainEvent || {}) },
@@ -92,7 +93,6 @@ class GameStateService {
       this.unsubFirebase();
       this.unsubFirebase = null;
     }
-    // Load state for this user
     this.currentState = this.loadInitialFromStorage();
     if (user && user.hamsterName) {
       this.currentState.name = user.hamsterName;
@@ -104,7 +104,6 @@ class GameStateService {
   init() {
     this.initFirebase();
 
-    // Cross-tab sync
     if (this.channel) {
       this.channel.onmessage = (event) => {
         if (event.data?.type === "STATE_UPDATE") {
@@ -132,7 +131,6 @@ class GameStateService {
     const dbPath = this.getDbPath();
     const gameRef = ref(database, dbPath);
 
-    // Initial check
     get(gameRef).then((snapshot) => {
       if (!snapshot.exists()) {
         const initData = {
@@ -144,7 +142,6 @@ class GameStateService {
       }
     }).catch(() => {});
 
-    // Listen to player's hamster
     this.unsubFirebase = onValue(gameRef, (snapshot) => {
       const val = snapshot.val();
       if (val) {
@@ -153,7 +150,6 @@ class GameStateService {
       }
     }, () => {});
 
-    // Listen to Global Events (Admin announcement, seed rain)
     const globalRef = ref(database, "global_events");
     this.unsubGlobal = onValue(globalRef, (snapshot) => {
       const g = snapshot.val();
@@ -180,6 +176,7 @@ class GameStateService {
       level: state.level || 1,
       coins: state.coins || 0,
       happiness: state.happiness || 85,
+      passExp: state.pass?.exp || 0,
       updatedAt: Date.now(),
     }).catch(() => {});
   }
@@ -326,7 +323,9 @@ class GameStateService {
     }, 15000);
   }
 
-  // Actions
+  // ==============================================================================
+  // ACTIONS (WITH DAILY QUEST PROGRESSION)
+  // ==============================================================================
   feed(foodItem = FOOD_ITEMS[0]) {
     sound.playEat();
     return this.updateState((prev) => {
@@ -341,11 +340,21 @@ class GameStateService {
       if (Math.random() < 0.3 && newPoop < 4) newPoop += 1;
       if (leveledUp) sound.playLevelUp();
 
+      // Advance daily quest
+      const newDailyProgress = {
+        ...(prev.pass?.dailyProgress || {}),
+        feed_twice: ((prev.pass?.dailyProgress?.feed_twice || 0) + 1),
+      };
+
       return {
         ...prev,
         hunger, happiness, coins, exp, level, maxExp,
         poopCount: newPoop,
         stats: newStats,
+        pass: {
+          ...(prev.pass || {}),
+          dailyProgress: newDailyProgress,
+        },
         actionState: "eating",
         actionExpiry: Date.now() + 2500,
         speechBubble: leveledUp
@@ -359,11 +368,20 @@ class GameStateService {
     sound.playEat();
     return this.updateState((prev) => {
       const newStats = { ...prev.stats, totalFed: (prev.stats?.totalFed || 0) + 1 };
+      const newDailyProgress = {
+        ...(prev.pass?.dailyProgress || {}),
+        feed_twice: ((prev.pass?.dailyProgress?.feed_twice || 0) + 1),
+      };
+
       return {
         ...prev,
         hunger: Math.min(100, prev.hunger + 10),
         exp: Math.min(prev.maxExp - 1, prev.exp + 2),
         stats: newStats,
+        pass: {
+          ...(prev.pass || {}),
+          dailyProgress: newDailyProgress,
+        },
         actionState: "eating",
         actionExpiry: Date.now() + 1500,
         speechBubble: { text: "อ้าวของกิน! จิ้มๆ ขอบคุณงับ 🥣⚡", timestamp: Date.now(), duration: 2500 },
@@ -379,10 +397,20 @@ class GameStateService {
       const newStats = { ...prev.stats, totalPets: (prev.stats?.totalPets || 0) + 1 };
       if (leveledUp) sound.playLevelUp();
       const randomQuote = HAPPY_QUOTES[Math.floor(Math.random() * HAPPY_QUOTES.length)];
+
+      const newDailyProgress = {
+        ...(prev.pass?.dailyProgress || {}),
+        pet_thrice: ((prev.pass?.dailyProgress?.pet_thrice || 0) + 1),
+      };
+
       return {
         ...prev,
         happiness, exp, level, maxExp,
         stats: newStats,
+        pass: {
+          ...(prev.pass || {}),
+          dailyProgress: newDailyProgress,
+        },
         actionState: "petting",
         actionExpiry: Date.now() + 1800,
         speechBubble: { text: randomQuote, timestamp: Date.now(), duration: 3500 },
@@ -404,12 +432,22 @@ class GameStateService {
       };
       if (leveledUp) sound.playLevelUp();
       sound.playCoin();
+
+      const newDailyProgress = {
+        ...(prev.pass?.dailyProgress || {}),
+        clean_cage: ((prev.pass?.dailyProgress?.clean_cage || 0) + 1),
+      };
+
       return {
         ...prev,
         cleanliness: 100, poopCount: 0,
         coins: prev.coins + rewardCoins,
         exp, level, maxExp,
         stats: newStats,
+        pass: {
+          ...(prev.pass || {}),
+          dailyProgress: newDailyProgress,
+        },
         actionState: "happy",
         actionExpiry: Date.now() + 2500,
         speechBubble: {
@@ -445,6 +483,12 @@ class GameStateService {
         miniGamesPlayed: (prev.stats?.miniGamesPlayed || 0) + 1,
         totalCoinsEarned: (prev.stats?.totalCoinsEarned || 0) + earnedCoins,
       };
+
+      const newDailyProgress = {
+        ...(prev.pass?.dailyProgress || {}),
+        spin_wheel: ((prev.pass?.dailyProgress?.spin_wheel || 0) + 1),
+      };
+
       return {
         ...prev,
         coins: prev.coins + earnedCoins,
@@ -452,11 +496,140 @@ class GameStateService {
         energy: Math.max(10, prev.energy - 15),
         happiness: Math.min(100, prev.happiness + 20),
         stats: newStats,
+        pass: {
+          ...(prev.pass || {}),
+          dailyProgress: newDailyProgress,
+        },
         actionState: "happy",
         actionExpiry: Date.now() + 2500,
         speechBubble: {
           text: `ปั่นวงล้อสนุกมากกก! ได้มา ${earnedCoins} เมล็ดทานตะวันเลยงับ 🏃‍♂️💨`,
           timestamp: Date.now(), duration: 4000,
+        },
+      };
+    });
+  }
+
+  // ==============================================================================
+  // 🎟️ HAMSTER PASS & STREAK CLAIM HANDLERS
+  // ==============================================================================
+  unlockGoldPass() {
+    if (this.currentState.coins < 200) return;
+    sound.playLevelUp();
+    return this.updateState((prev) => ({
+      ...prev,
+      coins: prev.coins - 200,
+      pass: {
+        ...(prev.pass || {}),
+        hasGoldPass: true,
+      },
+      speechBubble: {
+        text: "เย้ๆๆ! ปลดล็อค Gold Pass แล้วจ้า! พร้อมรับของพรีเมียมเพียบ! 🌟🎟️",
+        timestamp: Date.now(),
+        duration: 5000,
+      },
+    }));
+  }
+
+  claimFreePass(level, reward) {
+    sound.playCoin();
+    return this.updateState((prev) => {
+      let coins = prev.coins;
+      let exp = prev.exp;
+      let inv = prev.inventory || [];
+
+      if (reward.type === "coins") coins += reward.amount;
+      if (reward.type === "exp") exp += reward.amount;
+      if (reward.type === "item" && !inv.includes(reward.id)) inv = [...inv, reward.id];
+
+      return {
+        ...prev,
+        coins,
+        exp,
+        inventory: inv,
+        pass: {
+          ...(prev.pass || {}),
+          claimedFree: [...(prev.pass?.claimedFree || []), level],
+        },
+      };
+    });
+  }
+
+  claimGoldPass(level, reward) {
+    if (!this.currentState.pass?.hasGoldPass) return;
+    sound.playCoin();
+    return this.updateState((prev) => {
+      let coins = prev.coins;
+      let exp = prev.exp;
+      let inv = prev.inventory || [];
+
+      if (reward.type === "coins") coins += reward.amount;
+      if (reward.type === "exp") exp += reward.amount;
+      if (reward.type === "item" && !inv.includes(reward.id)) inv = [...inv, reward.id];
+
+      return {
+        ...prev,
+        coins,
+        exp,
+        inventory: inv,
+        pass: {
+          ...(prev.pass || {}),
+          claimedGold: [...(prev.pass?.claimedGold || []), level],
+        },
+      };
+    });
+  }
+
+  claimQuest(questId, passExpReward, coinsReward) {
+    sound.playCoin();
+    return this.updateState((prev) => {
+      const currentPassExp = (prev.pass?.exp || 0) + passExpReward;
+      const claimed = [...(prev.pass?.claimedQuests || []), questId];
+
+      return {
+        ...prev,
+        coins: prev.coins + coinsReward,
+        pass: {
+          ...(prev.pass || {}),
+          exp: currentPassExp,
+          claimedQuests: claimed,
+        },
+        speechBubble: {
+          text: `ทำเควสต์สำเร็จ! +${passExpReward} Pass EXP และ +${coinsReward} 🌻`,
+          timestamp: Date.now(),
+          duration: 3500,
+        },
+      };
+    });
+  }
+
+  claimDailyStreak(item) {
+    sound.playLevelUp();
+    const todayStr = new Date().toDateString();
+    return this.updateState((prev) => {
+      const nextDays = (prev.streak?.days || 0) + 1;
+      let coins = prev.coins;
+      let exp = prev.exp;
+      let inv = prev.inventory || [];
+
+      if (item.type === "coins") coins += item.amount;
+      if (item.type === "exp") exp += item.amount;
+      if (item.type === "item" && !inv.includes(item.id)) inv = [...inv, item.id];
+
+      return {
+        ...prev,
+        coins,
+        exp,
+        inventory: inv,
+        streak: {
+          days: nextDays,
+          lastClaimDate: todayStr,
+          claimedDays: [...(prev.streak?.claimedDays || []), item.day],
+        },
+        speechBubble: {
+          text: `เช็คชื่อวันที่ ${item.day} สำเร็จแล้ว! ได้รับ ${item.name} 🎁✨`,
+          timestamp: Date.now(),
+          duration: 4000,
         },
       };
     });
@@ -595,7 +768,6 @@ class GameStateService {
     sound.playNotification();
     const speechData = { text: text.trim(), timestamp: Date.now(), duration: 7000 };
 
-    // Broadcast globally to everyone if online
     if (isFirebaseConfigured() && database) {
       set(ref(database, "global_events/globalSpeech"), speechData).catch(() => {});
     }

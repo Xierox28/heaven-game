@@ -93,17 +93,17 @@ export default function HamsterCharacter({ state, onPet }) {
   const sleepTint = isSleeping ? "brightness-70 saturate-50" : "";
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none pt-4">
+    <div className="relative flex flex-col items-center justify-center select-none pt-2">
       {/* ============================================================
-          1. SPEECH BUBBLE (ปรับตำแหน่งและสีให้อ่านชัดเจน 100% ไม่หลุดขอบ)
+          1. SPEECH BUBBLE (อยู่เหนือน้องอย่างพอดี คมชัด 100% ไม่ตกขอบ)
       ============================================================ */}
       {bubbleVisible && speechBubble?.text && (
-        <div className="relative mb-3 z-30 max-w-[280px] sm:max-w-xs animate-slide-in-down">
+        <div className="relative mb-2 z-30 max-w-[280px] sm:max-w-xs animate-slide-in-down">
           <div className="relative bg-white text-slate-900 font-black text-xs sm:text-sm px-3.5 py-2 rounded-2xl shadow-xl border-2 border-amber-400 text-center flex items-center space-x-1.5">
             <span className="text-amber-500 text-sm flex-shrink-0">💬</span>
             <span className="leading-snug block flex-1 text-slate-950 font-extrabold">{speechBubble.text}</span>
           </div>
-          {/* Speech bubble tail pointing down to hamster */}
+          {/* Speech bubble tail pointing down */}
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[8px] border-t-amber-400"></div>
           <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[7px] border-t-white"></div>
         </div>
@@ -112,7 +112,6 @@ export default function HamsterCharacter({ state, onPet }) {
       {/* ============================================================
           2. MOOD PARTICLES — Zzz / Tears / Angry Puffs / Stars
       ============================================================ */}
-      {/* Sleeping Zzz */}
       {isSleeping && (
         <div className="absolute top-2 right-8 z-20 pointer-events-none space-y-0">
           {["Z", "z", "z"].map((z, i) => (
@@ -127,7 +126,6 @@ export default function HamsterCharacter({ state, onPet }) {
         </div>
       )}
 
-      {/* Tears (sad mood) */}
       {tears.map((tear) => (
         <div
           key={tear.id}
@@ -138,7 +136,6 @@ export default function HamsterCharacter({ state, onPet }) {
         </div>
       ))}
 
-      {/* Angry puffs */}
       {angryPuffs.map((puff) => (
         <div
           key={puff.id}
@@ -149,7 +146,6 @@ export default function HamsterCharacter({ state, onPet }) {
         </div>
       ))}
 
-      {/* Excited stars */}
       {floatingStars.map((star) => (
         <div
           key={star.id}
@@ -160,7 +156,6 @@ export default function HamsterCharacter({ state, onPet }) {
         </div>
       ))}
 
-      {/* Pet hearts */}
       {petHearts.map((heart) => (
         <div
           key={heart.id}
@@ -171,7 +166,6 @@ export default function HamsterCharacter({ state, onPet }) {
         </div>
       ))}
 
-      {/* Dirty badge */}
       {(mood === "dirty" || cleanliness < 45 || poopCount > 1) && !isSleeping && (
         <div className="absolute top-6 left-2 z-20 flex items-center space-x-0.5 animate-wiggle pointer-events-none">
           <span className="text-lg">🪰</span>
@@ -181,7 +175,6 @@ export default function HamsterCharacter({ state, onPet }) {
         </div>
       )}
 
-      {/* Happy glow */}
       {(mood === "happy" || mood === "excited") && !isSleeping && (
         <div className="absolute top-4 right-4 z-20 pointer-events-none text-yellow-500 animate-pulse-glow">
           <Sparkles className="w-5 h-5 fill-amber-400" />
@@ -196,10 +189,8 @@ export default function HamsterCharacter({ state, onPet }) {
         className={`relative cursor-pointer transition-all duration-300 active:scale-90 group ${animClass}`}
         title="กดที่น้องเพื่อลูบหัว"
       >
-        {/* Shadow */}
         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-44 h-8 bg-amber-950/20 rounded-full blur-sm pointer-events-none"></div>
 
-        {/* Hamster image */}
         <div className="relative w-52 h-36 sm:w-60 sm:h-40 flex items-center justify-center">
           <img
             src="/assets/heaven-hamster.png"
@@ -208,11 +199,11 @@ export default function HamsterCharacter({ state, onPet }) {
             draggable="false"
           />
 
-          {/* Blush cheeks */}
+          {/* Blush */}
           <div className="absolute top-[50%] left-[33%] w-5 h-3 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
           <div className="absolute top-[48%] right-[31%] w-5 h-3 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
 
-          {/* Sleeping eyes overlay */}
+          {/* Eyes */}
           {isSleeping && (
             <div className="absolute top-[43%] left-0 right-0 flex justify-center gap-9 pointer-events-none">
               <div className="w-4 h-1 border-b-2 border-slate-700 rounded-full"></div>
@@ -220,7 +211,6 @@ export default function HamsterCharacter({ state, onPet }) {
             </div>
           )}
 
-          {/* Sick / sad eye overlay (X eyes) */}
           {mood === "sick" && !isSleeping && (
             <div className="absolute top-[40%] left-0 right-0 flex justify-center gap-8 pointer-events-none">
               <div className="text-[12px] font-black text-slate-800">×</div>
@@ -228,7 +218,6 @@ export default function HamsterCharacter({ state, onPet }) {
             </div>
           )}
 
-          {/* Angry eyebrows */}
           {mood === "angry" && !isSleeping && (
             <div className="absolute top-[32%] left-0 right-0 flex justify-center gap-7 pointer-events-none">
               <div className="w-5 h-1 bg-slate-800 rounded-full rotate-[20deg]"></div>
@@ -237,7 +226,21 @@ export default function HamsterCharacter({ state, onPet }) {
           )}
 
           {/* ---- WARDROBE LAYERS ---- */}
-          {/* OUTFIT */}
+
+          {/* OUTFIT: CLOUD PAJAMAS (Season 1 Gold Pass Master) */}
+          {equipped.outfit === "cloud_pajamas" && (
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-44 z-10 pointer-events-none filter drop-shadow">
+              <div className="bg-gradient-to-r from-sky-200 via-indigo-100 to-sky-200 border-2 border-white rounded-3xl h-12 flex items-center justify-around px-2 shadow-inner">
+                <span className="text-xs">☁️</span>
+                <span className="text-[9px] font-black text-sky-800 tracking-wider uppercase bg-white/70 px-2 py-0.5 rounded-full">
+                  CLOUD 💤
+                </span>
+                <span className="text-xs">☁️</span>
+              </div>
+            </div>
+          )}
+
+          {/* OUTFIT: HOODIE */}
           {equipped.outfit === "hoodie_special" && (
             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-40 z-10 pointer-events-none filter drop-shadow">
               <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white rounded-3xl h-11 flex items-center justify-around px-3 shadow-inner">
@@ -245,6 +248,7 @@ export default function HamsterCharacter({ state, onPet }) {
               </div>
             </div>
           )}
+
           {equipped.outfit === "cute_bib" && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
               <div className="bg-yellow-200 border-2 border-amber-400 text-amber-800 text-xs px-3 py-1 rounded-b-2xl shadow-sm flex items-center space-x-1">
@@ -252,6 +256,7 @@ export default function HamsterCharacter({ state, onPet }) {
               </div>
             </div>
           )}
+
           {equipped.outfit === "cape_hero" && (
             <div className="absolute top-8 -left-1 z-0 pointer-events-none rotate-12">
               <div className="w-10 h-16 bg-rose-500 rounded-b-2xl shadow-md border-r-2 border-rose-700"></div>
@@ -271,7 +276,29 @@ export default function HamsterCharacter({ state, onPet }) {
             <div className="absolute bottom-7 left-[35%] z-10 pointer-events-none text-yellow-400 text-lg drop-shadow">⭐</div>
           )}
 
-          {/* HAT */}
+          {/* HAT: UNICORN HAT (7-Day Streak Master) */}
+          {equipped.hat === "unicorn_hat" && (
+            <div className="absolute -top-7 left-[45%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md flex flex-col items-center">
+              {/* Magic Horn */}
+              <div className="w-3 h-6 bg-gradient-to-t from-yellow-300 via-pink-400 to-indigo-400 rounded-t-full border border-yellow-500 rotate-[12deg] shadow-xs"></div>
+              {/* Ears with flowers */}
+              <div className="flex space-x-4 -mt-2">
+                <span className="text-xs">🌸</span>
+                <span className="text-xs">🦄</span>
+                <span className="text-xs">🌸</span>
+              </div>
+            </div>
+          )}
+
+          {/* HAT: STAR GLASSES (Gold Pass) */}
+          {equipped.hat === "star_glasses" && (
+            <div className="absolute top-[41%] left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow animate-pulse">
+              <span className="text-xl">⭐</span>
+              <div className="w-2 h-0.5 bg-yellow-600"></div>
+              <span className="text-xl">⭐</span>
+            </div>
+          )}
+
           {equipped.hat === "frog_hat" && (
             <div className="absolute -top-5 left-[44%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md">
               <div className="flex flex-col items-center">
@@ -288,6 +315,7 @@ export default function HamsterCharacter({ state, onPet }) {
               </div>
             </div>
           )}
+
           {equipped.hat === "sunglasses" && (
             <div className="absolute top-[41%] left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow">
               <div className="w-7 h-4 bg-slate-900 rounded-sm border border-slate-600 shadow-sm"></div>
@@ -295,9 +323,11 @@ export default function HamsterCharacter({ state, onPet }) {
               <div className="w-7 h-4 bg-slate-900 rounded-sm border border-slate-600 shadow-sm"></div>
             </div>
           )}
+
           {equipped.hat === "flower_crown" && (
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-base whitespace-nowrap">🌸🌼🌺🌸</div>
           )}
+
           {equipped.hat === "party_hat" && (
             <div className="absolute -top-7 left-[46%] -translate-x-1/2 z-20 pointer-events-none text-3xl rotate-12">🎉</div>
           )}

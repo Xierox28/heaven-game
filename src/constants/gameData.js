@@ -1,5 +1,5 @@
 // ==============================================================================
-// 🐹 HEAVEN GAME CONSTANTS & DATA — UPDATED WITH ACHIEVEMENTS
+// 🐹 HEAVEN GAME CONSTANTS & DATA — UPDATED WITH PASS & STREAK
 // ==============================================================================
 
 export const INITIAL_GAME_STATE = {
@@ -16,7 +16,7 @@ export const INITIAL_GAME_STATE = {
   isSleeping: false,
   actionState: "idle",
   actionExpiry: 0,
-  mood: "happy", // 'happy' | 'sad' | 'angry' | 'sick' | 'excited' | 'neutral'
+  mood: "happy",
 
   equipped: {
     hat: null,
@@ -25,7 +25,7 @@ export const INITIAL_GAME_STATE = {
   },
   inventory: ["frog_hat"],
 
-  // Stats for Achievements
+  // Stats for Achievements & Quests
   stats: {
     totalFed: 0,
     totalPets: 0,
@@ -35,8 +35,31 @@ export const INITIAL_GAME_STATE = {
     miniGamesPlayed: 0,
   },
 
-  // Achievements
   achievements: [],
+
+  // 🎟️ HAMSTER PASS (Battle Pass Season 1)
+  pass: {
+    season: 1,
+    exp: 0,
+    hasGoldPass: false,
+    claimedFree: [],
+    claimedGold: [],
+    dailyProgress: {
+      feed_twice: 0,
+      pet_thrice: 0,
+      clean_cage: 0,
+      spin_wheel: 0,
+    },
+    claimedQuests: [],
+    lastQuestDate: new Date().toDateString(),
+  },
+
+  // 📅 7-DAY LOGIN STREAK
+  streak: {
+    days: 0,
+    lastClaimDate: null,
+    claimedDays: [],
+  },
 
   speechBubble: {
     text: "สวัสดีงับ! นู๋ชื่อน้องเฮเว่น ยินดีที่ได้รู้จักน้า~ 🐹✨",
@@ -85,16 +108,19 @@ export const FOOD_ITEMS = [
 ];
 
 // ============================================================
-// WARDROBE ITEMS
+// WARDROBE ITEMS (รวมชุด Pass และ Streak)
 // ============================================================
 export const WARDROBE_ITEMS = [
   { id: "frog_hat",    type: "hat",       name: "หมวกกบเขียวตาโต",         icon: "🐸", cost: 0,   reqLevel: 1, desc: "หมวกกบน้อยสุดคิ้วท์ ใส่แล้วน่ารักตาแป๋ว" },
+  { id: "unicorn_hat", type: "hat",       name: "หมวกยูนิคอร์นสายรุ้ง",     icon: "🦄", cost: 200, reqLevel: 1, desc: "ไอเทมลิมิเต็ดจากเช็คชื่อ 7 วัน สวยวิ้งค์มีเขาเวทมนตร์" },
+  { id: "star_glasses",type: "hat",       name: "แว่นตาดาววิ้งค์",          icon: "⭐", cost: 150, reqLevel: 1, desc: "แว่นรูปดาวประกายวิบวับ ลิมิเต็ดจาก Gold Pass" },
   { id: "sunglasses",  type: "hat",       name: "แว่นกันแดดสุดเท่",         icon: "🕶️", cost: 50,  reqLevel: 5, desc: "แว่นดำบอสใหญ่ เพิ่มความคูล 300%" },
   { id: "flower_crown",type: "hat",       name: "มงกุฎดอกไม้พาสเทล",       icon: "🌸", cost: 75,  reqLevel: 5, desc: "มงกุฎดอกซากุระ หวานละมุนน่าทะนุถนอม" },
   { id: "party_hat",   type: "hat",       name: "หมวกปาร์ตี้สายรุ้ง",      icon: "🎉", cost: 60,  reqLevel: 5, desc: "หมวกทรงกรวยหลากสี พร้อมลุยทุกเทศกาล" },
   { id: "red_bow",     type: "accessory", name: "โบว์แดงน่ารัก",           icon: "🎀", cost: 40,  reqLevel: 5, desc: "โบว์ผ้าซาตินสีแดงสด เพิ่มความหวาน" },
   { id: "bell_collar", type: "accessory", name: "กระดิ่งทองกุ๊งกิ๊ง",       icon: "🔔", cost: 55,  reqLevel: 5, desc: "ปลอกคอกระดิ่งสีทอง เดินไปไหนมีเสียงกุ๊งกิ๊ง" },
   { id: "star_badge",  type: "accessory", name: "เข็มกลัดดาวประกาย",       icon: "⭐", cost: 45,  reqLevel: 5, desc: "เข็มกลัดรูปดาวส่องแสงวิบวับ" },
+  { id: "cloud_pajamas",type: "outfit",   name: "ชุดนอนปุยเมฆแฟนซี",       icon: "☁️", cost: 250, reqLevel: 1, desc: "ชุดนอนขนนุ่มลายปุยเมฆ ลิมิเต็ด Season 1 Gold Pass Master" },
   { id: "hoodie_special", type: "outfit", name: "ชุดฮู้ดดี้พิเศษ (Limited)", icon: "🧥", cost: 150, reqLevel: 5, desc: "ฮู้ดดี้ขนปุยโทนพาสเทล อุ่นสบาย (ไอเทมลิมิเต็ด!)" },
   { id: "cute_bib",    type: "outfit",    name: "ผ้ากันเปื้อนลายดาว",       icon: "⭐", cost: 65,  reqLevel: 5, desc: "ผ้ากันเปื้อนสำหรับเจ้าแฮมสเตอร์ตัวน้อย" },
   { id: "cape_hero",   type: "outfit",    name: "ผ้าคลุมฮีโร่สีแดง",       icon: "🦸", cost: 120, reqLevel: 5, desc: "ผ้าคลุมยาวพลิ้วไหว สำหรับผู้พิทักษ์ความยุติธรรม" },
@@ -104,102 +130,18 @@ export const WARDROBE_ITEMS = [
 // ACHIEVEMENT DEFINITIONS
 // ============================================================
 export const ACHIEVEMENT_DEFS = [
-  {
-    id: "first_feed",
-    name: "นักเลี้ยงมือใหม่",
-    desc: "ให้อาหารน้องเฮเว่นครั้งแรก",
-    icon: "🥣",
-    rarity: "common",
-    check: (stats) => stats.totalFed >= 1,
-  },
-  {
-    id: "feed_10",
-    name: "แม่ครัวแห่งกรง",
-    desc: "ให้อาหารครบ 10 ครั้ง",
-    icon: "👨‍🍳",
-    rarity: "uncommon",
-    check: (stats) => stats.totalFed >= 10,
-  },
-  {
-    id: "feed_50",
-    name: "เชฟสามดาวมิชลิน",
-    desc: "ให้อาหารครบ 50 ครั้ง",
-    icon: "⭐⭐⭐",
-    rarity: "rare",
-    check: (stats) => stats.totalFed >= 50,
-  },
-  {
-    id: "first_pet",
-    name: "นักลูบหัวมือโปร",
-    desc: "ลูบหัวน้องเฮเว่นครั้งแรก",
-    icon: "✋",
-    rarity: "common",
-    check: (stats) => stats.totalPets >= 1,
-  },
-  {
-    id: "pet_20",
-    name: "นักลูบแห่งปี",
-    desc: "ลูบหัวน้อง 20 ครั้ง",
-    icon: "💆",
-    rarity: "uncommon",
-    check: (stats) => stats.totalPets >= 20,
-  },
-  {
-    id: "clean_5",
-    name: "นักสุขาภิบาลสุดเจ๋ง",
-    desc: "ทำความสะอาดกรง 5 ครั้ง",
-    icon: "🧹",
-    rarity: "uncommon",
-    check: (stats) => stats.totalCleans >= 5,
-  },
-  {
-    id: "coins_100",
-    name: "นักสะสมเมล็ดทานตะวัน",
-    desc: "สะสมเหรียญรวมถึง 100 เมล็ด",
-    icon: "🌻",
-    rarity: "uncommon",
-    check: (stats) => stats.totalCoinsEarned >= 100,
-  },
-  {
-    id: "coins_1000",
-    name: "เจ้าสวนทานตะวัน",
-    desc: "สะสมเหรียญรวมถึง 1,000 เมล็ด",
-    icon: "💰",
-    rarity: "rare",
-    check: (stats) => stats.totalCoinsEarned >= 1000,
-  },
-  {
-    id: "minigame_1",
-    name: "นักปั่นมือใหม่",
-    desc: "เล่นมินิเกมปั่นวงล้อครั้งแรก",
-    icon: "🎡",
-    rarity: "common",
-    check: (stats) => stats.miniGamesPlayed >= 1,
-  },
-  {
-    id: "minigame_5",
-    name: "แชมป์วงล้อ",
-    desc: "เล่นมินิเกมปั่นวงล้อ 5 ครั้ง",
-    icon: "🏆",
-    rarity: "rare",
-    check: (stats) => stats.miniGamesPlayed >= 5,
-  },
-  {
-    id: "level_3",
-    name: "น้องเฮเว่นโต!",
-    desc: "น้องเฮเว่นถึงระดับ 3",
-    icon: "🌟",
-    rarity: "uncommon",
-    check: (_, state) => state.level >= 3,
-  },
-  {
-    id: "level_5",
-    name: "เฮเว่นสุดยอด!",
-    desc: "น้องเฮเว่นถึงระดับ 5",
-    icon: "👑",
-    rarity: "legendary",
-    check: (_, state) => state.level >= 5,
-  },
+  { id: "first_feed", name: "นักเลี้ยงมือใหม่", desc: "ให้อาหารน้องเฮเว่นครั้งแรก", icon: "🥣", rarity: "common", check: (stats) => stats.totalFed >= 1 },
+  { id: "feed_10", name: "แม่ครัวแห่งกรง", desc: "ให้อาหารครบ 10 ครั้ง", icon: "👨‍🍳", rarity: "uncommon", check: (stats) => stats.totalFed >= 10 },
+  { id: "feed_50", name: "เชฟสามดาวมิชลิน", desc: "ให้อาหารครบ 50 ครั้ง", icon: "⭐⭐⭐", rarity: "rare", check: (stats) => stats.totalFed >= 50 },
+  { id: "first_pet", name: "นักลูบหัวมือโปร", desc: "ลูบหัวน้องเฮเว่นครั้งแรก", icon: "✋", rarity: "common", check: (stats) => stats.totalPets >= 1 },
+  { id: "pet_20", name: "นักลูบแห่งปี", desc: "ลูบหัวน้อง 20 ครั้ง", icon: "💆", rarity: "uncommon", check: (stats) => stats.totalPets >= 20 },
+  { id: "clean_5", name: "นักสุขาภิบาลสุดเจ๋ง", desc: "ทำความสะอาดกรง 5 ครั้ง", icon: "🧹", rarity: "uncommon", check: (stats) => stats.totalCleans >= 5 },
+  { id: "coins_100", name: "นักสะสมเมล็ดทานตะวัน", desc: "สะสมเหรียญรวมถึง 100 เมล็ด", icon: "🌻", rarity: "uncommon", check: (stats) => stats.totalCoinsEarned >= 100 },
+  { id: "coins_1000", name: "เจ้าสวนทานตะวัน", desc: "สะสมเหรียญรวมถึง 1,000 เมล็ด", icon: "💰", rarity: "rare", check: (stats) => stats.totalCoinsEarned >= 1000 },
+  { id: "minigame_1", name: "นักปั่นมือใหม่", desc: "เล่นมินิเกมปั่นวงล้อครั้งแรก", icon: "🎡", rarity: "common", check: (stats) => stats.miniGamesPlayed >= 1 },
+  { id: "minigame_5", name: "แชมป์วงล้อ", desc: "เล่นมินิเกมปั่นวงล้อ 5 ครั้ง", icon: "🏆", rarity: "rare", check: (stats) => stats.miniGamesPlayed >= 5 },
+  { id: "level_3", name: "น้องเฮเว่นโต!", desc: "น้องเฮเว่นถึงระดับ 3", icon: "🌟", rarity: "uncommon", check: (_, state) => state.level >= 3 },
+  { id: "level_5", name: "เฮเว่นสุดยอด!", desc: "น้องเฮเว่นถึงระดับ 5", icon: "👑", rarity: "legendary", check: (_, state) => state.level >= 5 },
 ];
 
 export const RARITY_STYLES = {
