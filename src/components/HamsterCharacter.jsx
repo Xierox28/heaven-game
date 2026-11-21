@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
-import { WARDROBE_ITEMS } from "../constants/gameData";
+import { WARDROBE_ITEMS, HAMSTER_BREEDS, PERSONALITIES } from "../constants/gameData";
 
 // Mood → animation class map
 const MOOD_ANIMATIONS = {
@@ -183,28 +183,46 @@ export default function HamsterCharacter({ state, onPet }) {
       )}
 
       {/* ============================================================
-          3. HAMSTER BODY + WARDROBE LAYERS (EXACT 16:9 PROPORTIONAL FIT)
+          3. HAMSTER BODY + BREED + GROWTH STAGE (EXACT 16:9 FIT)
       ============================================================ */}
-      <div
-        onClick={handleHamsterClick}
-        className={`relative cursor-pointer transition-all duration-300 active:scale-95 group ${animClass}`}
-        title="กดที่น้องเพื่อลูบหัว"
-      >
-        {/* เงาใต้น้อง */}
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-48 sm:w-56 h-7 bg-amber-950/20 rounded-full blur-sm pointer-events-none"></div>
+      {(() => {
+        const breedId = state.breed || "winter_white";
+        const breedImg = `/assets/breeds/${breedId}.png`;
+        const level = state.level || 1;
+        const stage = level >= 25 ? "adult" : level >= 10 ? "junior" : "baby";
+        const stageScale = stage === "adult" ? "scale-[1.06]" : stage === "junior" ? "scale-100" : "scale-[0.88]";
+        const personalityId = state.personality || "affectionate";
+        const pDef = PERSONALITIES.find((p) => p.id === personalityId);
 
-        {/* กล่องบรรจุตัวน้อง 16:9 อัตราส่วนตรงกับภาพ 1024x576 เป๊ะๆ */}
-        <div className="relative w-64 sm:w-72 aspect-[16/9] flex items-center justify-center">
-          <img
-            src="/assets/heaven-hamster.png"
-            alt="Nong Heaven Hamster"
-            className={`w-full h-full object-contain pixel-art filter drop-shadow-md transition-all duration-500 ${tintClass} ${sleepTint}`}
-            draggable="false"
-          />
+        return (
+          <div
+            onClick={handleHamsterClick}
+            className={`relative cursor-pointer transition-all duration-300 active:scale-95 group ${animClass} ${stageScale}`}
+            title="กดที่น้องเพื่อลูบหัว"
+          >
+            {/* เงาใต้น้อง */}
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-48 sm:w-56 h-7 bg-amber-950/20 rounded-full blur-sm pointer-events-none"></div>
 
-          {/* แก้มแดง (Blush) ตรงตำแหน่งแก้มทั้งสองข้าง */}
-          <div className="absolute top-[64%] left-[34%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
-          <div className="absolute top-[66%] left-[59%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+            {/* กล่องบรรจุตัวน้อง 16:9 อัตราส่วนตรงกับภาพ 1024x576 เป๊ะๆ */}
+            <div className="relative w-64 sm:w-72 aspect-[16/9] flex items-center justify-center">
+              <img
+                src={breedImg}
+                onError={(e) => { e.currentTarget.src = "/assets/heaven-hamster.png"; }}
+                alt="Hamster Character"
+                className={`w-full h-full object-contain pixel-art filter drop-shadow-md transition-all duration-500 ${tintClass} ${sleepTint}`}
+                draggable="false"
+              />
+
+              {/* แก้มแดง (Blush) ตรงตำแหน่งแก้มทั้งสองข้าง */}
+              <div className="absolute top-[64%] left-[34%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+              <div className="absolute top-[66%] left-[59%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+
+              {/* Personality Icon Floater */}
+              {pDef && !isSleeping && (
+                <div className="absolute -top-1 -right-1 z-25 pointer-events-none text-xs bg-white/90 border border-amber-300 rounded-full w-5 h-5 flex items-center justify-center shadow-xs animate-bounce">
+                  {pDef.icon}
+                </div>
+              )}
 
           {/* ดวงตาตอนหลับ (Sleeping Eyes) ทับตาจริงพอดิบพอดี */}
           {isSleeping && (
@@ -282,13 +300,37 @@ export default function HamsterCharacter({ state, onPet }) {
           )}
         </div>
       </div>
+    );
+  })()}
 
-      {/* Hint label */}
-      <div className="mt-2 pointer-events-none">
-        <p className="text-xs text-amber-900 font-bold bg-white/80 backdrop-blur-md px-3 py-1 rounded-full shadow-xs inline-block border border-amber-200">
-          {isSleeping ? "💤 น้องกำลังหลับสบาย... พลังงานกำลังฟื้นฟู" : "👆 กดที่ตัวน้องเพื่อลูบหัวเล่นด้วยกัน"}
-        </p>
-      </div>
+      {/* Hint label & Growth stage badge */}
+      {(() => {
+        const level = state.level || 1;
+        const stageBadge = level >= 25 ? "👑 วัยโตเต็มวัย" : level >= 10 ? "🏃 วัยรุ่น" : "🍼 วัยเบบี้";
+        const breedDef = HAMSTER_BREEDS.find((b) => b.id === state.breed);
+        const pDef = PERSONALITIES.find((p) => p.id === state.personality);
+
+        return (
+          <div className="mt-2 pointer-events-none flex flex-col items-center space-y-1">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-[10px] bg-purple-100 text-purple-900 border border-purple-300 font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
+                {stageBadge}
+              </span>
+              <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
+                {breedDef?.name?.split(" ")[0] || "วินเทอร์ไวท์"}
+              </span>
+              {pDef && (
+                <span className="text-[10px] bg-pink-100 text-pink-900 border border-pink-300 font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
+                  {pDef.icon} {pDef.name}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-amber-900 font-bold bg-white/80 backdrop-blur-md px-3 py-1 rounded-full shadow-xs inline-block border border-amber-200">
+              {isSleeping ? "💤 น้องกำลังหลับสบาย... พลังงานกำลังฟื้นฟู" : "👆 กดที่ตัวน้องเพื่อลูบหัวเล่นด้วยกัน"}
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 }

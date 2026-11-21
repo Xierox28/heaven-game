@@ -856,13 +856,20 @@ export default function PlayerView({ onNavigateToAdmin }) {
         isOpen={isWardrobeOpen}
         onClose={() => setIsWardrobeOpen(false)}
         coins={gameState.coins}
+        userLevel={gameState.level}
         inventory={gameState.inventory || []}
         equipped={gameState.equipped || {}}
         wardrobeOffsets={gameState.wardrobeOffsets || {}}
+        currentBreed={gameState.breed || "winter_white"}
+        unlockedBreeds={gameState.unlockedBreeds || ["winter_white"]}
+        currentPersonality={gameState.personality || "affectionate"}
         onBuyItem={(id) => gameStateService.buyItem(id)}
         onToggleEquip={(type, id) => gameStateService.toggleEquip(type, id)}
         onAdjustOffset={(id, dx, dy, ds) => gameStateService.adjustWardrobeOffset(id, dx, dy, ds)}
         onResetOffset={(id) => gameStateService.resetWardrobeOffset(id)}
+        onSelectBreed={(id) => gameStateService.setBreed(id)}
+        onBuyBreed={(id) => gameStateService.buyBreed(id)}
+        onSelectPersonality={(id) => gameStateService.setPersonality(id)}
       />
 
       <AchievementPanel

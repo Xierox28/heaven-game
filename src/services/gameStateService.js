@@ -10,6 +10,8 @@ import {
   WARDROBE_ITEMS,
   HAPPY_QUOTES,
   ACHIEVEMENT_DEFS,
+  HAMSTER_BREEDS,
+  PERSONALITIES,
 } from "../constants/gameData";
 import { FURNITURE_ITEMS, MYSTERY_BOXES } from "../constants/furnitureData";
 import { sound } from "../utils/audio";
@@ -187,6 +189,10 @@ class GameStateService {
         ...(this.currentState?.wardrobeOffsets || {}),
         ...(val?.wardrobeOffsets || {}),
       },
+      // 🐹 Breeds & Personalities (v4.0)
+      breed: val?.breed || this.currentState?.breed || INITIAL_GAME_STATE.breed,
+      unlockedBreeds: toSafeArray(val?.unlockedBreeds ?? this.currentState?.unlockedBreeds, INITIAL_GAME_STATE.unlockedBreeds),
+      personality: val?.personality || this.currentState?.personality || INITIAL_GAME_STATE.personality,
       lastDecayTime: Date.now(),
       lastUpdated: Math.max(Number(val?.lastUpdated) || 0, Number(this.currentState?.lastUpdated) || 0, Date.now()),
     };
@@ -977,6 +983,69 @@ class GameStateService {
       return {
         ...prev,
         wardrobeOffsets: updated,
+      };
+    });
+  }
+
+  // ==============================================================================
+  // 🐹 BREEDS & PERSONALITY METHODS (v4.0)
+  // ==============================================================================
+  buyBreed(breedId) {
+    const breedDef = HAMSTER_BREEDS.find((b) => b.id === breedId);
+    if (!breedDef) return { success: false, message: "ไม่พบสายพันธุ์นี้" };
+
+    if (this.currentState.coins < breedDef.cost) {
+      sound.playPrank();
+      return { success: false, message: "เมล็ดทานตะวันไม่พอจ้า!" };
+    }
+
+    if (this.currentState.level < breedDef.reqLevel) {
+      sound.playPrank();
+      return { success: false, message: `ต้องการเลเวล ${breedDef.reqLevel} ขึ้นไปจ้า!` };
+    }
+
+    sound.playReward();
+    this.updateState((prev) => {
+      const prevUnlocked = toSafeArray(prev.unlockedBreeds, ["winter_white"]);
+      const nextUnlocked = Array.from(new Set([...prevUnlocked, breedId]));
+      return {
+        ...prev,
+        coins: Math.max(0, prev.coins - breedDef.cost),
+        unlockedBreeds: nextUnlocked,
+        breed: breedId,
+        speechBubble: {
+          text: `แปลงร่างเป็นสายพันธุ์ ${breedDef.name} แล้วงับ! น่ารักมั้ย~ ✨`,
+          timestamp: Date.now(),
+          duration: 5000,
+        },
+      };
+    });
+    return { success: true, message: `ปลดล็อคสายพันธุ์ ${breedDef.name} เรียบร้อย!` };
+  }
+
+  setBreed(breedId) {
+    const unlocked = toSafeArray(this.currentState?.unlockedBreeds, ["winter_white"]);
+    if (!unlocked.includes(breedId)) return;
+    sound.playClick();
+    this.updateState((prev) => ({
+      ...prev,
+      breed: breedId,
+    }));
+  }
+
+  setPersonality(personalityId) {
+    sound.playClick();
+    this.updateState((prev) => {
+      const pDef = PERSONALITIES.find((p) => p.id === personalityId);
+      const randomQuote = pDef ? pDef.quotes[Math.floor(Math.random() * pDef.quotes.length)] : "นิสัยใหม่น่ารักจัง!";
+      return {
+        ...prev,
+        personality: personalityId,
+        speechBubble: {
+          text: randomQuote,
+          timestamp: Date.now(),
+          duration: 5000,
+        },
       };
     });
   }

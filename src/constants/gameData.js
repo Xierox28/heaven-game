@@ -23,6 +23,11 @@ export const INITIAL_GAME_STATE = {
   inventory: ["frog_hat"],
   wardrobeOffsets: {}, // { [itemId]: { x: 0, y: 0, scale: 1.0 } }
 
+  // 🐹 BREEDS & PERSONALITY (v4.0)
+  breed: "winter_white",
+  unlockedBreeds: ["winter_white"],
+  personality: "affectionate",
+
   // 🏡 CAGE FURNITURE & DECORATIONS
   furniture: {
     equipped: {
@@ -202,4 +207,104 @@ export const SAD_QUOTES = [
   "ทำไมไม่มาเล่นด้วยเลย... เหงาจัง 😢",
   "ไม่ค่อยมีความสุขเลยวันนี้...",
   "น้องรอนายอยู่นะ 🥺",
+];
+
+// ==============================================================================
+// 🐹 HAMSTER BREEDS & SKINS (v4.0) — COSMETIC ONLY
+// ==============================================================================
+export const HAMSTER_BREEDS = [
+  {
+    id: "winter_white",
+    name: "วินเทอร์ไวท์ (Winter White)",
+    tag: "เริ่มต้น",
+    image: "/assets/breeds/winter_white.png",
+    thumb: "/assets/breeds/thumbs/winter_white.png",
+    desc: "ขาวปุกปุย แก้มชมพูระเรื่อ นุ่มนิ่มน่ากอดที่สุด สายพันธุ์ดั้งเดิมของน้องเฮเว่น",
+    cost: 0,
+    reqLevel: 1,
+  },
+  {
+    id: "roborovski",
+    name: "โรโบรอฟสกี้ (Roborovski)",
+    tag: "ยอดนิยม",
+    image: "/assets/breeds/roborovski.png",
+    thumb: "/assets/breeds/thumbs/roborovski.png",
+    desc: "สีน้ำตาลทองลายคาด คิ้วขาว ตาแป๋ว ตัวจิ๋วปราดเปรียว วิ่งไวเหมือนจรวด",
+    cost: 150,
+    reqLevel: 5,
+  },
+  {
+    id: "golden_giant",
+    name: "ไจแอนท์ส้มคาราเมล (Golden Syrian)",
+    tag: "พรีเมียม",
+    image: "/assets/breeds/golden_giant.png",
+    thumb: "/assets/breeds/thumbs/golden_giant.png",
+    desc: "ขนสีส้มแอปริคอต ตัวอ้วนตุ้ยนุ้ย แก้มป่อง น่าฟัดสุดๆ",
+    cost: 250,
+    reqLevel: 10,
+  },
+  {
+    id: "panda",
+    name: "แพนด้าลายวัว (Panda Hamster)",
+    tag: "หายาก",
+    image: "/assets/breeds/panda.png",
+    thumb: "/assets/breeds/thumbs/panda.png",
+    desc: "ลายขาว-ดำคลาสสิก โดดเด่นไม่ซ้ำใคร น่ารักสะกดทุกสายตา",
+    cost: 350,
+    reqLevel: 15,
+  },
+];
+
+// ==============================================================================
+// 🎭 HAMSTER PERSONALITIES (v4.0)
+// ==============================================================================
+export const PERSONALITIES = [
+  {
+    id: "glutton",
+    name: "จอมตะกละ",
+    icon: "🍩",
+    tagline: "เรื่องกินเรื่องใหญ่ แก้มตุ่ยตลอดเวลา",
+    quotes: [
+      "หม่ำๆ อร่อยจังเยยย~ 🌻",
+      "มีเมล็ดทานตะวันอีกมั้ยน้า ท้องร้องแย้วว",
+      "เคี้ยวแก้มตุ่ยเลยยย งั่มๆๆ",
+      "วันนี้มีขนมอะไรให้หนูกินบ้างงับ? 🍪",
+    ],
+  },
+  {
+    id: "sleepyhead",
+    name: "ขี้เซา",
+    icon: "💤",
+    tagline: "ง่วงได้ทุกที่ เตียงนุ่มๆ คือสวรรค์",
+    quotes: [
+      "ฮาวววว~ ขอหลับต่ออีก 5 นาทีนะงับ 💤",
+      "อากาศดีแบบนี้ น่าม้วนตัวนอนที่สุดเลยย",
+      "ขอนอนกลางวันแป๊บนึงน้า Zzz...",
+      "เตียงนุ่มๆ กลิ่นหอมจังเยยย",
+    ],
+  },
+  {
+    id: "hyper",
+    name: "นักซิ่งไฮเปอร์",
+    icon: "⚡",
+    tagline: "พลังงานล้นเหลือ พร้อมวิ่ง 100 รอบ!",
+    quotes: [
+      "วู้ฮู้วว! พลังล้นเหลือ พร้อมวิ่ง 100 รอบ! ⚡",
+      "ไปเล่นของเล่นกันนนน ดุ๊กดิ๊กๆ!",
+      "หมุนตัว 360 องศาให้ดูเลยยยย!",
+      "วันนี้ตื่นเต้นจัง มีอะไรให้สำรวจบ้างน้า!",
+    ],
+  },
+  {
+    id: "affectionate",
+    name: "จอมอ้อน",
+    icon: "💕",
+    tagline: "ติดเจ้าของ ชอบให้ลูบหัวเป็นที่สุด",
+    quotes: [
+      "รักเจ้าของที่สุดในโลกเล้ยยย~ 💕",
+      "มาลูบหัวเค้าหน่อยจิ คิดถึงจังงง",
+      "อยู่กับเจ้าของแล้วมีความสุขที่สุดเลย!",
+      "ขอกอดแน่นๆ ทีหนึ่งได้มั้ยงับ~ 🐾",
+    ],
+  },
 ];
