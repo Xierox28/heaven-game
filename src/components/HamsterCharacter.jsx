@@ -1,0 +1,325 @@
+import React, { useState, useEffect } from "react";
+import { Heart, Sparkles } from "lucide-react";
+
+// Mood → animation class map
+const MOOD_ANIMATIONS = {
+  excited:  "animate-excited-dance",
+  happy:    "animate-cute-bounce",
+  neutral:  "animate-cute-breathe",
+  sad:      "animate-sad-droop",
+  angry:    "animate-angry-shake",
+  sick:     "animate-sick-wobble",
+  eating:   "animate-eat-munch",
+  petting:  "animate-pet-shimmer",
+  sleeping: "animate-sleep-breathe",
+  dirty:    "animate-cute-breathe",
+};
+
+// Mood → overlay color / effect
+const MOOD_TINT = {
+  sad:    "sepia-[0.3] brightness-90 saturate-75",
+  angry:  "hue-rotate-[-20deg] saturate-150",
+  sick:   "sepia-[0.5] brightness-85",
+  dirty:  "brightness-90 sepia-[0.3]",
+};
+
+export default function HamsterCharacter({ state, onPet }) {
+  const { isSleeping, actionState, cleanliness, poopCount, equipped = {}, speechBubble, mood = "happy" } = state;
+
+  const [petHearts, setPetHearts] = useState([]);
+  const [floatingStars, setFloatingStars] = useState([]);
+  const [tears, setTears] = useState([]);
+  const [angryPuffs, setAngryPuffs] = useState([]);
+  const [bubbleVisible, setBubbleVisible] = useState(true);
+
+  // ---- Speech Bubble visibility ----
+  useEffect(() => {
+    if (!speechBubble?.text) return;
+    setBubbleVisible(true);
+    const t = setTimeout(() => setBubbleVisible(false), speechBubble.duration || 5000);
+    return () => clearTimeout(t);
+  }, [speechBubble?.timestamp, speechBubble?.text]);
+
+  // ---- Mood-based ambient particles ----
+  useEffect(() => {
+    if (mood === "sad" && !isSleeping) {
+      const interval = setInterval(() => {
+        const tear = { id: Date.now() + Math.random(), x: 38 + Math.random() * 20 };
+        setTears((prev) => [...prev.slice(-3), tear]);
+        setTimeout(() => setTears((prev) => prev.filter((t) => t.id !== tear.id)), 1000);
+      }, 1500);
+      return () => clearInterval(interval);
+    }
+    if (mood === "angry" && !isSleeping) {
+      const interval = setInterval(() => {
+        const puff = { id: Date.now() + Math.random(), side: Math.random() > 0.5 ? "left" : "right" };
+        setAngryPuffs((prev) => [...prev.slice(-3), puff]);
+        setTimeout(() => setAngryPuffs((prev) => prev.filter((p) => p.id !== puff.id)), 800);
+      }, 700);
+      return () => clearInterval(interval);
+    }
+    if (mood === "excited" && !isSleeping) {
+      const interval = setInterval(() => {
+        const star = { id: Date.now() + Math.random(), x: 20 + Math.random() * 60 };
+        setFloatingStars((prev) => [...prev.slice(-5), star]);
+        setTimeout(() => setFloatingStars((prev) => prev.filter((s) => s.id !== star.id)), 1200);
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [mood, isSleeping]);
+
+  const handleHamsterClick = (e) => {
+    if (isSleeping) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const heart = {
+      id: Date.now() + Math.random(),
+      x: e.clientX - rect.left + (Math.random() * 20 - 10),
+      y: e.clientY - rect.top + (Math.random() * 20 - 10),
+    };
+    setPetHearts((prev) => [...prev, heart]);
+    setTimeout(() => setPetHearts((prev) => prev.filter((h) => h.id !== heart.id)), 1200);
+    if (onPet) onPet();
+  };
+
+  // Choose animation
+  const isEating = actionState === "eating";
+  const isPetting = actionState === "petting";
+
+  let animClass = MOOD_ANIMATIONS[mood] || "animate-cute-breathe";
+  if (isSleeping) animClass = "animate-sleep-breathe";
+  if (isEating) animClass = "animate-eat-munch";
+  if (isPetting) animClass = "animate-pet-shimmer";
+
+  const tintClass = MOOD_TINT[mood] || "";
+  const sleepTint = isSleeping ? "brightness-70 saturate-50" : "";
+
+  return (
+    <div className="relative flex flex-col items-center justify-center select-none">
+      {/* ============================================================
+          SPEECH BUBBLE
+      ============================================================ */}
+      {bubbleVisible && speechBubble?.text && (
+        <div className="absolute -top-20 z-30 max-w-[270px] animate-slide-in-down pointer-events-none">
+          <div className="relative bg-white/95 backdrop-blur-md text-slate-800 text-xs sm:text-sm font-bold px-4 py-2.5 rounded-2xl shadow-lg border-2 border-amber-200 text-center">
+            <span className="leading-snug block">{speechBubble.text}</span>
+            {/* tail */}
+            <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2">
+              <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-white"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================
+          MOOD PARTICLES — Zzz / Tears / Angry Puffs / Stars
+      ============================================================ */}
+      {/* Sleeping Zzz */}
+      {isSleeping && (
+        <div className="absolute -top-14 right-10 z-20 pointer-events-none space-y-0">
+          {["Z", "z", "z"].map((z, i) => (
+            <div
+              key={i}
+              className="text-indigo-300 font-black leading-none animate-[floatZzz_2.5s_ease-in-out_infinite]"
+              style={{ fontSize: `${18 - i * 4}px`, animationDelay: `${i * 0.7}s` }}
+            >
+              {z}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tears (sad mood) */}
+      {tears.map((tear) => (
+        <div
+          key={tear.id}
+          className="absolute z-25 pointer-events-none text-sky-400 text-xs animate-[floatTear_1s_ease-in_forwards]"
+          style={{ left: `${tear.x}%`, top: "55%" }}
+        >
+          💧
+        </div>
+      ))}
+
+      {/* Angry puffs */}
+      {angryPuffs.map((puff) => (
+        <div
+          key={puff.id}
+          className="absolute z-25 pointer-events-none animate-[floatAngryPuff_0.8s_ease-out_forwards]"
+          style={{ [puff.side]: "-8px", top: "10%" }}
+        >
+          <span className="text-red-500 font-black text-sm">💢</span>
+        </div>
+      ))}
+
+      {/* Excited stars */}
+      {floatingStars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute z-25 pointer-events-none animate-[floatStar_1.2s_ease-out_forwards] text-yellow-400"
+          style={{ left: `${star.x}%`, top: "20%" }}
+        >
+          ✨
+        </div>
+      ))}
+
+      {/* Pet hearts */}
+      {petHearts.map((heart) => (
+        <div
+          key={heart.id}
+          className="absolute z-40 pointer-events-none animate-[floatHeart_1.2s_ease-out_forwards]"
+          style={{ left: heart.x, top: heart.y }}
+        >
+          <Heart className="w-5 h-5 fill-pink-400 stroke-pink-600 drop-shadow" />
+        </div>
+      ))}
+
+      {/* ============================================================
+          DIRTY / SICK STATUS BADGE
+      ============================================================ */}
+      {(mood === "dirty" || cleanliness < 45 || poopCount > 1) && !isSleeping && (
+        <div className="absolute -top-5 -left-2 z-20 flex items-center space-x-0.5 animate-wiggle pointer-events-none">
+          <span className="text-lg">🪰</span>
+          <span className="text-[9px] bg-amber-900/60 text-amber-100 px-1.5 py-0.5 rounded-full font-bold">มอมแมม~</span>
+        </div>
+      )}
+
+      {/* Happy glow */}
+      {(mood === "happy" || mood === "excited") && !isSleeping && (
+        <div className="absolute -top-7 -right-3 z-20 pointer-events-none text-yellow-400 animate-pulse-glow">
+          <Sparkles className="w-5 h-5 fill-amber-300" />
+        </div>
+      )}
+
+      {/* ============================================================
+          HAMSTER BODY + WARDROBE LAYERS
+      ============================================================ */}
+      <div
+        onClick={handleHamsterClick}
+        className={`relative cursor-pointer transition-all duration-300 active:scale-90 group ${animClass}`}
+        title="กดที่น้องเพื่อลูบหัว"
+      >
+        {/* Shadow */}
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-44 h-8 bg-black/10 rounded-full blur-sm pointer-events-none"></div>
+
+        {/* Hamster image */}
+        <div className="relative w-52 h-36 sm:w-60 sm:h-40 flex items-center justify-center">
+          <img
+            src="/assets/heaven-hamster.png"
+            alt="Nong Heaven Hamster"
+            className={`w-full h-full object-contain pixel-art filter transition-all duration-500 ${tintClass} ${sleepTint}`}
+            draggable="false"
+          />
+
+          {/* Blush cheeks */}
+          <div className="absolute top-[50%] left-[33%] w-5 h-3 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+          <div className="absolute top-[48%] right-[31%] w-5 h-3 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+
+          {/* Sleeping eyes overlay */}
+          {isSleeping && (
+            <div className="absolute top-[43%] left-0 right-0 flex justify-center gap-9 pointer-events-none">
+              <div className="w-4 h-1 border-b-2 border-slate-700 rounded-full"></div>
+              <div className="w-4 h-1 border-b-2 border-slate-700 rounded-full"></div>
+            </div>
+          )}
+
+          {/* Sick / sad eye overlay (X eyes) */}
+          {mood === "sick" && !isSleeping && (
+            <div className="absolute top-[40%] left-0 right-0 flex justify-center gap-8 pointer-events-none">
+              <div className="text-[11px] font-black text-slate-700">×</div>
+              <div className="text-[11px] font-black text-slate-700">×</div>
+            </div>
+          )}
+
+          {/* Angry eyebrows */}
+          {mood === "angry" && !isSleeping && (
+            <div className="absolute top-[32%] left-0 right-0 flex justify-center gap-7 pointer-events-none">
+              <div className="w-5 h-1 bg-slate-700 rounded-full rotate-[20deg]"></div>
+              <div className="w-5 h-1 bg-slate-700 rounded-full rotate-[-20deg]"></div>
+            </div>
+          )}
+
+          {/* ---- WARDROBE LAYERS ---- */}
+
+          {/* OUTFIT */}
+          {equipped.outfit === "hoodie_special" && (
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-40 z-10 pointer-events-none">
+              <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white/80 rounded-3xl h-11 flex items-center justify-around px-3 shadow-inner">
+                <span className="text-[9px] font-black text-white tracking-widest uppercase bg-white/30 px-2 py-0.5 rounded-full">HEAVEN ♡</span>
+              </div>
+            </div>
+          )}
+          {equipped.outfit === "cute_bib" && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+              <div className="bg-yellow-200 border-2 border-amber-300 text-amber-700 text-xs px-3 py-1 rounded-b-2xl shadow-sm flex items-center space-x-1">
+                <span>⭐</span><span className="font-bold text-[9px]">BABY</span>
+              </div>
+            </div>
+          )}
+          {equipped.outfit === "cape_hero" && (
+            <div className="absolute top-8 -left-1 z-0 pointer-events-none rotate-12">
+              <div className="w-10 h-16 bg-rose-500 rounded-b-2xl shadow-md border-r-2 border-rose-700"></div>
+            </div>
+          )}
+
+          {/* ACCESSORY */}
+          {equipped.accessory === "red_bow" && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-2xl animate-pulse">🎀</div>
+          )}
+          {equipped.accessory === "bell_collar" && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none w-5 h-5 flex items-center justify-center">
+              <div className="bg-amber-400 border border-amber-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow animate-bounce">🔔</div>
+            </div>
+          )}
+          {equipped.accessory === "star_badge" && (
+            <div className="absolute bottom-7 left-[35%] z-10 pointer-events-none text-yellow-400 text-lg drop-shadow">⭐</div>
+          )}
+
+          {/* HAT */}
+          {equipped.hat === "frog_hat" && (
+            <div className="absolute -top-5 left-[44%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md">
+              <div className="flex flex-col items-center">
+                <div className="flex space-x-3 mb-[-5px]">
+                  {[0, 1].map((i) => (
+                    <div key={i} className="w-4 h-4 bg-emerald-500 rounded-full border border-emerald-700 flex items-center justify-center shadow-sm">
+                      <div className="w-2 h-2 bg-white rounded-full flex items-center justify-center">
+                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="w-20 h-7 bg-emerald-400 border-2 border-emerald-600 rounded-t-full shadow-sm"></div>
+              </div>
+            </div>
+          )}
+          {equipped.hat === "sunglasses" && (
+            <div className="absolute top-[41%] left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow">
+              <div className="w-7 h-4 bg-slate-900 rounded-sm border border-slate-600 shadow-sm"></div>
+              <div className="w-2 h-0.5 bg-slate-800"></div>
+              <div className="w-7 h-4 bg-slate-900 rounded-sm border border-slate-600 shadow-sm"></div>
+            </div>
+          )}
+          {equipped.hat === "flower_crown" && (
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-base whitespace-nowrap">🌸🌼🌺🌸</div>
+          )}
+          {equipped.hat === "party_hat" && (
+            <div className="absolute -top-7 left-[46%] -translate-x-1/2 z-20 pointer-events-none text-3xl rotate-12">🎉</div>
+          )}
+
+          {/* Eating bowl */}
+          {isEating && (
+            <div className="absolute bottom-0 right-6 z-20 pointer-events-none animate-bounce flex items-center">
+              <span className="text-3xl">🥣</span>
+              <span className="absolute -top-2 -right-1 text-xs">✨</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Hint label */}
+      <div className="mt-2.5 pointer-events-none">
+        <p className="text-xs text-amber-700/80 font-semibold bg-white/60 backdrop-blur-sm px-3 py-1 rounded-full shadow-xs inline-block border border-amber-100">
+          {isSleeping ? "💤 น้องกำลังหลับสบาย... พลังงานกำลังฟื้นฟู" : "👆 กดที่ตัวน้องเพื่อลูบหัวเล่นด้วยกัน"}
+        </p>
+      </div>
+    </div>
+  );
+}

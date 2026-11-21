@@ -1,0 +1,244 @@
+// ==============================================================================
+// 🐹 HEAVEN GAME CONSTANTS & DATA — UPDATED WITH ACHIEVEMENTS
+// ==============================================================================
+
+export const INITIAL_GAME_STATE = {
+  name: "น้องเฮเว่น (Heaven)",
+  hunger: 80,
+  happiness: 85,
+  cleanliness: 75,
+  energy: 90,
+  level: 1,
+  exp: 0,
+  maxExp: 100,
+  coins: 60,
+  poopCount: 0,
+  isSleeping: false,
+  actionState: "idle",
+  actionExpiry: 0,
+  mood: "happy", // 'happy' | 'sad' | 'angry' | 'sick' | 'excited' | 'neutral'
+
+  equipped: {
+    hat: null,
+    accessory: null,
+    outfit: null,
+  },
+  inventory: ["frog_hat"],
+
+  // Stats for Achievements
+  stats: {
+    totalFed: 0,
+    totalPets: 0,
+    totalCleans: 0,
+    totalCoinsEarned: 0,
+    maxStreakDays: 0,
+    miniGamesPlayed: 0,
+  },
+
+  // Achievements
+  achievements: [],
+
+  speechBubble: {
+    text: "สวัสดีงับ! นู๋ชื่อน้องเฮเว่น ยินดีที่ได้รู้จักน้า~ 🐹✨",
+    timestamp: Date.now(),
+    duration: 6000,
+  },
+  announcement: {
+    id: 1, title: "", message: "", active: false, timestamp: Date.now(),
+  },
+  seedRainEvent: {
+    id: 0, active: false, timestamp: 0,
+  },
+  lastDecayTime: Date.now(),
+  lastUpdated: Date.now(),
+};
+
+// ============================================================
+// FOOD ITEMS
+// ============================================================
+export const FOOD_ITEMS = [
+  {
+    id: "pellets", name: "อาหารเม็ดธรรมดา", icon: "🥣",
+    cost: 0, reqLevel: 1, hunger: 15, happiness: 5, exp: 5,
+    desc: "อาหารเม็ดแสนอร่อย กินอิ่มง่ายๆ ฟรี!",
+  },
+  {
+    id: "sunflower_seeds", name: "เมล็ดทานตะวันอบ", icon: "🌻",
+    cost: 5, reqLevel: 3, hunger: 25, happiness: 12, exp: 10,
+    desc: "ของโปรดอันดับหนึ่งของน้องเฮเว่น เคี้ยวกรุบกรอบ",
+  },
+  {
+    id: "broccoli", name: "บรอกโคลีสดกรอบ", icon: "🥦",
+    cost: 10, reqLevel: 3, hunger: 35, happiness: 15, exp: 15,
+    desc: "ผักสดเพื่อสุขภาพ เพิ่มไฟเบอร์ให้น้องแฮมเตอร์",
+  },
+  {
+    id: "strawberry", name: "สตรอว์เบอร์รีหวานฉ่ำ", icon: "🍓",
+    cost: 15, reqLevel: 3, hunger: 50, happiness: 30, exp: 25,
+    desc: "ผลไม้สีแดงสดใส กลิ่นหอมหวานถูกใจน้องเฮเว่น",
+  },
+  {
+    id: "cheesecake", name: "ชีสเค้กเนียนนุ่ม", icon: "🧀",
+    cost: 25, reqLevel: 3, hunger: 70, happiness: 50, exp: 40,
+    desc: "ของหวานพรีเมียม กินแล้วฟินจนแก้มตุ่ย",
+  },
+];
+
+// ============================================================
+// WARDROBE ITEMS
+// ============================================================
+export const WARDROBE_ITEMS = [
+  { id: "frog_hat",    type: "hat",       name: "หมวกกบเขียวตาโต",         icon: "🐸", cost: 0,   reqLevel: 1, desc: "หมวกกบน้อยสุดคิ้วท์ ใส่แล้วน่ารักตาแป๋ว" },
+  { id: "sunglasses",  type: "hat",       name: "แว่นกันแดดสุดเท่",         icon: "🕶️", cost: 50,  reqLevel: 5, desc: "แว่นดำบอสใหญ่ เพิ่มความคูล 300%" },
+  { id: "flower_crown",type: "hat",       name: "มงกุฎดอกไม้พาสเทล",       icon: "🌸", cost: 75,  reqLevel: 5, desc: "มงกุฎดอกซากุระ หวานละมุนน่าทะนุถนอม" },
+  { id: "party_hat",   type: "hat",       name: "หมวกปาร์ตี้สายรุ้ง",      icon: "🎉", cost: 60,  reqLevel: 5, desc: "หมวกทรงกรวยหลากสี พร้อมลุยทุกเทศกาล" },
+  { id: "red_bow",     type: "accessory", name: "โบว์แดงน่ารัก",           icon: "🎀", cost: 40,  reqLevel: 5, desc: "โบว์ผ้าซาตินสีแดงสด เพิ่มความหวาน" },
+  { id: "bell_collar", type: "accessory", name: "กระดิ่งทองกุ๊งกิ๊ง",       icon: "🔔", cost: 55,  reqLevel: 5, desc: "ปลอกคอกระดิ่งสีทอง เดินไปไหนมีเสียงกุ๊งกิ๊ง" },
+  { id: "star_badge",  type: "accessory", name: "เข็มกลัดดาวประกาย",       icon: "⭐", cost: 45,  reqLevel: 5, desc: "เข็มกลัดรูปดาวส่องแสงวิบวับ" },
+  { id: "hoodie_special", type: "outfit", name: "ชุดฮู้ดดี้พิเศษ (Limited)", icon: "🧥", cost: 150, reqLevel: 5, desc: "ฮู้ดดี้ขนปุยโทนพาสเทล อุ่นสบาย (ไอเทมลิมิเต็ด!)" },
+  { id: "cute_bib",    type: "outfit",    name: "ผ้ากันเปื้อนลายดาว",       icon: "⭐", cost: 65,  reqLevel: 5, desc: "ผ้ากันเปื้อนสำหรับเจ้าแฮมสเตอร์ตัวน้อย" },
+  { id: "cape_hero",   type: "outfit",    name: "ผ้าคลุมฮีโร่สีแดง",       icon: "🦸", cost: 120, reqLevel: 5, desc: "ผ้าคลุมยาวพลิ้วไหว สำหรับผู้พิทักษ์ความยุติธรรม" },
+];
+
+// ============================================================
+// ACHIEVEMENT DEFINITIONS
+// ============================================================
+export const ACHIEVEMENT_DEFS = [
+  {
+    id: "first_feed",
+    name: "นักเลี้ยงมือใหม่",
+    desc: "ให้อาหารน้องเฮเว่นครั้งแรก",
+    icon: "🥣",
+    rarity: "common",
+    check: (stats) => stats.totalFed >= 1,
+  },
+  {
+    id: "feed_10",
+    name: "แม่ครัวแห่งกรง",
+    desc: "ให้อาหารครบ 10 ครั้ง",
+    icon: "👨‍🍳",
+    rarity: "uncommon",
+    check: (stats) => stats.totalFed >= 10,
+  },
+  {
+    id: "feed_50",
+    name: "เชฟสามดาวมิชลิน",
+    desc: "ให้อาหารครบ 50 ครั้ง",
+    icon: "⭐⭐⭐",
+    rarity: "rare",
+    check: (stats) => stats.totalFed >= 50,
+  },
+  {
+    id: "first_pet",
+    name: "นักลูบหัวมือโปร",
+    desc: "ลูบหัวน้องเฮเว่นครั้งแรก",
+    icon: "✋",
+    rarity: "common",
+    check: (stats) => stats.totalPets >= 1,
+  },
+  {
+    id: "pet_20",
+    name: "นักลูบแห่งปี",
+    desc: "ลูบหัวน้อง 20 ครั้ง",
+    icon: "💆",
+    rarity: "uncommon",
+    check: (stats) => stats.totalPets >= 20,
+  },
+  {
+    id: "clean_5",
+    name: "นักสุขาภิบาลสุดเจ๋ง",
+    desc: "ทำความสะอาดกรง 5 ครั้ง",
+    icon: "🧹",
+    rarity: "uncommon",
+    check: (stats) => stats.totalCleans >= 5,
+  },
+  {
+    id: "coins_100",
+    name: "นักสะสมเมล็ดทานตะวัน",
+    desc: "สะสมเหรียญรวมถึง 100 เมล็ด",
+    icon: "🌻",
+    rarity: "uncommon",
+    check: (stats) => stats.totalCoinsEarned >= 100,
+  },
+  {
+    id: "coins_1000",
+    name: "เจ้าสวนทานตะวัน",
+    desc: "สะสมเหรียญรวมถึง 1,000 เมล็ด",
+    icon: "💰",
+    rarity: "rare",
+    check: (stats) => stats.totalCoinsEarned >= 1000,
+  },
+  {
+    id: "minigame_1",
+    name: "นักปั่นมือใหม่",
+    desc: "เล่นมินิเกมปั่นวงล้อครั้งแรก",
+    icon: "🎡",
+    rarity: "common",
+    check: (stats) => stats.miniGamesPlayed >= 1,
+  },
+  {
+    id: "minigame_5",
+    name: "แชมป์วงล้อ",
+    desc: "เล่นมินิเกมปั่นวงล้อ 5 ครั้ง",
+    icon: "🏆",
+    rarity: "rare",
+    check: (stats) => stats.miniGamesPlayed >= 5,
+  },
+  {
+    id: "level_3",
+    name: "น้องเฮเว่นโต!",
+    desc: "น้องเฮเว่นถึงระดับ 3",
+    icon: "🌟",
+    rarity: "uncommon",
+    check: (_, state) => state.level >= 3,
+  },
+  {
+    id: "level_5",
+    name: "เฮเว่นสุดยอด!",
+    desc: "น้องเฮเว่นถึงระดับ 5",
+    icon: "👑",
+    rarity: "legendary",
+    check: (_, state) => state.level >= 5,
+  },
+];
+
+export const RARITY_STYLES = {
+  common:    { bg: "bg-slate-100",  border: "border-slate-300",  text: "text-slate-700",  label: "ทั่วไป",    glow: "" },
+  uncommon:  { bg: "bg-green-50",   border: "border-green-300",  text: "text-green-800",  label: "หายาก",     glow: "shadow-green-200" },
+  rare:      { bg: "bg-blue-50",    border: "border-blue-300",   text: "text-blue-800",   label: "หายากมาก", glow: "shadow-blue-200" },
+  legendary: { bg: "bg-amber-50",   border: "border-amber-400",  text: "text-amber-900",  label: "ตำนาน",     glow: "shadow-amber-200 shadow-md" },
+};
+
+export const LEVEL_PERKS = {
+  1: "เล่นพื้นฐาน ให้อาหารเม็ดธรรมดา",
+  2: "ปลดล็อคมินิเกม 'ปั่นวงล้อ' วิ่งเก็บเหรียญ",
+  3: "ปลดล็อค 'ร้านค้าอาหารพรีเมียม' 4 เมนู",
+  5: "ปลดล็อค 'ร้านค้าแฟชั่น & ตู้เสื้อผ้า' แต่งตัวสุดคิ้วท์",
+};
+
+export const HAPPY_QUOTES = [
+  "ฮัมมี่มีความสุขจังเลยงับ! 💖",
+  "เมล็ดทานตะวันคือของอร่อยที่สุดในโลก! 🌻",
+  "ลูบหัวอีกหน่อยน้า ชอบมั่กๆ เลย 🐹✨",
+  "วันนี้อากาศดีจัง มาเล่นกันเถอะ!",
+  "เฮเว่นรักเจ้านายที่สุดเลยยย~ 🐾",
+  "กรงสะอาด น่านอนเกลือกกลิ้งที่สุด!",
+];
+
+export const HUNGRY_QUOTES = [
+  "หิวจนพุงยุบแล้วน้า ขอของกินหน่อยงับ 🥺",
+  "จ๊อกๆ... ท้องเฮเว่นร้องแล้วนะ",
+  "มีเมล็ดทานตะวันมั้ยงับ?",
+];
+
+export const ANGRY_QUOTES = [
+  "โกรธแล้วนะ! อย่าทำให้กรงสกปรกได้ยิน! 😤",
+  "นู๋ไม่โอเคเลยวันนี้... 😠",
+  "เฮ้ย! มีอึเยอะมาก! ช่วยเก็บทีได้มั้ย! 💢",
+];
+
+export const SAD_QUOTES = [
+  "ทำไมไม่มาเล่นด้วยเลย... เหงาจัง 😢",
+  "ไม่ค่อยมีความสุขเลยวันนี้...",
+  "น้องรอนายอยู่นะ 🥺",
+];
