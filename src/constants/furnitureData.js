@@ -1,0 +1,227 @@
+// ==============================================================================
+// 🏡 CAGE FURNITURE & MYSTERY BOX DATA
+// ==============================================================================
+
+export const FURNITURE_ITEMS = [
+  // ----------------------------------------------------------------------------
+  // 1. HOUSES & BEDS (บ้านไม้และที่นอน)
+  // ----------------------------------------------------------------------------
+  {
+    id: "mushroom_house",
+    category: "house",
+    name: "บ้านเห็ดแดงพาสเทล",
+    icon: "🍄",
+    rarity: "common",
+    cost: 40,
+    reqLevel: 1,
+    desc: "บ้านเห็ดลายจุดน่ารัก มีประตูจิ๋วให้น้องมุดเข้าไปนอน",
+    perkDesc: "⚡ ชาร์จพลังงานตอนนอนเร็วขึ้น +10%",
+    perk: { energyRegenBonus: 0.1 },
+  },
+  {
+    id: "log_cabin",
+    category: "house",
+    name: "บ้านท่อนไม้อบอุ่น",
+    icon: "🪵",
+    rarity: "rare",
+    cost: 90,
+    reqLevel: 4,
+    desc: "บ้านสไตล์เคบินไม้สักธรรมชาติ กลิ่นไม้อบอุ่นหลับสบาย",
+    perkDesc: "⚡ ชาร์จพลังงานตอนนอนเร็วขึ้น +25%",
+    perk: { energyRegenBonus: 0.25 },
+  },
+  {
+    id: "cloud_bed",
+    category: "house",
+    name: "เตียงนอนปุยเมฆดาวตก",
+    icon: "☁️",
+    rarity: "rare",
+    cost: 120,
+    reqLevel: 4,
+    desc: "เตียงนุ่มฟูดุจปุยเมฆ ประดับด้วยโมบายดวงดาวสีทอง",
+    perkDesc: "⚡ ชาร์จพลังงานตอนนอนเร็วขึ้น +30%",
+    perk: { energyRegenBonus: 0.3 },
+  },
+  {
+    id: "fairy_castle",
+    category: "house",
+    name: "ปราสาทเจ้าหญิงแฮมสเตอร์",
+    icon: "🏰",
+    rarity: "epic",
+    cost: 250,
+    reqLevel: 4,
+    desc: "ปราสาทป้อมปราการสีชมพูทองสุดหรูหรา สำหรับน้องเฮเว่นตัวจริง",
+    perkDesc: "👑 ชาร์จพลังงานเร็วขึ้น +50% & อารมณ์ดีตลอดวัน",
+    perk: { energyRegenBonus: 0.5 },
+  },
+
+  // ----------------------------------------------------------------------------
+  // 2. TOYS (ของเล่นและเครื่องเล่น)
+  // ----------------------------------------------------------------------------
+  {
+    id: "wooden_swing",
+    category: "toy",
+    name: "ชิงช้าไม้แกว่งดุ๊กดิ๊ก",
+    icon: "🪵",
+    rarity: "common",
+    cost: 35,
+    reqLevel: 1,
+    desc: "ชิงช้าผูกเชือกน่ารัก แกว่งเบาๆ คลายเหงา",
+    perkDesc: "💖 ความสุขลดช้าลง 15%",
+    perk: { happinessDecayReduction: 0.15 },
+  },
+  {
+    id: "rainbow_tunnel",
+    category: "toy",
+    name: "อุโมงค์ลอดสายรุ้ง",
+    icon: "🌈",
+    rarity: "rare",
+    cost: 80,
+    reqLevel: 4,
+    desc: "ท่ออุโมงค์โค้ง 7 สี ให้น้องวิ่งมุดเล่นเพลิดเพลิน",
+    perkDesc: "💖 ความสุขลดช้าลง 30%",
+    perk: { happinessDecayReduction: 0.3 },
+  },
+  {
+    id: "hamster_slide",
+    category: "toy",
+    name: "สไลเดอร์สีเหลืองพาสเทล",
+    icon: "🛝",
+    rarity: "rare",
+    cost: 110,
+    reqLevel: 4,
+    desc: "สไลเดอร์ของเล่นแสนสนุก น้องลื่นไถลได้ทั้งวัน",
+    perkDesc: "💖 ความสุขลดช้าลง 35% & ได้ EXP เพิ่ม",
+    perk: { happinessDecayReduction: 0.35, expBonus: 1 },
+  },
+  {
+    id: "amusement_ferris",
+    category: "toy",
+    name: "ชิงช้าสวรรค์จิ๋วแฟนซี",
+    icon: "🎡",
+    rarity: "epic",
+    cost: 220,
+    reqLevel: 4,
+    desc: "ชิงช้าสวรรค์หมุนได้จริง มีไฟกะพริบวิ้งค์ๆ ราวกับอยู่ในสวนสนุก",
+    perkDesc: "✨ ความสุขลดช้าลง 50% & ปั่นวงล้อได้แต้มคูณสอง",
+    perk: { happinessDecayReduction: 0.5, wheelBonus: 1 },
+  },
+
+  // ----------------------------------------------------------------------------
+  // 3. WALLPAPERS (ลวดลายผนังกรง)
+  // ----------------------------------------------------------------------------
+  {
+    id: "default_grid",
+    category: "wallpaper",
+    name: "ตารางมินิมอลคลาสสิก",
+    icon: "📐",
+    rarity: "common",
+    cost: 0,
+    reqLevel: 1,
+    desc: "ลวดลายตารางมิลลิเมตรโทนอบอุ่น สะอาดตาสไตล์สมุดไดอารี่",
+    perkDesc: "🌿 ค่าเริ่มต้น",
+    perk: {},
+  },
+  {
+    id: "sakura_blossom",
+    category: "wallpaper",
+    name: "สวนซากุระพาสเทล",
+    icon: "🌸",
+    rarity: "common",
+    cost: 45,
+    reqLevel: 1,
+    desc: "ผนังชมพูละมุน มีกลีบดอกซากุระหวานแหววโปรยปราย",
+    perkDesc: "🌸 เพิ่มความสดใสสบายตา",
+    perk: { moodBoost: 5 },
+  },
+  {
+    id: "forest_camp",
+    category: "wallpaper",
+    name: "แคมป์ปิ้งป่าสนสีเขียว",
+    icon: "🌲",
+    rarity: "rare",
+    cost: 85,
+    reqLevel: 4,
+    desc: "บรรยากาศป่าสนธรรมชาติร่มรื่น สดชื่นเหมือนไปแคมป์ปิ้ง",
+    perkDesc: "🌲 ช่วยให้น้องรู้สึกผ่อนคลาย",
+    perk: { moodBoost: 10 },
+  },
+  {
+    id: "galaxy_stars",
+    category: "wallpaper",
+    name: "กาแล็กซีดวงดาวระยิบระยับ",
+    icon: "🌌",
+    rarity: "epic",
+    cost: 180,
+    reqLevel: 4,
+    desc: "อวกาศสีม่วงทไวไลท์ มีดวงดาวระยิบระยับและทางช้างเผือกงดงาม",
+    perkDesc: "⭐ เปล่งประกาย ออร่าวิ้งค์ทั่วทั้งกรง",
+    perk: { moodBoost: 20 },
+  },
+
+  // ----------------------------------------------------------------------------
+  // 4. RUGS (พรมปูพื้น)
+  // ----------------------------------------------------------------------------
+  {
+    id: "fluffy_cream",
+    category: "rug",
+    name: "พรมขนแกะปุยเมฆ",
+    icon: "🧶",
+    rarity: "common",
+    cost: 30,
+    reqLevel: 1,
+    desc: "พรมรูปก้อนเมฆสีครีมนุ่มละมุน ปูรองตัวน้องให้อุ่นสบาย",
+    perkDesc: "🧹 ลดโอกาสเกิดอึ 15%",
+    perk: { cleanDecayReduction: 0.15 },
+  },
+  {
+    id: "clover_lawn",
+    category: "rug",
+    name: "สนามหญ้าโคลเวอร์นำโชค",
+    icon: "🍀",
+    rarity: "rare",
+    cost: 75,
+    reqLevel: 4,
+    desc: "พรมหญ้าเทียมสีเขียวสดใส แซมด้วยใบโคลเวอร์ 4 แฉกนำโชค",
+    perkDesc: "🧹 ลดโอกาสเกิดอึ 30% & กรงสะอาดนานขึ้น",
+    perk: { cleanDecayReduction: 0.3 },
+  },
+  {
+    id: "royal_velvet",
+    category: "rug",
+    name: "พรมกำมะหยี่ทองคำราชวงศ์",
+    icon: "👑",
+    rarity: "epic",
+    cost: 190,
+    reqLevel: 4,
+    desc: "พรมแดงเนื้อกำมะหยี่ ขลิบขอบดิ้นทองคำล้ำค่า",
+    perkDesc: "✨ ลดโอกาสเกิดอึ 50% & กรงสะอาดวิ้งค์ตลอดเวลา",
+    perk: { cleanDecayReduction: 0.5 },
+  },
+];
+
+// ==============================================================================
+// 🎁 MYSTERY BOX DEFINITIONS
+// ==============================================================================
+export const MYSTERY_BOXES = [
+  {
+    id: "wood_box",
+    name: "กล่องสุ่มไม้แฮมสเตอร์",
+    icon: "📦",
+    cost: 50,
+    desc: "กล่องไม้ธรรมดา สุ่มรับเฟอร์นิเจอร์ทั่วไปและมีโอกาสลุ้นของหายาก",
+    rates: { common: 0.7, rare: 0.25, epic: 0.05 },
+    ratesText: "Common 70% | Rare 25% | Epic 5%",
+    color: "from-amber-100 to-amber-200 border-amber-400",
+  },
+  {
+    id: "gold_box",
+    name: "กล่องสมบัติทองคำพรีเมียม",
+    icon: "👑",
+    cost: 120,
+    desc: "กล่องสมบัติทองคำวิบวับ การันตีโอกาสได้ของระดับ Rare และ Epic สูงมาก!",
+    rates: { common: 0.2, rare: 0.55, epic: 0.25 },
+    ratesText: "Rare 55% | Epic 25% | Common 20%",
+    color: "from-yellow-200 via-amber-300 to-yellow-400 border-yellow-500 shadow-amber-300/50",
+  },
+];

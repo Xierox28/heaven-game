@@ -25,6 +25,17 @@ export const INITIAL_GAME_STATE = {
   },
   inventory: ["frog_hat"],
 
+  // 🏡 CAGE FURNITURE & DECORATIONS
+  furniture: {
+    equipped: {
+      house: null,
+      toy: null,
+      wallpaper: "default_grid",
+      rug: null,
+    },
+    inventory: ["default_grid"],
+  },
+
   // Stats for Achievements & Quests
   stats: {
     totalFed: 0,

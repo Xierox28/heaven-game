@@ -11,6 +11,7 @@ import {
   HAPPY_QUOTES,
   ACHIEVEMENT_DEFS,
 } from "../constants/gameData";
+import { FURNITURE_ITEMS, MYSTERY_BOXES } from "../constants/furnitureData";
 import { sound } from "../utils/audio";
 
 class GameStateService {
@@ -85,6 +86,15 @@ class GameStateService {
       speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val?.speechBubble || {}) },
       announcement: { ...INITIAL_GAME_STATE.announcement, ...(val?.announcement || {}) },
       seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(val?.seedRainEvent || {}) },
+      furniture: {
+        equipped: {
+          ...INITIAL_GAME_STATE.furniture.equipped,
+          ...(val?.furniture?.equipped || {}),
+        },
+        inventory: Array.isArray(val?.furniture?.inventory)
+          ? val.furniture.inventory
+          : INITIAL_GAME_STATE.furniture.inventory,
+      },
     };
   }
 
@@ -328,7 +338,7 @@ class GameStateService {
   startSleepRecharge() {
     if (this.sleepRechargeInterval) clearInterval(this.sleepRechargeInterval);
 
-    // ทำงานทุกๆ 1 วินาที เติมพลังงาน +10% (10 วินาทีเต็ม 100%)
+    // ทำงานทุกๆ 1 วินาที เติมพลังงาน +10% (หรือเร็วกว่านั้นหากมีบัฟบ้านไม้/ที่นอน)
     this.sleepRechargeInterval = setInterval(() => {
       if (!this.currentState.isSleeping) {
         clearInterval(this.sleepRechargeInterval);
@@ -339,7 +349,13 @@ class GameStateService {
       const currentEnergy = this.currentState.energy || 0;
       if (currentEnergy >= 100) return;
 
-      const newEnergy = Math.min(100, currentEnergy + 10);
+      // คำนวณบัฟจากบ้านไม้/ที่นอนที่ติดตั้ง
+      const equippedHouse = this.currentState.furniture?.equipped?.house;
+      const houseDef = FURNITURE_ITEMS.find((f) => f.id === equippedHouse);
+      const regenBonus = houseDef?.perk?.energyRegenBonus || 0;
+      const chargeAmount = Math.round(10 * (1 + regenBonus));
+
+      const newEnergy = Math.min(100, currentEnergy + chargeAmount);
       const isNowFull = newEnergy === 100 && currentEnergy < 100;
 
       this.updateState((prev) => ({
@@ -375,18 +391,28 @@ class GameStateService {
       this.updateState((prev) => {
         let { hunger, happiness, cleanliness, energy, poopCount, isSleeping } = prev;
 
+        // คำนวณบัฟจากของเล่นและพรมปูพื้น
+        const equippedToy = prev.furniture?.equipped?.toy;
+        const toyDef = FURNITURE_ITEMS.find((f) => f.id === equippedToy);
+        const happyDecayReduction = toyDef?.perk?.happinessDecayReduction || 0;
+
+        const equippedRug = prev.furniture?.equipped?.rug;
+        const rugDef = FURNITURE_ITEMS.find((f) => f.id === equippedRug);
+        const cleanDecayReduction = rugDef?.perk?.cleanDecayReduction || 0;
+
         if (isSleeping) {
           // พลังงานเติมเร็ว 10 วินาทีเต็ม (+10 ต่อวินาที)
           energy = Math.min(100, energy + elapsedSeconds * 10);
           hunger = Math.max(0, hunger - elapsedSeconds * 0.03);
-          cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.02);
+          cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.02 * (1 - cleanDecayReduction));
         } else {
           hunger = Math.max(0, hunger - elapsedSeconds * 0.08);
-          happiness = Math.max(0, happiness - elapsedSeconds * 0.06);
-          cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.05);
+          happiness = Math.max(0, happiness - elapsedSeconds * 0.06 * (1 - happyDecayReduction));
+          cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.05 * (1 - cleanDecayReduction));
           energy = Math.max(0, energy - elapsedSeconds * 0.07);
 
-          if (cleanliness < 60 && poopCount < 4 && Math.random() < 0.15) {
+          const poopChance = 0.15 * (1 - cleanDecayReduction);
+          if (cleanliness < 60 && poopCount < 4 && Math.random() < poopChance) {
             poopCount = Math.min(5, poopCount + 1);
             cleanliness = Math.max(0, cleanliness - 15);
           }
@@ -808,6 +834,125 @@ class GameStateService {
         [type]: prev.equipped[type] === itemId ? null : itemId,
       },
     }));
+  }
+
+  // ==============================================================================
+  // 🏡 CAGE FURNITURE & MYSTERY BOX METHODS
+  // ==============================================================================
+  buyFurniture(furnitureId) {
+    const item = FURNITURE_ITEMS.find((f) => f.id === furnitureId);
+    if (!item) return { success: false, message: "ไม่พบไอเทมนี้ในระบบ" };
+
+    if (this.currentState.coins < item.cost) {
+      sound.playPrank();
+      return { success: false, message: "เมล็ดทานตะวันไม่พอจ้า!" };
+    }
+
+    const currentInv = this.currentState.furniture?.inventory || [];
+    if (currentInv.includes(furnitureId)) {
+      return { success: false, message: "คุณมีเฟอร์นิเจอร์ชิ้นนี้อยู่แล้ว!" };
+    }
+
+    sound.playCoin();
+    this.updateState((prev) => {
+      const inv = prev.furniture?.inventory || [];
+      return {
+        ...prev,
+        coins: prev.coins - item.cost,
+        furniture: {
+          ...(prev.furniture || {}),
+          inventory: [...inv, furnitureId],
+        },
+        speechBubble: {
+          text: `ว้าววว! ได้ ${item.name} มาแต่งกรงแล้ว น่ารักสุดๆ 🏡✨`,
+          timestamp: Date.now(),
+          duration: 3500,
+        },
+      };
+    });
+    return { success: true, item };
+  }
+
+  toggleEquipFurniture(category, furnitureId) {
+    sound.playClick();
+    return this.updateState((prev) => {
+      const currentEquipped = prev.furniture?.equipped || {};
+      const isAlready = currentEquipped[category] === furnitureId;
+      // วอลเปเปอร์ถ้าถอดออก ให้กลับเป็นลายตารางเริ่มต้น (default_grid)
+      const nextEquipped = isAlready
+        ? (category === "wallpaper" ? "default_grid" : null)
+        : furnitureId;
+
+      return {
+        ...prev,
+        furniture: {
+          ...(prev.furniture || {}),
+          equipped: {
+            ...currentEquipped,
+            [category]: nextEquipped,
+          },
+        },
+      };
+    });
+  }
+
+  openMysteryBox(boxId) {
+    const box = MYSTERY_BOXES.find((b) => b.id === boxId);
+    if (!box) return { success: false, message: "ไม่พบกล่องสุ่มนี้" };
+
+    if (this.currentState.coins < box.cost) {
+      sound.playPrank();
+      return { success: false, message: "เมล็ดทานตะวันไม่พอเปิดกล่องสุ่มงับ!" };
+    }
+
+    // คำนวณความหายาก (RNG)
+    const roll = Math.random();
+    let chosenRarity = "common";
+    if (box.id === "gold_box") {
+      if (roll < 0.25) chosenRarity = "epic";
+      else if (roll < 0.80) chosenRarity = "rare";
+      else chosenRarity = "common";
+    } else {
+      if (roll < 0.05) chosenRarity = "epic";
+      else if (roll < 0.30) chosenRarity = "rare";
+      else chosenRarity = "common";
+    }
+
+    let pool = FURNITURE_ITEMS.filter((f) => f.rarity === chosenRarity && f.cost > 0);
+    if (pool.length === 0) pool = FURNITURE_ITEMS.filter((f) => f.cost > 0);
+    const wonItem = pool[Math.floor(Math.random() * pool.length)];
+
+    sound.playLevelUp();
+
+    let isDuplicate = false;
+    let refund = 0;
+
+    this.updateState((prev) => {
+      const currentInv = prev.furniture?.inventory || [];
+      isDuplicate = currentInv.includes(wonItem.id);
+      if (isDuplicate) {
+        refund = Math.floor(box.cost * 0.4); // คืนเงินปลอบใจ 40%
+      }
+      const newInv = isDuplicate ? currentInv : [...currentInv, wonItem.id];
+
+      return {
+        ...prev,
+        coins: prev.coins - box.cost + refund,
+        furniture: {
+          ...(prev.furniture || {}),
+          inventory: newInv,
+        },
+        speechBubble: {
+          text: isDuplicate
+            ? `เปิดได้ ${wonItem.name} ซ้ำ! ได้รับเงินปลอบใจ ${refund} 🌻 งับ`
+            : `🎉 ยินดีด้วย! เปิดกล่องสุ่มได้ [${wonItem.name}] ระดับ ${wonItem.rarity.toUpperCase()}! ✨`,
+          timestamp: Date.now(),
+          duration: 4500,
+        },
+      };
+    });
+
+    return { success: true, item: wonItem, isDuplicate, refund };
   }
 
   collectRainSeed() {

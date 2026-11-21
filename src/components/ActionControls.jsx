@@ -9,6 +9,7 @@ export default function ActionControls({
   onToggleSleep,
   onOpenWheel,
   onOpenFoodShop,
+  onOpenDecor,
   onOpenWardrobe,
 }) {
   const { level, isSleeping, poopCount, cleanliness } = state;
@@ -103,25 +104,25 @@ export default function ActionControls({
           <span className="text-[10px] text-amber-600">อัปเลเวลเพื่อปลดล็อค</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
           {/* ปั่นวงล้อ (Lv.2) */}
           <button
             onClick={onOpenWheel}
             disabled={level < 2 || isSleeping}
-            className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
               level >= 2 && !isSleeping
                 ? "bg-gradient-to-b from-amber-50 to-orange-100 border-orange-300 text-orange-950 hover:shadow-sm active:scale-95 cursor-pointer"
                 : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
             }`}
           >
-            <div className="text-xl mb-0.5">🎡</div>
-            <span className="text-[11px] font-black leading-tight">ปั่นวงล้อ</span>
+            <div className="text-lg sm:text-xl mb-0.5">🎡</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">ปั่นวงล้อ</span>
             {level < 2 ? (
-              <span className="flex items-center text-[9px] text-slate-500 mt-0.5 font-bold">
+              <span className="flex items-center text-[8px] sm:text-[9px] text-slate-500 mt-0.5 font-bold">
                 <Lock className="w-2.5 h-2.5 mr-0.5" /> Lv.2
               </span>
             ) : (
-              <span className="text-[9px] text-orange-600 font-bold mt-0.5">หาเหรียญ!</span>
+              <span className="text-[8px] sm:text-[9px] text-orange-600 font-bold mt-0.5">หาเหรียญ</span>
             )}
           </button>
 
@@ -129,20 +130,41 @@ export default function ActionControls({
           <button
             onClick={onOpenFoodShop}
             disabled={level < 3 || isSleeping}
-            className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
               level >= 3 && !isSleeping
                 ? "bg-gradient-to-b from-rose-50 to-pink-100 border-pink-300 text-pink-950 hover:shadow-sm active:scale-95 cursor-pointer"
                 : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
             }`}
           >
-            <div className="text-xl mb-0.5">🍰</div>
-            <span className="text-[11px] font-black leading-tight">ร้านอาหาร</span>
+            <div className="text-lg sm:text-xl mb-0.5">🍰</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">ร้านอาหาร</span>
             {level < 3 ? (
-              <span className="flex items-center text-[9px] text-slate-500 mt-0.5 font-bold">
+              <span className="flex items-center text-[8px] sm:text-[9px] text-slate-500 mt-0.5 font-bold">
                 <Lock className="w-2.5 h-2.5 mr-0.5" /> Lv.3
               </span>
             ) : (
-              <span className="text-[9px] text-pink-600 font-bold mt-0.5">เมนูเด็ด</span>
+              <span className="text-[8px] sm:text-[9px] text-pink-600 font-bold mt-0.5">เมนูเด็ด</span>
+            )}
+          </button>
+
+          {/* ตกแต่งกรง & กล่องสุ่ม (Lv.4) */}
+          <button
+            onClick={onOpenDecor}
+            disabled={level < 4 || isSleeping}
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
+              level >= 4 && !isSleeping
+                ? "bg-gradient-to-b from-emerald-50 to-teal-100 border-teal-300 text-teal-950 hover:shadow-sm active:scale-95 cursor-pointer"
+                : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+            }`}
+          >
+            <div className="text-lg sm:text-xl mb-0.5">🏡</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">แต่งกรง</span>
+            {level < 4 ? (
+              <span className="flex items-center text-[8px] sm:text-[9px] text-slate-500 mt-0.5 font-bold">
+                <Lock className="w-2.5 h-2.5 mr-0.5" /> Lv.4
+              </span>
+            ) : (
+              <span className="text-[8px] sm:text-[9px] text-teal-600 font-bold mt-0.5">ของแต่ง</span>
             )}
           </button>
 
@@ -150,20 +172,20 @@ export default function ActionControls({
           <button
             onClick={onOpenWardrobe}
             disabled={level < 5}
-            className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+            className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
               level >= 5
                 ? "bg-gradient-to-b from-purple-50 to-indigo-100 border-purple-300 text-purple-950 hover:shadow-sm active:scale-95 cursor-pointer"
                 : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
             }`}
           >
-            <div className="text-xl mb-0.5">👗</div>
-            <span className="text-[11px] font-black leading-tight">ตู้เสื้อผ้า</span>
+            <div className="text-lg sm:text-xl mb-0.5">👗</div>
+            <span className="text-[10px] sm:text-[11px] font-black leading-tight">ตู้เสื้อผ้า</span>
             {level < 5 ? (
-              <span className="flex items-center text-[9px] text-slate-500 mt-0.5 font-bold">
+              <span className="flex items-center text-[8px] sm:text-[9px] text-slate-500 mt-0.5 font-bold">
                 <Lock className="w-2.5 h-2.5 mr-0.5" /> Lv.5
               </span>
             ) : (
-              <span className="text-[9px] text-purple-600 font-bold mt-0.5">แต่งตัว</span>
+              <span className="text-[8px] sm:text-[9px] text-purple-600 font-bold mt-0.5">แต่งตัว</span>
             )}
           </button>
         </div>

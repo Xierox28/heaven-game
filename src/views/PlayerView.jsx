@@ -19,6 +19,7 @@ import AuthModal from "../components/AuthModal";
 import LeaderboardModal from "../components/LeaderboardModal";
 import HamsterPassModal from "../components/HamsterPassModal";
 import UpdateLogModal from "../components/UpdateLogModal";
+import CageDecorModal from "../components/CageDecorModal";
 import { AchievementToast, AchievementPanel } from "../components/AchievementSystem";
 
 export default function PlayerView({ onNavigateToAdmin }) {
@@ -28,6 +29,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isWheelOpen, setIsWheelOpen] = useState(false);
   const [isFoodShopOpen, setIsFoodShopOpen] = useState(false);
   const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
+  const [isDecorOpen, setIsDecorOpen] = useState(false);
   const [isAchievementOpen, setIsAchievementOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
@@ -242,89 +244,191 @@ export default function PlayerView({ onNavigateToAdmin }) {
           {/* ============================================================
               2. CAGE STAGE
           ============================================================ */}
-          <div
-            className={`relative w-full rounded-3xl border-4 shadow-lg min-h-[330px] flex flex-col justify-between p-4 cursor-pointer transition-all duration-700 ${
-              isNight
-                ? "bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border-slate-700 shadow-indigo-950/40"
-                : "bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100 border-amber-300 shadow-amber-200/50"
-            }`}
-            onClick={handleCageTap}
-            title="ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"
-          >
-            {/* Background grid pattern */}
-            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-              <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:18px_18px]"></div>
-            </div>
+          {(() => {
+            const equippedFurniture = gameState.furniture?.equipped || {};
+            let wallpaperStyle = "bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100 border-amber-300 shadow-amber-200/50";
+            if (isNight) {
+              wallpaperStyle = "bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border-slate-700 shadow-indigo-950/40";
+            } else if (equippedFurniture.wallpaper === "sakura_blossom") {
+              wallpaperStyle = "bg-gradient-to-b from-pink-100 via-rose-50 to-pink-200 border-pink-300 shadow-pink-200/50";
+            } else if (equippedFurniture.wallpaper === "forest_camp") {
+              wallpaperStyle = "bg-gradient-to-b from-emerald-100 via-green-50 to-emerald-200 border-emerald-400 shadow-emerald-200/50";
+            } else if (equippedFurniture.wallpaper === "galaxy_stars") {
+              wallpaperStyle = "bg-gradient-to-b from-indigo-950 via-purple-900 to-slate-950 border-purple-500 shadow-purple-950/50";
+            }
 
-            {/* Room Badge */}
-            <div className="relative z-10 flex items-center justify-between w-full">
-              <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
-                isNight
-                  ? "bg-slate-800/90 border-slate-600 text-indigo-200"
-                  : "bg-white/95 border-amber-200 text-amber-950"
-              }`}>
-                {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
-              </span>
+            return (
+              <div
+                className={`relative w-full rounded-3xl border-4 shadow-lg min-h-[330px] flex flex-col justify-between p-4 cursor-pointer transition-all duration-700 ${wallpaperStyle}`}
+                onClick={handleCageTap}
+                title="ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"
+              >
+                {/* Background grid pattern */}
+                <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:18px_18px]"></div>
 
-              <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full">
-                👆👆 ดับเบิ้ลแทปให้อาหารด่วน
-              </span>
-            </div>
+                  {/* Wallpaper special ambiance */}
+                  {equippedFurniture.wallpaper === "sakura_blossom" && !isNight && (
+                    <div className="absolute inset-0 flex justify-around opacity-35 text-xs pt-4 select-none">
+                      <span>🌸</span><span>🌸</span><span>🌸</span>
+                    </div>
+                  )}
+                  {equippedFurniture.wallpaper === "forest_camp" && !isNight && (
+                    <div className="absolute top-2 right-12 opacity-35 text-xl select-none">
+                      🌲🌲
+                    </div>
+                  )}
+                  {equippedFurniture.wallpaper === "galaxy_stars" && (
+                    <div className="absolute inset-0 opacity-40 flex justify-around pt-3 select-none text-yellow-300 text-xs">
+                      <span>✨</span><span>⭐</span><span>✨</span>
+                    </div>
+                  )}
+                </div>
 
-            {/* Water bottle */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                if (gameState.isSleeping) return;
-                sound.playEat();
-                gameStateService.updateState((prev) => ({
-                  ...prev,
-                  happiness: Math.min(100, prev.happiness + 5),
-                  speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! 💧🐹", timestamp: Date.now(), duration: 3000 },
-                }));
-              }}
-              className="absolute top-12 left-3 z-20 cursor-pointer group flex flex-col items-center"
-              title="กดเพื่อดื่มน้ำ"
-            >
-              <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
-                <div className="w-full h-9 bg-sky-400"></div>
-                <div className="absolute -bottom-1.5 -right-1 w-2 h-3.5 bg-slate-400 rounded-xs rotate-45 border border-slate-500"></div>
-              </div>
-              <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
-            </div>
+                {/* Room Badge */}
+                <div className="relative z-10 flex items-center justify-between w-full">
+                  <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
+                    isNight || equippedFurniture.wallpaper === "galaxy_stars"
+                      ? "bg-slate-800/90 border-slate-600 text-indigo-200"
+                      : "bg-white/95 border-amber-200 text-amber-950"
+                  }`}>
+                    {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
+                  </span>
 
-            {/* Poop objects */}
-            <div className="absolute bottom-3 left-6 right-6 flex items-end pointer-events-auto z-20">
-              {Array.from({ length: gameState.poopCount || 0 }).map((_, idx) => (
+                  <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full">
+                    👆👆 ดับเบิ้ลแทปให้อาหารด่วน
+                  </span>
+                </div>
+
+                {/* Water bottle */}
                 <div
-                  key={idx}
                   onClick={(e) => {
                     e.stopPropagation();
-                    gameStateService.cleanCage();
+                    if (gameState.isSleeping) return;
+                    sound.playEat();
+                    gameStateService.updateState((prev) => ({
+                      ...prev,
+                      happiness: Math.min(100, prev.happiness + 5),
+                      speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! 💧🐹", timestamp: Date.now(), duration: 3000 },
+                    }));
                   }}
-                  className="cursor-pointer text-2xl filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
-                  style={{ animationDelay: `${idx * 0.2}s`, marginLeft: idx > 0 ? "10px" : "0" }}
-                  title="คลิกเพื่อเก็บอึ!"
+                  className="absolute top-12 left-3 z-20 cursor-pointer group flex flex-col items-center"
+                  title="กดเพื่อดื่มน้ำ"
                 >
-                  💩
+                  <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
+                    <div className="w-full h-9 bg-sky-400"></div>
+                    <div className="absolute -bottom-1.5 -right-1 w-2 h-3.5 bg-slate-400 rounded-xs rotate-45 border border-slate-500"></div>
+                  </div>
+                  <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
                 </div>
-              ))}
-            </div>
 
-            {/* Hamster Character */}
-            <div className="relative z-10 my-auto py-1" onClick={(e) => e.stopPropagation()}>
-              <HamsterCharacter
-                state={gameState}
-                onPet={() => gameStateService.pet()}
-              />
-            </div>
+                {/* 🏡 House / Bed Slot (มุมขวาบนของกรง) */}
+                {equippedFurniture.house && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sound.playClick();
+                      setIsDecorOpen(true);
+                    }}
+                    className="absolute top-10 right-3.5 z-20 cursor-pointer group flex flex-col items-center animate-cute-breathe"
+                    title="บ้าน/ที่นอน (คลิกเพื่อเปลี่ยน)"
+                  >
+                    <div className="w-12 h-12 bg-white/85 backdrop-blur-xs border-2 border-amber-300 rounded-2xl flex items-center justify-center text-3xl shadow-sm group-hover:scale-110 transition-transform">
+                      {equippedFurniture.house === "mushroom_house" && "🍄"}
+                      {equippedFurniture.house === "log_cabin" && "🪵"}
+                      {equippedFurniture.house === "cloud_bed" && "☁️"}
+                      {equippedFurniture.house === "fairy_castle" && "🏰"}
+                    </div>
+                    <span className="text-[9px] font-black text-amber-900 bg-amber-200/80 px-1.5 py-0.2 rounded-md mt-0.5 shadow-xs">
+                      {equippedFurniture.house === "mushroom_house" && "บ้านเห็ด"}
+                      {equippedFurniture.house === "log_cabin" && "บ้านไม้"}
+                      {equippedFurniture.house === "cloud_bed" && "เตียงเมฆ"}
+                      {equippedFurniture.house === "fairy_castle" && "ปราสาท"}
+                    </span>
+                  </div>
+                )}
 
-            {/* Floor decoration */}
-            <div className="relative z-10 self-end mr-2 flex items-center space-x-1 pointer-events-none">
-              <span className="text-xl">🌻</span>
-              <div className="w-12 h-2.5 bg-amber-900/20 rounded-full blur-[1px]"></div>
-            </div>
-          </div>
+                {/* 🎠 Toy Slot (มุมขวาล่างของกรง) */}
+                {equippedFurniture.toy && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sound.playPet();
+                      setIsDecorOpen(true);
+                    }}
+                    className="absolute bottom-11 right-3.5 z-20 cursor-pointer group flex flex-col items-center"
+                    title="ของเล่น (คลิกเพื่อเปลี่ยน)"
+                  >
+                    <div className="w-11 h-11 bg-white/85 backdrop-blur-xs border-2 border-amber-300 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">
+                      {equippedFurniture.toy === "wooden_swing" && <span>🪵</span>}
+                      {equippedFurniture.toy === "rainbow_tunnel" && <span>🌈</span>}
+                      {equippedFurniture.toy === "hamster_slide" && <span>🛝</span>}
+                      {equippedFurniture.toy === "amusement_ferris" && <span className="animate-spin" style={{ animationDuration: "10s" }}>🎡</span>}
+                    </div>
+                    <span className="text-[9px] font-black text-orange-900 bg-orange-200/80 px-1.5 py-0.2 rounded-md mt-0.5 shadow-xs">
+                      {equippedFurniture.toy === "wooden_swing" && "ชิงช้า"}
+                      {equippedFurniture.toy === "rainbow_tunnel" && "อุโมงค์"}
+                      {equippedFurniture.toy === "hamster_slide" && "สไลเดอร์"}
+                      {equippedFurniture.toy === "amusement_ferris" && "ชิงช้าสวรรค์"}
+                    </span>
+                  </div>
+                )}
+
+                {/* Poop objects */}
+                <div className="absolute bottom-3 left-6 right-6 flex items-end pointer-events-auto z-20">
+                  {Array.from({ length: gameState.poopCount || 0 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        gameStateService.cleanCage();
+                      }}
+                      className="cursor-pointer text-2xl filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
+                      style={{ animationDelay: `${idx * 0.2}s`, marginLeft: idx > 0 ? "10px" : "0" }}
+                      title="คลิกเพื่อเก็บอึ!"
+                    >
+                      💩
+                    </div>
+                  ))}
+                </div>
+
+                {/* 🧶 Rug Slot (พรมปูพื้นใต้ตัวน้อง) */}
+                {equippedFurniture.rug && (
+                  <div className="absolute top-[65%] left-1/2 -translate-x-1/2 z-0 pointer-events-none filter drop-shadow-xs">
+                    {equippedFurniture.rug === "fluffy_cream" && (
+                      <div className="w-48 sm:w-56 h-10 bg-amber-100/90 border-2 border-white rounded-full shadow-inner flex items-center justify-center text-xs opacity-75">
+                        ☁️ ☁️ ☁️
+                      </div>
+                    )}
+                    {equippedFurniture.rug === "clover_lawn" && (
+                      <div className="w-48 sm:w-56 h-10 bg-emerald-200/90 border-2 border-emerald-400 rounded-full shadow-inner flex items-center justify-center text-xs opacity-85">
+                        🍀 ☘️ 🍀 ☘️
+                      </div>
+                    )}
+                    {equippedFurniture.rug === "royal_velvet" && (
+                      <div className="w-48 sm:w-56 h-10 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 border-2 border-yellow-400 rounded-full shadow-inner flex items-center justify-center text-xs text-yellow-300">
+                        👑 👑 👑
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Hamster Character */}
+                <div className="relative z-10 my-auto py-1" onClick={(e) => e.stopPropagation()}>
+                  <HamsterCharacter
+                    state={gameState}
+                    onPet={() => gameStateService.pet()}
+                  />
+                </div>
+
+                {/* Floor decoration */}
+                <div className="relative z-10 self-end mr-2 flex items-center space-x-1 pointer-events-none">
+                  <span className="text-xl">🌻</span>
+                  <div className="w-12 h-2.5 bg-amber-900/20 rounded-full blur-[1px]"></div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ============================================================
               3. STATUS BARS
@@ -342,6 +446,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
             onToggleSleep={() => gameStateService.toggleSleep()}
             onOpenWheel={() => setIsWheelOpen(true)}
             onOpenFoodShop={() => setIsFoodShopOpen(true)}
+            onOpenDecor={() => setIsDecorOpen(true)}
             onOpenWardrobe={() => setIsWardrobeOpen(true)}
           />
 
@@ -355,7 +460,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1"
             >
               <Scroll className="w-3 h-3 text-amber-700" />
-              <span>ประวัติอัปเดต (v2.3)</span>
+              <span>ประวัติอัปเดต (v3.0)</span>
             </button>
           </div>
         </div>
@@ -379,6 +484,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
       <UpdateLogModal
         isOpen={isUpdateLogOpen}
         onClose={() => setIsUpdateLogOpen(false)}
+      />
+
+      <CageDecorModal
+        isOpen={isDecorOpen}
+        onClose={() => setIsDecorOpen(false)}
+        coins={gameState.coins}
+        userLevel={gameState.level}
+        furniture={gameState.furniture || {}}
+        onBuy={(id) => gameStateService.buyFurniture(id)}
+        onEquip={(cat, id) => gameStateService.toggleEquipFurniture(cat, id)}
+        onOpenBox={(boxId) => gameStateService.openMysteryBox(boxId)}
       />
 
       <HamsterPassModal
