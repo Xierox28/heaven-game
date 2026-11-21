@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Sparkles, MessageCircle } from "lucide-react";
 
 // Mood → animation class map
 const MOOD_ANIMATIONS = {
@@ -36,7 +36,7 @@ export default function HamsterCharacter({ state, onPet }) {
   useEffect(() => {
     if (!speechBubble?.text) return;
     setBubbleVisible(true);
-    const t = setTimeout(() => setBubbleVisible(false), speechBubble.duration || 5000);
+    const t = setTimeout(() => setBubbleVisible(false), speechBubble.duration || 6000);
     return () => clearTimeout(t);
   }, [speechBubble?.timestamp, speechBubble?.text]);
 
@@ -81,7 +81,6 @@ export default function HamsterCharacter({ state, onPet }) {
     if (onPet) onPet();
   };
 
-  // Choose animation
   const isEating = actionState === "eating";
   const isPetting = actionState === "petting";
 
@@ -94,32 +93,32 @@ export default function HamsterCharacter({ state, onPet }) {
   const sleepTint = isSleeping ? "brightness-70 saturate-50" : "";
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none">
+    <div className="relative flex flex-col items-center justify-center select-none pt-4">
       {/* ============================================================
-          SPEECH BUBBLE
+          1. SPEECH BUBBLE (ปรับตำแหน่งและสีให้อ่านชัดเจน 100% ไม่หลุดขอบ)
       ============================================================ */}
       {bubbleVisible && speechBubble?.text && (
-        <div className="absolute -top-20 z-30 max-w-[270px] animate-slide-in-down pointer-events-none">
-          <div className="relative bg-white/95 backdrop-blur-md text-slate-800 text-xs sm:text-sm font-bold px-4 py-2.5 rounded-2xl shadow-lg border-2 border-amber-200 text-center">
-            <span className="leading-snug block">{speechBubble.text}</span>
-            {/* tail */}
-            <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2">
-              <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-white"></div>
-            </div>
+        <div className="relative mb-3 z-30 max-w-[280px] sm:max-w-xs animate-slide-in-down">
+          <div className="relative bg-white text-slate-900 font-black text-xs sm:text-sm px-3.5 py-2 rounded-2xl shadow-xl border-2 border-amber-400 text-center flex items-center space-x-1.5">
+            <span className="text-amber-500 text-sm flex-shrink-0">💬</span>
+            <span className="leading-snug block flex-1 text-slate-950 font-extrabold">{speechBubble.text}</span>
           </div>
+          {/* Speech bubble tail pointing down to hamster */}
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[8px] border-t-amber-400"></div>
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[7px] border-t-white"></div>
         </div>
       )}
 
       {/* ============================================================
-          MOOD PARTICLES — Zzz / Tears / Angry Puffs / Stars
+          2. MOOD PARTICLES — Zzz / Tears / Angry Puffs / Stars
       ============================================================ */}
       {/* Sleeping Zzz */}
       {isSleeping && (
-        <div className="absolute -top-14 right-10 z-20 pointer-events-none space-y-0">
+        <div className="absolute top-2 right-8 z-20 pointer-events-none space-y-0">
           {["Z", "z", "z"].map((z, i) => (
             <div
               key={i}
-              className="text-indigo-300 font-black leading-none animate-[floatZzz_2.5s_ease-in-out_infinite]"
+              className="text-indigo-400 font-black leading-none animate-[floatZzz_2.5s_ease-in-out_infinite]"
               style={{ fontSize: `${18 - i * 4}px`, animationDelay: `${i * 0.7}s` }}
             >
               {z}
@@ -133,7 +132,7 @@ export default function HamsterCharacter({ state, onPet }) {
         <div
           key={tear.id}
           className="absolute z-25 pointer-events-none text-sky-400 text-xs animate-[floatTear_1s_ease-in_forwards]"
-          style={{ left: `${tear.x}%`, top: "55%" }}
+          style={{ left: `${tear.x}%`, top: "60%" }}
         >
           💧
         </div>
@@ -144,7 +143,7 @@ export default function HamsterCharacter({ state, onPet }) {
         <div
           key={puff.id}
           className="absolute z-25 pointer-events-none animate-[floatAngryPuff_0.8s_ease-out_forwards]"
-          style={{ [puff.side]: "-8px", top: "10%" }}
+          style={{ [puff.side]: "-8px", top: "20%" }}
         >
           <span className="text-red-500 font-black text-sm">💢</span>
         </div>
@@ -168,29 +167,29 @@ export default function HamsterCharacter({ state, onPet }) {
           className="absolute z-40 pointer-events-none animate-[floatHeart_1.2s_ease-out_forwards]"
           style={{ left: heart.x, top: heart.y }}
         >
-          <Heart className="w-5 h-5 fill-pink-400 stroke-pink-600 drop-shadow" />
+          <Heart className="w-5 h-5 fill-pink-500 stroke-pink-700 drop-shadow" />
         </div>
       ))}
 
-      {/* ============================================================
-          DIRTY / SICK STATUS BADGE
-      ============================================================ */}
+      {/* Dirty badge */}
       {(mood === "dirty" || cleanliness < 45 || poopCount > 1) && !isSleeping && (
-        <div className="absolute -top-5 -left-2 z-20 flex items-center space-x-0.5 animate-wiggle pointer-events-none">
+        <div className="absolute top-6 left-2 z-20 flex items-center space-x-0.5 animate-wiggle pointer-events-none">
           <span className="text-lg">🪰</span>
-          <span className="text-[9px] bg-amber-900/60 text-amber-100 px-1.5 py-0.5 rounded-full font-bold">มอมแมม~</span>
+          <span className="text-[10px] bg-amber-900 text-amber-100 px-2 py-0.5 rounded-full font-black shadow-xs">
+            มอมแมม~
+          </span>
         </div>
       )}
 
       {/* Happy glow */}
       {(mood === "happy" || mood === "excited") && !isSleeping && (
-        <div className="absolute -top-7 -right-3 z-20 pointer-events-none text-yellow-400 animate-pulse-glow">
-          <Sparkles className="w-5 h-5 fill-amber-300" />
+        <div className="absolute top-4 right-4 z-20 pointer-events-none text-yellow-500 animate-pulse-glow">
+          <Sparkles className="w-5 h-5 fill-amber-400" />
         </div>
       )}
 
       {/* ============================================================
-          HAMSTER BODY + WARDROBE LAYERS
+          3. HAMSTER BODY + WARDROBE LAYERS
       ============================================================ */}
       <div
         onClick={handleHamsterClick}
@@ -198,14 +197,14 @@ export default function HamsterCharacter({ state, onPet }) {
         title="กดที่น้องเพื่อลูบหัว"
       >
         {/* Shadow */}
-        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-44 h-8 bg-black/10 rounded-full blur-sm pointer-events-none"></div>
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-44 h-8 bg-amber-950/20 rounded-full blur-sm pointer-events-none"></div>
 
         {/* Hamster image */}
         <div className="relative w-52 h-36 sm:w-60 sm:h-40 flex items-center justify-center">
           <img
             src="/assets/heaven-hamster.png"
             alt="Nong Heaven Hamster"
-            className={`w-full h-full object-contain pixel-art filter transition-all duration-500 ${tintClass} ${sleepTint}`}
+            className={`w-full h-full object-contain pixel-art filter drop-shadow-md transition-all duration-500 ${tintClass} ${sleepTint}`}
             draggable="false"
           />
 
@@ -224,32 +223,31 @@ export default function HamsterCharacter({ state, onPet }) {
           {/* Sick / sad eye overlay (X eyes) */}
           {mood === "sick" && !isSleeping && (
             <div className="absolute top-[40%] left-0 right-0 flex justify-center gap-8 pointer-events-none">
-              <div className="text-[11px] font-black text-slate-700">×</div>
-              <div className="text-[11px] font-black text-slate-700">×</div>
+              <div className="text-[12px] font-black text-slate-800">×</div>
+              <div className="text-[12px] font-black text-slate-800">×</div>
             </div>
           )}
 
           {/* Angry eyebrows */}
           {mood === "angry" && !isSleeping && (
             <div className="absolute top-[32%] left-0 right-0 flex justify-center gap-7 pointer-events-none">
-              <div className="w-5 h-1 bg-slate-700 rounded-full rotate-[20deg]"></div>
-              <div className="w-5 h-1 bg-slate-700 rounded-full rotate-[-20deg]"></div>
+              <div className="w-5 h-1 bg-slate-800 rounded-full rotate-[20deg]"></div>
+              <div className="w-5 h-1 bg-slate-800 rounded-full rotate-[-20deg]"></div>
             </div>
           )}
 
           {/* ---- WARDROBE LAYERS ---- */}
-
           {/* OUTFIT */}
           {equipped.outfit === "hoodie_special" && (
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-40 z-10 pointer-events-none">
-              <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white/80 rounded-3xl h-11 flex items-center justify-around px-3 shadow-inner">
-                <span className="text-[9px] font-black text-white tracking-widest uppercase bg-white/30 px-2 py-0.5 rounded-full">HEAVEN ♡</span>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-40 z-10 pointer-events-none filter drop-shadow">
+              <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white rounded-3xl h-11 flex items-center justify-around px-3 shadow-inner">
+                <span className="text-[9px] font-black text-white tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">HEAVEN ♡</span>
               </div>
             </div>
           )}
           {equipped.outfit === "cute_bib" && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-              <div className="bg-yellow-200 border-2 border-amber-300 text-amber-700 text-xs px-3 py-1 rounded-b-2xl shadow-sm flex items-center space-x-1">
+              <div className="bg-yellow-200 border-2 border-amber-400 text-amber-800 text-xs px-3 py-1 rounded-b-2xl shadow-sm flex items-center space-x-1">
                 <span>⭐</span><span className="font-bold text-[9px]">BABY</span>
               </div>
             </div>
@@ -262,7 +260,7 @@ export default function HamsterCharacter({ state, onPet }) {
 
           {/* ACCESSORY */}
           {equipped.accessory === "red_bow" && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-2xl animate-pulse">🎀</div>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-2xl animate-pulse filter drop-shadow">🎀</div>
           )}
           {equipped.accessory === "bell_collar" && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none w-5 h-5 flex items-center justify-center">
@@ -315,8 +313,8 @@ export default function HamsterCharacter({ state, onPet }) {
       </div>
 
       {/* Hint label */}
-      <div className="mt-2.5 pointer-events-none">
-        <p className="text-xs text-amber-700/80 font-semibold bg-white/60 backdrop-blur-sm px-3 py-1 rounded-full shadow-xs inline-block border border-amber-100">
+      <div className="mt-2 pointer-events-none">
+        <p className="text-xs text-amber-900 font-bold bg-white/80 backdrop-blur-md px-3 py-1 rounded-full shadow-xs inline-block border border-amber-200">
           {isSleeping ? "💤 น้องกำลังหลับสบาย... พลังงานกำลังฟื้นฟู" : "👆 กดที่ตัวน้องเพื่อลูบหัวเล่นด้วยกัน"}
         </p>
       </div>

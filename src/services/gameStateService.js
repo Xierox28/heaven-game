@@ -1,87 +1,110 @@
 // ==============================================================================
-// 🐹 HEAVEN GAME STATE SERVICE — UPGRADED v2
+// 🐹 HEAVEN GAME STATE SERVICE — WITH USER & LEADERBOARD SYNC
 // ==============================================================================
 import { ref, onValue, set, get } from "firebase/database";
 import { database, isFirebaseConfigured } from "../firebaseConfig";
+import { authService } from "./authService";
 import {
   INITIAL_GAME_STATE,
   FOOD_ITEMS,
   WARDROBE_ITEMS,
   HAPPY_QUOTES,
-  ANGRY_QUOTES,
-  SAD_QUOTES,
   ACHIEVEMENT_DEFS,
 } from "../constants/gameData";
 import { sound } from "../utils/audio";
 
-const DB_NODE = "heaven_game";
-const LOCAL_STORAGE_KEY = "heaven_game_state_v2";
-
 class GameStateService {
   constructor() {
+    this.currentUser = authService.currentUser;
     this.currentState = this.loadInitialFromStorage();
     this.listeners = new Set();
+    this.achievementListeners = new Set();
     this.channel =
       typeof window !== "undefined" && window.BroadcastChannel
         ? new BroadcastChannel("heaven_game_channel")
         : null;
     this.decayInterval = null;
-    this.newlyUnlockedAchievements = [];
-    this.achievementListeners = new Set();
+    this.unsubFirebase = null;
+    this.unsubGlobal = null;
+
+    // Listen to Auth changes
+    authService.subscribe((user) => {
+      this.bindUser(user);
+    });
+
     this.init();
+  }
+
+  getStorageKey() {
+    return this.currentUser
+      ? `heaven_game_state_user_${this.currentUser.username}`
+      : "heaven_game_state_guest";
+  }
+
+  getDbPath() {
+    return this.currentUser
+      ? `players/${this.currentUser.username}/hamster`
+      : "heaven_game";
   }
 
   loadInitialFromStorage() {
     if (typeof window === "undefined") return { ...INITIAL_GAME_STATE };
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const stored = localStorage.getItem(this.getStorageKey());
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
-          ...INITIAL_GAME_STATE,
-          ...parsed,
-          equipped: { ...INITIAL_GAME_STATE.equipped, ...(parsed.equipped || {}) },
-          inventory: Array.isArray(parsed.inventory) ? parsed.inventory : INITIAL_GAME_STATE.inventory,
-          stats: { ...INITIAL_GAME_STATE.stats, ...(parsed.stats || {}) },
-          achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
-          speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(parsed.speechBubble || {}) },
-          announcement: { ...INITIAL_GAME_STATE.announcement, ...(parsed.announcement || {}) },
-          seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(parsed.seedRainEvent || {}) },
-        };
+        return this.mergeState(parsed);
       }
     } catch (e) {
       console.warn("Could not load from localStorage", e);
     }
-    return { ...INITIAL_GAME_STATE };
+    return {
+      ...INITIAL_GAME_STATE,
+      name: this.currentUser?.hamsterName || INITIAL_GAME_STATE.name,
+    };
   }
 
   saveToStorage(state) {
     if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.warn("Could not save to localStorage", e);
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(state));
+    } catch {}
+  }
+
+  mergeState(val) {
+    return {
+      ...INITIAL_GAME_STATE,
+      ...val,
+      name: val?.name || this.currentUser?.hamsterName || INITIAL_GAME_STATE.name,
+      equipped: { ...INITIAL_GAME_STATE.equipped, ...(val?.equipped || {}) },
+      inventory: Array.isArray(val?.inventory) ? val.inventory : INITIAL_GAME_STATE.inventory,
+      stats: { ...INITIAL_GAME_STATE.stats, ...(val?.stats || {}) },
+      achievements: Array.isArray(val?.achievements) ? val.achievements : [],
+      speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val?.speechBubble || {}) },
+      announcement: { ...INITIAL_GAME_STATE.announcement, ...(val?.announcement || {}) },
+      seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(val?.seedRainEvent || {}) },
+    };
+  }
+
+  bindUser(user) {
+    this.currentUser = user;
+    if (this.unsubFirebase) {
+      this.unsubFirebase();
+      this.unsubFirebase = null;
     }
+    // Load state for this user
+    this.currentState = this.loadInitialFromStorage();
+    if (user && user.hamsterName) {
+      this.currentState.name = user.hamsterName;
+    }
+    this.notify();
+    this.initFirebase();
   }
 
   init() {
-    if (isFirebaseConfigured() && database) {
-      const gameRef = ref(database, DB_NODE);
-      get(gameRef).then((snapshot) => {
-        if (!snapshot.exists()) {
-          set(gameRef, { ...INITIAL_GAME_STATE });
-        }
-      }).catch(() => {});
+    this.initFirebase();
 
-      onValue(gameRef, (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          const merged = this.mergeState(val);
-          this.applyIncomingState(merged, false);
-        }
-      }, () => {});
-    }
-
+    // Cross-tab sync
     if (this.channel) {
       this.channel.onmessage = (event) => {
         if (event.data?.type === "STATE_UPDATE") {
@@ -92,7 +115,7 @@ class GameStateService {
 
     if (typeof window !== "undefined") {
       window.addEventListener("storage", (e) => {
-        if (e.key === LOCAL_STORAGE_KEY && e.newValue) {
+        if (e.key === this.getStorageKey() && e.newValue) {
           try {
             this.applyIncomingState(JSON.parse(e.newValue), false);
           } catch {}
@@ -103,18 +126,62 @@ class GameStateService {
     this.startDecayTimer();
   }
 
-  mergeState(val) {
-    return {
-      ...INITIAL_GAME_STATE,
-      ...val,
-      equipped: { ...INITIAL_GAME_STATE.equipped, ...(val.equipped || {}) },
-      inventory: Array.isArray(val.inventory) ? val.inventory : INITIAL_GAME_STATE.inventory,
-      stats: { ...INITIAL_GAME_STATE.stats, ...(val.stats || {}) },
-      achievements: Array.isArray(val.achievements) ? val.achievements : [],
-      speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val.speechBubble || {}) },
-      announcement: { ...INITIAL_GAME_STATE.announcement, ...(val.announcement || {}) },
-      seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(val.seedRainEvent || {}) },
-    };
+  initFirebase() {
+    if (!isFirebaseConfigured() || !database) return;
+
+    const dbPath = this.getDbPath();
+    const gameRef = ref(database, dbPath);
+
+    // Initial check
+    get(gameRef).then((snapshot) => {
+      if (!snapshot.exists()) {
+        const initData = {
+          ...INITIAL_GAME_STATE,
+          name: this.currentUser?.hamsterName || INITIAL_GAME_STATE.name,
+        };
+        set(gameRef, initData);
+        this.updateLeaderboard(initData);
+      }
+    }).catch(() => {});
+
+    // Listen to player's hamster
+    this.unsubFirebase = onValue(gameRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        const merged = this.mergeState(val);
+        this.applyIncomingState(merged, false);
+      }
+    }, () => {});
+
+    // Listen to Global Events (Admin announcement, seed rain)
+    const globalRef = ref(database, "global_events");
+    this.unsubGlobal = onValue(globalRef, (snapshot) => {
+      const g = snapshot.val();
+      if (g) {
+        this.updateState((prev) => ({
+          ...prev,
+          announcement: g.announcement ? { ...prev.announcement, ...g.announcement } : prev.announcement,
+          seedRainEvent: g.seedRainEvent ? { ...prev.seedRainEvent, ...g.seedRainEvent } : prev.seedRainEvent,
+          speechBubble: g.globalSpeech && Date.now() - g.globalSpeech.timestamp < 10000
+            ? g.globalSpeech
+            : prev.speechBubble,
+        }));
+      }
+    }, () => {});
+  }
+
+  updateLeaderboard(state) {
+    if (!isFirebaseConfigured() || !database) return;
+    const username = this.currentUser?.username || "guest";
+    const lbRef = ref(database, `leaderboard/${username}`);
+    set(lbRef, {
+      username,
+      hamsterName: state.name || this.currentUser?.hamsterName || "น้องเฮเว่น",
+      level: state.level || 1,
+      coins: state.coins || 0,
+      happiness: state.happiness || 85,
+      updatedAt: Date.now(),
+    }).catch(() => {});
   }
 
   applyIncomingState(newState, broadcast = true) {
@@ -158,11 +225,7 @@ class GameStateService {
     }
 
     nextState.lastUpdated = Date.now();
-
-    // Recalculate mood based on stats
     nextState.mood = this.calculateMood(nextState);
-
-    // Check achievements
     nextState = this.checkAchievements(nextState);
 
     this.currentState = nextState;
@@ -175,15 +238,13 @@ class GameStateService {
 
     if (isFirebaseConfigured() && database) {
       try {
-        const gameRef = ref(database, DB_NODE);
+        const gameRef = ref(database, this.getDbPath());
         await set(gameRef, nextState);
+        this.updateLeaderboard(nextState);
       } catch {}
     }
   }
 
-  // ==============================================================================
-  // 🌡️ MOOD ENGINE
-  // ==============================================================================
   calculateMood(state) {
     const { hunger, happiness, cleanliness, energy, poopCount } = state;
     const avg = (hunger + happiness + cleanliness + energy) / 4;
@@ -196,20 +257,13 @@ class GameStateService {
     return "neutral";
   }
 
-  // ==============================================================================
-  // 🏆 ACHIEVEMENT ENGINE
-  // ==============================================================================
   checkAchievements(state) {
     const unearned = ACHIEVEMENT_DEFS.filter(
       (def) => !state.achievements.includes(def.id)
     );
 
     const newlyEarned = unearned.filter((def) => {
-      try {
-        return def.check(state.stats || {}, state);
-      } catch {
-        return false;
-      }
+      try { return def.check(state.stats || {}, state); } catch { return false; }
     });
 
     if (newlyEarned.length > 0) {
@@ -222,13 +276,9 @@ class GameStateService {
         achievements: [...state.achievements, ...newlyEarned.map((a) => a.id)],
       };
     }
-
     return state;
   }
 
-  // ==============================================================================
-  // ⏱️ DECAY TIMER
-  // ==============================================================================
   startDecayTimer() {
     if (this.decayInterval) clearInterval(this.decayInterval);
 
@@ -276,9 +326,7 @@ class GameStateService {
     }, 15000);
   }
 
-  // ==============================================================================
-  // 🎮 PLAYER ACTIONS
-  // ==============================================================================
+  // Actions
   feed(foodItem = FOOD_ITEMS[0]) {
     sound.playEat();
     return this.updateState((prev) => {
@@ -287,7 +335,7 @@ class GameStateService {
       const happiness = Math.min(100, prev.happiness + foodItem.happiness);
       const coins = prev.coins - foodItem.cost;
       const { exp, level, maxExp, leveledUp } = this.calculateExp(prev.exp + foodItem.exp, prev.level, prev.maxExp);
-      const newStats = { ...prev.stats, totalFed: (prev.stats?.totalFed || 0) + 1, totalCoinsEarned: (prev.stats?.totalCoinsEarned || 0) };
+      const newStats = { ...prev.stats, totalFed: (prev.stats?.totalFed || 0) + 1 };
 
       let newPoop = prev.poopCount;
       if (Math.random() < 0.3 && newPoop < 4) newPoop += 1;
@@ -308,7 +356,6 @@ class GameStateService {
   }
 
   quickFeed() {
-    // Double-tap quick feed — ให้อาหารเม็ดพื้นฐาน +10 hunger ทันที
     sound.playEat();
     return this.updateState((prev) => {
       const newStats = { ...prev.stats, totalFed: (prev.stats?.totalFed || 0) + 1 };
@@ -465,9 +512,7 @@ class GameStateService {
     }));
   }
 
-  // ==============================================================================
-  // 👑 ADMIN / GM COMMANDS
-  // ==============================================================================
+  // Admin GM Actions
   adminAddCoins(amount) {
     sound.playCoin();
     return this.updateState((prev) => ({
@@ -548,37 +593,58 @@ class GameStateService {
   adminSendSpeech(text) {
     if (!text?.trim()) return;
     sound.playNotification();
+    const speechData = { text: text.trim(), timestamp: Date.now(), duration: 7000 };
+
+    // Broadcast globally to everyone if online
+    if (isFirebaseConfigured() && database) {
+      set(ref(database, "global_events/globalSpeech"), speechData).catch(() => {});
+    }
+
     return this.updateState((prev) => ({
       ...prev,
-      speechBubble: { text: text.trim(), timestamp: Date.now(), duration: 7000 },
+      speechBubble: speechData,
     }));
   }
 
   adminSendAnnouncement(title, message) {
     if (!title || !message) return;
     sound.playNotification();
+    const announceData = { id: Date.now(), title: title.trim(), message: message.trim(), active: true, timestamp: Date.now() };
+
+    if (isFirebaseConfigured() && database) {
+      set(ref(database, "global_events/announcement"), announceData).catch(() => {});
+    }
+
     return this.updateState((prev) => ({
       ...prev,
-      announcement: { id: Date.now(), title: title.trim(), message: message.trim(), active: true, timestamp: Date.now() },
+      announcement: announceData,
     }));
   }
 
   adminTriggerSeedRain() {
     sound.playNotification();
+    const seedEvent = { id: Date.now(), active: true, timestamp: Date.now() };
+
+    if (isFirebaseConfigured() && database) {
+      set(ref(database, "global_events/seedRainEvent"), seedEvent).catch(() => {});
+    }
+
     return this.updateState((prev) => ({
       ...prev,
-      seedRainEvent: { id: Date.now(), active: true, timestamp: Date.now() },
+      seedRainEvent: seedEvent,
       speechBubble: { text: "ฝนเมล็ดทานตะวันตกลงมาแล้ววว! รีบจิ้มเก็บกันเร็วพวกเรา! 🌻🌧️", timestamp: Date.now(), duration: 5000 },
     }));
   }
 
   adminResetGame() {
-    return this.updateState(() => ({ ...INITIAL_GAME_STATE, lastDecayTime: Date.now(), lastUpdated: Date.now() }));
+    return this.updateState(() => ({
+      ...INITIAL_GAME_STATE,
+      name: this.currentUser?.hamsterName || INITIAL_GAME_STATE.name,
+      lastDecayTime: Date.now(),
+      lastUpdated: Date.now(),
+    }));
   }
 
-  // ==============================================================================
-  // 📈 EXP & LEVEL
-  // ==============================================================================
   calculateExp(currentExp, currentLevel, currentMaxExp) {
     let exp = currentExp;
     let level = currentLevel;
@@ -591,7 +657,6 @@ class GameStateService {
       maxExp = level * 100;
       leveledUp = true;
     }
-
     return { exp, level, maxExp, leveledUp };
   }
 }
