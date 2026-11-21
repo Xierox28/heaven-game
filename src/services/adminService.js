@@ -1,7 +1,7 @@
 // ==============================================================================
 // 👑 ADMIN GM SERVICE — MULTI-PLAYER MANAGEMENT & BROADCASTING
 // ==============================================================================
-import { ref, get, set, update, onValue } from "firebase/database";
+import { ref, get, set, update, onValue, remove } from "firebase/database";
 import { database, isFirebaseConfigured } from "../firebaseConfig";
 import { sound } from "../utils/audio";
 import { INITIAL_GAME_STATE, WARDROBE_ITEMS } from "../constants/gameData";
@@ -214,6 +214,54 @@ class AdminService {
     }
 
     return { success: true, newDiamonds };
+  }
+
+  // ปฏิเสธ / ยกเลิกคำขอเพชร
+  async rejectDiamondRequest(reqId, username, reply = "พี่ดิวบอกว่าเพชรหมด ไว้มาอ้อนใหม่น้า 🥺") {
+    sound.playClick();
+    if (username) {
+      await this.updatePlayerHamster(username, {
+        speechBubble: {
+          text: `งืออ... พี่ดิวปฏิเสธคำขอเพชร (${reply}) 💔`,
+          timestamp: Date.now(),
+          duration: 6000,
+        },
+      });
+    }
+
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, `global_events/diamond_requests/${reqId}/status`), "rejected");
+      await set(ref(database, `global_events/diamond_requests/${reqId}/reply`), reply);
+      await set(ref(database, `global_events/diamond_requests/${reqId}/rejectedAt`), Date.now());
+    }
+
+    return { success: true };
+  }
+
+  // ลบรายการคำขอเพชรทิ้งจากระบบทันที
+  async deleteDiamondRequest(reqId) {
+    sound.playClick();
+    if (isFirebaseConfigured() && database) {
+      await remove(ref(database, `global_events/diamond_requests/${reqId}`));
+    }
+    return { success: true };
+  }
+
+  // ล้างคำขอทั้งหมดที่อนุมัติหรือปฏิเสธแล้ว
+  async clearProcessedDiamondRequests() {
+    sound.playClick();
+    if (isFirebaseConfigured() && database) {
+      const snap = await get(ref(database, "global_events/diamond_requests"));
+      const data = snap.val();
+      if (data) {
+        for (const [id, req] of Object.entries(data)) {
+          if (req.status === "approved" || req.status === "rejected") {
+            await remove(ref(database, `global_events/diamond_requests/${id}`));
+          }
+        }
+      }
+    }
+    return { success: true };
   }
 
   // แจกเพชรให้ทุกคนพร้อมกัน (Mass Diamonds)

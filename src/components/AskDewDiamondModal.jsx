@@ -170,14 +170,26 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
                     <div className="flex items-center justify-between font-black">
                       <span className="text-cyan-800">ขอ +{r.amount} 💎</span>
                       <span className={`px-2 py-0.5 rounded-full ${
-                        r.status === "approved" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-800 border border-amber-300 animate-pulse"
+                        r.status === "approved"
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                          : r.status === "rejected"
+                          ? "bg-rose-100 text-rose-800 border border-rose-300"
+                          : "bg-amber-100 text-amber-800 border border-amber-300 animate-pulse"
                       }`}>
-                        {r.status === "approved" ? "✓ อนุมัติแล้ว!" : "⏳ รอพี่ดิวอนุมัติ"}
+                        {r.status === "approved"
+                          ? "✓ อนุมัติแล้ว!"
+                          : r.status === "rejected"
+                          ? "❌ พี่ดิวปฏิเสธ/ยกเลิก"
+                          : "⏳ รอพี่ดิวอนุมัติ"}
                       </span>
                     </div>
                     <p className="text-slate-600 font-semibold mt-1 italic">"{r.message}"</p>
                     {r.reply && (
-                      <p className="text-emerald-700 font-bold mt-1 bg-emerald-50 p-1 rounded-lg border border-emerald-200">
+                      <p className={`font-bold mt-1 p-1 rounded-lg border text-[10px] ${
+                        r.status === "rejected"
+                          ? "bg-rose-50 text-rose-700 border-rose-200"
+                          : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      }`}>
                         👑 พี่ดิว: {r.reply}
                       </p>
                     )}

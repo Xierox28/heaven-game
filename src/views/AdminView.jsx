@@ -28,7 +28,8 @@ import {
   Crown,
   Eye,
   EyeOff,
-  Scroll
+  Scroll,
+  Trash2
 } from "lucide-react";
 
 export default function AdminView({ onNavigateToPlayer }) {
@@ -46,6 +47,7 @@ export default function AdminView({ onNavigateToPlayer }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingPlayer, setLoadingPlayer] = useState(false);
   const [diamondRequests, setDiamondRequests] = useState([]);
+  const [reqFilter, setReqFilter] = useState("all");
   const [replyText, setReplyText] = useState("");
 
   useEffect(() => {
@@ -658,63 +660,213 @@ export default function AdminView({ onNavigateToPlayer }) {
         {/* ============================================================
             💎 VIP DIAMOND REQUESTS (รายการคำขออ้อนขอเพชร)
         ============================================================ */}
-        <section className="bg-slate-900/90 border border-cyan-800/60 rounded-3xl p-4 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
-              <span>💎</span>
-              <span>คำขออ้อนขอเพชรจากผู้เล่น (Diamond Requests)</span>
-              <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full text-[10px]">
-                {diamondRequests.length} รายการ
-              </span>
-            </h3>
-          </div>
+        {/* ============================================================
+            💎 VIP DIAMOND REQUESTS (รายการคำขออ้อนขอเพชร)
+        ============================================================ */}
+        {(() => {
+          const pendingCount = diamondRequests.filter((r) => r.status !== "approved" && r.status !== "rejected").length;
+          const approvedCount = diamondRequests.filter((r) => r.status === "approved").length;
+          const rejectedCount = diamondRequests.filter((r) => r.status === "rejected").length;
 
-          {diamondRequests.length === 0 ? (
-            <p className="text-xs text-slate-500 italic py-2">ยังไม่มีคำขอเพชรในขณะนี้</p>
-          ) : (
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {diamondRequests.map((req) => (
-                <div key={req.id} className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 text-xs flex flex-col space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-black text-cyan-300">@{req.username}</span>
-                      <span className="text-[10px] text-slate-400">({req.hamsterName})</span>
-                    </div>
-                    <span className="font-black text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full text-[11px]">
-                      ขอ +{req.amount} 💎
-                    </span>
-                  </div>
+          const filteredRequests = diamondRequests.filter((r) => {
+            if (reqFilter === "pending") return r.status !== "approved" && r.status !== "rejected";
+            if (reqFilter === "approved") return r.status === "approved";
+            if (reqFilter === "rejected") return r.status === "rejected";
+            return true;
+          });
 
-                  <p className="text-slate-300 italic bg-slate-900/60 p-2 rounded-xl border border-slate-800/60">
-                    "{req.message}"
-                  </p>
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800">
-                    <span className="text-[10px] text-slate-500">
-                      สถานะ: {req.status === "approved" ? "✓ อนุมัติแล้ว" : "⏳ รอดิวอนุมัติ"}
-                    </span>
-
-                    <div className="flex items-center space-x-1.5">
-                      {[req.amount || 100, 500, 1000].map((amt) => (
-                        <button
-                          key={amt}
-                          type="button"
-                          onClick={async () => {
-                            await adminService.approveDiamondRequest(req.id, req.username, amt);
-                            triggerFeedback(`อนุมัติแจก +${amt} 💎 ให้ @${req.username} แล้ว!`);
-                          }}
-                          className="px-2.5 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-                        >
-                          อนุมัติ +{amt} 💎
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+          return (
+            <section className="bg-slate-900/90 border border-cyan-800/60 rounded-3xl p-4 shadow-sm space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/50 pb-2.5">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
+                    <span>💎</span>
+                    <span>คำขออ้อนขอเพชรจากผู้เล่น (Diamond Requests)</span>
+                  </h3>
+                  <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full text-[10px] font-black">
+                    {diamondRequests.length} รายการ
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
+
+                {/* Quick Action: ล้างรายการที่เสร็จแล้ว */}
+                {(approvedCount > 0 || rejectedCount > 0) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await adminService.clearProcessedDiamondRequests();
+                      triggerFeedback("ล้างรายการคำขอที่อนุมัติ/ยกเลิกแล้วทั้งหมดเรียบร้อย!");
+                    }}
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold text-[10px] rounded-xl border border-rose-500/30 transition-all active:scale-95 cursor-pointer flex items-center space-x-1"
+                  >
+                    <Trash2 className="w-3 h-3 text-rose-400" />
+                    <span>ล้างรายการที่เสร็จแล้ว ({approvedCount + rejectedCount})</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                {[
+                  { id: "all", label: `ทั้งหมด (${diamondRequests.length})` },
+                  { id: "pending", label: `⌛ รอดิวอนุมัติ (${pendingCount})`, highlight: pendingCount > 0 },
+                  { id: "approved", label: `✓ อนุมัติแล้ว (${approvedCount})` },
+                  { id: "rejected", label: `❌ ปฏิเสธแล้ว (${rejectedCount})` },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setReqFilter(tab.id)}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                      reqFilter === tab.id
+                        ? "bg-cyan-500 text-slate-950 shadow-xs"
+                        : tab.highlight
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
+                        : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {filteredRequests.length === 0 ? (
+                <p className="text-xs text-slate-500 italic py-3 text-center">
+                  {reqFilter === "pending"
+                    ? "✨ ไม่มีคำขอที่ค้างอนุมัติ สบายใจได้!"
+                    : "ไม่มีรายการคำขอในหมวดนี้"}
+                </p>
+              ) : (
+                <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                  {filteredRequests.map((req) => {
+                    const isPending = req.status !== "approved" && req.status !== "rejected";
+                    const isApproved = req.status === "approved";
+                    const isRejected = req.status === "rejected";
+
+                    return (
+                      <div
+                        key={req.id}
+                        className={`bg-slate-950/80 border rounded-2xl p-3 text-xs flex flex-col space-y-2 transition-all ${
+                          isPending
+                            ? "border-cyan-800/80 shadow-xs"
+                            : isApproved
+                            ? "border-emerald-800/40 opacity-80"
+                            : "border-rose-900/40 opacity-70"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-black text-cyan-300">@{req.username}</span>
+                            <span className="text-[10px] text-slate-400">({req.hamsterName})</span>
+                          </div>
+
+                          <div className="flex items-center space-x-1.5">
+                            <span className="font-black text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full text-[11px]">
+                              ขอ +{req.amount} 💎
+                            </span>
+
+                            {/* ลบรายการทิ้งเดี่ยวๆ */}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await adminService.deleteDiamondRequest(req.id);
+                                triggerFeedback(`ลบรายการคำขอของ @${req.username} เรียบร้อย 🗑️`);
+                              }}
+                              className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                              title="ลบรายการนี้ทิ้ง"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <p className="text-slate-300 italic bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60 leading-relaxed">
+                          "{req.message}"
+                        </p>
+
+                        {req.reply && (
+                          <div className={`text-[11px] p-2 rounded-xl border ${
+                            isApproved
+                              ? "bg-emerald-950/40 text-emerald-300 border-emerald-800/40"
+                              : "bg-rose-950/40 text-rose-300 border-rose-800/40"
+                          }`}>
+                            <span className="font-black">👑 ตอบกลับ: </span>
+                            <span>{req.reply}</span>
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-800/80">
+                          <span className={`text-[10px] font-bold flex items-center space-x-1 ${
+                            isApproved
+                              ? "text-emerald-400"
+                              : isRejected
+                              ? "text-rose-400"
+                              : "text-amber-400"
+                          }`}>
+                            <span>สถานะ:</span>
+                            <span>
+                              {isApproved
+                                ? "✓ อนุมัติแล้ว"
+                                : isRejected
+                                ? "❌ ปฏิเสธ/ยกเลิกแล้ว"
+                                : "⏳ รอดิวอนุมัติ"}
+                            </span>
+                          </span>
+
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {isPending ? (
+                              <>
+                                {/* ปุ่มอนุมัติแจกเพชร */}
+                                {[req.amount || 100, 500, 1000].map((amt) => (
+                                  <button
+                                    key={amt}
+                                    type="button"
+                                    onClick={async () => {
+                                      await adminService.approveDiamondRequest(req.id, req.username, amt);
+                                      triggerFeedback(`อนุมัติแจก +${amt} 💎 ให้ @${req.username} แล้ว!`);
+                                    }}
+                                    className="px-2.5 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                                  >
+                                    อนุมัติ +{amt} 💎
+                                  </button>
+                                ))}
+
+                                {/* ❌ ปุ่มยกเลิก / ปฏิเสธรายการ */}
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    await adminService.rejectDiamondRequest(req.id, req.username);
+                                    triggerFeedback(`ยกเลิก/ปฏิเสธคำขอของ @${req.username} แล้ว ❌`);
+                                  }}
+                                  className="px-2.5 py-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center space-x-1 border border-rose-400/30"
+                                  title="ปฏิเสธคำขอนี้ พร้อมแจ้งน้องแฮมสเตอร์"
+                                >
+                                  <span>❌</span>
+                                  <span>ยกเลิก/ปฏิเสธ</span>
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  await adminService.deleteDiamondRequest(req.id);
+                                  triggerFeedback(`ลบรายการคำขอของ @${req.username} เรียบร้อย 🗑️`);
+                                }}
+                                className="px-2 py-0.5 bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-300 font-bold text-[10px] rounded-lg border border-slate-700 transition-colors cursor-pointer flex items-center space-x-1"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>ลบรายการนี้</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          );
+        })()}
 
         {/* ============================================================
             🌐 SERVER-WIDE ACTIONS (คำสั่งระดับเซิร์ฟเวอร์)
