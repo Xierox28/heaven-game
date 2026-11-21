@@ -14,6 +14,15 @@ import {
 import { FURNITURE_ITEMS, MYSTERY_BOXES } from "../constants/furnitureData";
 import { sound } from "../utils/audio";
 
+// Helper: แปลง Array หรือ Object จาก Firebase ({ 0: 'a', 1: 'b' }) ให้เป็น JavaScript Array เสมอ
+const toSafeArray = (val, defaultVal = []) => {
+  if (Array.isArray(val)) return val;
+  if (val && typeof val === "object") {
+    return Object.values(val);
+  }
+  return defaultVal;
+};
+
 class GameStateService {
   constructor() {
     this.currentUser = authService.currentUser;
@@ -56,6 +65,12 @@ class GameStateService {
         const parsed = JSON.parse(stored);
         return this.mergeState(parsed);
       }
+      // ตรวจสอบ Safety Backup สำรองกรณีข้อมูลหลักสูญหาย
+      const backup = localStorage.getItem(`heaven_safety_backup_${this.getStorageKey()}`);
+      if (backup) {
+        const parsedBackup = JSON.parse(backup);
+        return this.mergeState(parsedBackup);
+      }
     } catch (e) {
       console.warn("Could not load from localStorage", e);
     }
@@ -66,39 +81,102 @@ class GameStateService {
   }
 
   saveToStorage(state) {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !state) return;
     try {
-      localStorage.setItem(this.getStorageKey(), JSON.stringify(state));
+      const dataStr = JSON.stringify(state);
+      localStorage.setItem(this.getStorageKey(), dataStr);
+      // Safety Emergency Backup สำรองข้อมูลเมื่อมีความก้าวหน้า ป้องกันข้อมูลหาย 100%
+      if (state.coins > 0 || state.level > 1 || (state.inventory && state.inventory.length > 1)) {
+        localStorage.setItem(`heaven_safety_backup_${this.getStorageKey()}`, dataStr);
+      }
     } catch {}
   }
 
   mergeState(val) {
+    if (!val || typeof val !== "object") return this.currentState || { ...INITIAL_GAME_STATE };
+
+    // Anti-wipe: รวมไอเทมที่มีอยู่กับของใหม่เข้าด้วยกัน (ไม่มีทางที่ของจะหายเด็ดขาด)
+    const prevInventory = toSafeArray(this.currentState?.inventory, []);
+    const incomingInventory = toSafeArray(val?.inventory, INITIAL_GAME_STATE.inventory);
+    const mergedInventory = Array.from(new Set([...prevInventory, ...incomingInventory]));
+
+    const prevFurnitureInv = toSafeArray(this.currentState?.furniture?.inventory, []);
+    const incomingFurnitureInv = toSafeArray(val?.furniture?.inventory, INITIAL_GAME_STATE.furniture.inventory);
+    const mergedFurnitureInv = Array.from(new Set([...prevFurnitureInv, ...incomingFurnitureInv]));
+
+    const prevAchievements = toSafeArray(this.currentState?.achievements, []);
+    const incomingAchievements = toSafeArray(val?.achievements, []);
+    const mergedAchievements = Array.from(new Set([...prevAchievements, ...incomingAchievements]));
+
+    // Monotonic coins & level guard: ป้องกันเงินลดฮวบหรือเลเวลลดลงเอง
+    const currentCoins = Math.max(0, Number(this.currentState?.coins) || 0);
+    const incomingCoins = Math.max(0, Number(val?.coins) || 0);
+    const finalCoins = Math.max(currentCoins, incomingCoins);
+
+    const currentLevel = Math.max(1, Number(this.currentState?.level) || 1);
+    const incomingLevel = Math.max(1, Number(val?.level) || 1);
+    const finalLevel = Math.max(currentLevel, incomingLevel);
+
+    // Stats safety floors: ป้องกันค่าสถานะกลายเป็น 0 โดยมีพื้นต่ำสุดที่ปลอดภัย
+    const rawHunger = Number(val?.hunger ?? this.currentState?.hunger ?? 80);
+    const rawHappy = Number(val?.happiness ?? this.currentState?.happiness ?? 85);
+    const rawClean = Number(val?.cleanliness ?? this.currentState?.cleanliness ?? 75);
+    const rawEnergy = Number(val?.energy ?? this.currentState?.energy ?? 90);
+
     return {
       ...INITIAL_GAME_STATE,
       ...val,
-      name: val?.name || this.currentUser?.hamsterName || INITIAL_GAME_STATE.name,
-      equipped: { ...INITIAL_GAME_STATE.equipped, ...(val?.equipped || {}) },
-      inventory: Array.isArray(val?.inventory) ? val.inventory : INITIAL_GAME_STATE.inventory,
-      stats: { ...INITIAL_GAME_STATE.stats, ...(val?.stats || {}) },
-      achievements: Array.isArray(val?.achievements) ? val.achievements : [],
-      pass: { ...INITIAL_GAME_STATE.pass, ...(val?.pass || {}) },
-      streak: { ...INITIAL_GAME_STATE.streak, ...(val?.streak || {}) },
-      speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val?.speechBubble || {}) },
+      name: val?.name || this.currentUser?.hamsterName || this.currentState?.name || INITIAL_GAME_STATE.name,
+      level: finalLevel,
+      maxExp: finalLevel * 100,
+      coins: finalCoins,
+      hunger: Math.max(20, Math.min(100, isNaN(rawHunger) ? 80 : rawHunger)),
+      happiness: Math.max(20, Math.min(100, isNaN(rawHappy) ? 85 : rawHappy)),
+      cleanliness: Math.max(20, Math.min(100, isNaN(rawClean) ? 75 : rawClean)),
+      energy: Math.max(15, Math.min(100, isNaN(rawEnergy) ? 90 : rawEnergy)),
+      equipped: {
+        hat: val?.equipped?.hat !== undefined ? val.equipped.hat : (this.currentState?.equipped?.hat ?? null),
+        accessory: val?.equipped?.accessory !== undefined ? val.equipped.accessory : (this.currentState?.equipped?.accessory ?? null),
+        outfit: val?.equipped?.outfit !== undefined ? val.equipped.outfit : (this.currentState?.equipped?.outfit ?? null),
+      },
+      inventory: mergedInventory.length > 0 ? mergedInventory : INITIAL_GAME_STATE.inventory,
+      stats: { ...INITIAL_GAME_STATE.stats, ...(this.currentState?.stats || {}), ...(val?.stats || {}) },
+      achievements: mergedAchievements,
+      pass: {
+        ...INITIAL_GAME_STATE.pass,
+        ...(this.currentState?.pass || {}),
+        ...(val?.pass || {}),
+        claimedFree: toSafeArray(val?.pass?.claimedFree ?? this.currentState?.pass?.claimedFree, []),
+        claimedGold: toSafeArray(val?.pass?.claimedGold ?? this.currentState?.pass?.claimedGold, []),
+        claimedQuests: toSafeArray(val?.pass?.claimedQuests ?? this.currentState?.pass?.claimedQuests, []),
+      },
+      streak: {
+        ...INITIAL_GAME_STATE.streak,
+        ...(this.currentState?.streak || {}),
+        ...(val?.streak || {}),
+        claimedDays: toSafeArray(val?.streak?.claimedDays ?? this.currentState?.streak?.claimedDays, []),
+      },
+      speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val?.speechBubble || this.currentState?.speechBubble || {}) },
       announcement: { ...INITIAL_GAME_STATE.announcement, ...(val?.announcement || {}) },
       seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(val?.seedRainEvent || {}) },
       furniture: {
         equipped: {
-          ...INITIAL_GAME_STATE.furniture.equipped,
-          ...(val?.furniture?.equipped || {}),
+          house: val?.furniture?.equipped?.house !== undefined ? val.furniture.equipped.house : (this.currentState?.furniture?.equipped?.house ?? null),
+          toy: val?.furniture?.equipped?.toy !== undefined ? val.furniture.equipped.toy : (this.currentState?.furniture?.equipped?.toy ?? null),
+          wallpaper: val?.furniture?.equipped?.wallpaper || this.currentState?.furniture?.equipped?.wallpaper || "default_grid",
+          rug: val?.furniture?.equipped?.rug !== undefined ? val.furniture.equipped.rug : (this.currentState?.furniture?.equipped?.rug ?? null),
         },
         positions: {
-          ...INITIAL_GAME_STATE.furniture.positions,
+          house: { x: 18, y: 3 },
+          toy: { x: 82, y: 3 },
+          rug: { x: 50, y: 6 },
+          ...(this.currentState?.furniture?.positions || {}),
           ...(val?.furniture?.positions || {}),
         },
-        inventory: Array.isArray(val?.furniture?.inventory)
-          ? val.furniture.inventory
-          : INITIAL_GAME_STATE.furniture.inventory,
+        inventory: mergedFurnitureInv.length > 0 ? mergedFurnitureInv : INITIAL_GAME_STATE.furniture.inventory,
       },
+      lastDecayTime: Date.now(),
+      lastUpdated: Math.max(Number(val?.lastUpdated) || 0, Number(this.currentState?.lastUpdated) || 0, Date.now()),
     };
   }
 
@@ -389,8 +467,12 @@ class GameStateService {
     this.decayInterval = setInterval(() => {
       const now = Date.now();
       const last = this.currentState.lastDecayTime || now;
-      const elapsedSeconds = Math.max(0, (now - last) / 1000);
+      let elapsedSeconds = Math.max(0, (now - last) / 1000);
       if (elapsedSeconds < 10) return;
+
+      // 🛡️ SAFETY CAP: จำกัดเวลาลดค่าสถานะไม่เกิน 60 วินาทีต่อครั้ง
+      // ป้องกันอาการค่าสถานะลดฮวบเหลือ 0 ทันทีเมื่อสลับแท็บหรือเปิดเกมทิ้งไว้
+      elapsedSeconds = Math.min(elapsedSeconds, 60);
 
       this.updateState((prev) => {
         let { hunger, happiness, cleanliness, energy, poopCount, isSleeping } = prev;
@@ -407,18 +489,19 @@ class GameStateService {
         if (isSleeping) {
           // พลังงานเติมเร็ว 10 วินาทีเต็ม (+10 ต่อวินาที)
           energy = Math.min(100, energy + elapsedSeconds * 10);
-          hunger = Math.max(0, hunger - elapsedSeconds * 0.03);
-          cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.02 * (1 - cleanDecayReduction));
+          hunger = Math.max(20, hunger - elapsedSeconds * 0.015);
+          cleanliness = Math.max(20, cleanliness - elapsedSeconds * 0.01 * (1 - cleanDecayReduction));
         } else {
-          hunger = Math.max(0, hunger - elapsedSeconds * 0.08);
-          happiness = Math.max(0, happiness - elapsedSeconds * 0.06 * (1 - happyDecayReduction));
-          cleanliness = Math.max(0, cleanliness - elapsedSeconds * 0.05 * (1 - cleanDecayReduction));
-          energy = Math.max(0, energy - elapsedSeconds * 0.07);
+          // อัตราการลดที่สมดุล พร้อม Safety Floor ขั้นต่ำ 20% (ไม่มีทางลดฮวบจนเหลือ 0)
+          hunger = Math.max(25, hunger - elapsedSeconds * 0.025);
+          happiness = Math.max(25, happiness - elapsedSeconds * 0.02 * (1 - happyDecayReduction));
+          cleanliness = Math.max(20, cleanliness - elapsedSeconds * 0.02 * (1 - cleanDecayReduction));
+          energy = Math.max(20, energy - elapsedSeconds * 0.025);
 
-          const poopChance = 0.15 * (1 - cleanDecayReduction);
-          if (cleanliness < 60 && poopCount < 4 && Math.random() < poopChance) {
-            poopCount = Math.min(5, poopCount + 1);
-            cleanliness = Math.max(0, cleanliness - 15);
+          const poopChance = 0.06 * (1 - cleanDecayReduction);
+          if (cleanliness < 50 && poopCount < 4 && Math.random() < poopChance) {
+            poopCount = Math.min(4, poopCount + 1);
+            cleanliness = Math.max(15, cleanliness - 5);
           }
         }
 
