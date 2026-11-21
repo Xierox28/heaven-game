@@ -189,9 +189,13 @@ class GameStateService {
         ...(this.currentState?.wardrobeOffsets || {}),
         ...(val?.wardrobeOffsets || {}),
       },
-      // 🐹 Breeds & Personalities (v4.0)
+      // 🐹 Breeds & Personalities (v4.0) — Auto-unlock by Level Milestone
       breed: val?.breed || this.currentState?.breed || INITIAL_GAME_STATE.breed,
-      unlockedBreeds: toSafeArray(val?.unlockedBreeds ?? this.currentState?.unlockedBreeds, INITIAL_GAME_STATE.unlockedBreeds),
+      unlockedBreeds: (() => {
+        const raw = toSafeArray(val?.unlockedBreeds ?? this.currentState?.unlockedBreeds, INITIAL_GAME_STATE.unlockedBreeds);
+        const levelUnlocked = HAMSTER_BREEDS.filter((b) => finalLevel >= b.reqLevel).map((b) => b.id);
+        return Array.from(new Set([...raw, ...levelUnlocked]));
+      })(),
       personality: val?.personality || this.currentState?.personality || INITIAL_GAME_STATE.personality,
       lastDecayTime: Date.now(),
       lastUpdated: Math.max(Number(val?.lastUpdated) || 0, Number(this.currentState?.lastUpdated) || 0, Date.now()),
@@ -1024,13 +1028,22 @@ class GameStateService {
   }
 
   setBreed(breedId) {
+    const breedDef = HAMSTER_BREEDS.find((b) => b.id === breedId);
+    if (!breedDef) return;
     const unlocked = toSafeArray(this.currentState?.unlockedBreeds, ["winter_white"]);
-    if (!unlocked.includes(breedId)) return;
+    const isLevelMet = (this.currentState?.level || 1) >= (breedDef.reqLevel || 1);
+    if (!unlocked.includes(breedId) && !isLevelMet) return;
+
     sound.playClick();
-    this.updateState((prev) => ({
-      ...prev,
-      breed: breedId,
-    }));
+    this.updateState((prev) => {
+      const prevUnlocked = toSafeArray(prev.unlockedBreeds, ["winter_white"]);
+      const nextUnlocked = Array.from(new Set([...prevUnlocked, breedId]));
+      return {
+        ...prev,
+        breed: breedId,
+        unlockedBreeds: nextUnlocked,
+      };
+    });
   }
 
   setPersonality(personalityId) {

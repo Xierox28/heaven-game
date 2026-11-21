@@ -195,9 +195,12 @@ export default function WardrobeModal({
               </h4>
               <div className="space-y-2">
                 {HAMSTER_BREEDS.map((b) => {
-                  const isOwned = unlockedBreeds.includes(b.id);
+                  const safeUnlocked = Array.isArray(unlockedBreeds)
+                    ? unlockedBreeds
+                    : Object.values(unlockedBreeds || {});
+                  const isOwned = (userLevel >= b.reqLevel) || safeUnlocked.includes(b.id);
                   const isCurrent = currentBreed === b.id;
-                  const canAfford = coins >= b.cost;
+                  const canAfford = coins >= (b.cost || 0);
                   const meetsLevel = userLevel >= b.reqLevel;
 
                   return (

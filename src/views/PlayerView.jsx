@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star, Scroll } from "lucide-react";
+import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star, Scroll, Check, Move, RotateCcw } from "lucide-react";
 
 import { gameStateService } from "../services/gameStateService";
 import { authService } from "../services/authService";
@@ -79,11 +79,58 @@ export default function PlayerView({ onNavigateToAdmin }) {
     ...(gameState.furniture?.scales || {}),
   };
 
+  const cageRef = useRef(null);
+  const [draggingDecor, setDraggingDecor] = useState(null);
+
+  const handlePointerDownDecor = (category, e) => {
+    if (!isMoveMode) return;
+    e.stopPropagation();
+    sound.playClick();
+    setSelectedDecor(category);
+    setDraggingDecor(category);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerMoveCage = (e) => {
+    if (!isMoveMode || !draggingDecor || !cageRef.current) return;
+    const rect = cageRef.current.getBoundingClientRect();
+    const rawX = ((e.clientX - rect.left) / rect.width) * 100;
+    const rawY = ((rect.bottom - e.clientY) / rect.height) * 100;
+
+    const newX = Math.round(Math.max(6, Math.min(94, rawX)));
+    const newY = Math.round(Math.max(1, Math.min(36, rawY)));
+
+    gameStateService.updateState((prev) => ({
+      ...prev,
+      furniture: {
+        ...prev.furniture,
+        positions: {
+          house: { x: 18, y: 3 },
+          toy: { x: 82, y: 3 },
+          rug: { x: 50, y: 6 },
+          ...(prev.furniture?.positions || {}),
+          [draggingDecor]: { x: newX, y: newY },
+        },
+      },
+    }));
+  };
+
+  const handlePointerUpCage = (e) => {
+    if (draggingDecor) {
+      setDraggingDecor(null);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+  };
+
   const handleNudgeDecor = (category, dx, dy) => {
     sound.playClick();
     const current = currentPositions[category] || { x: 50, y: 5 };
-    const newX = Math.max(8, Math.min(92, current.x + dx));
-    const newY = Math.max(1, Math.min(38, current.y + dy));
+    const newX = Math.max(6, Math.min(94, current.x + dx));
+    const newY = Math.max(1, Math.min(36, current.y + dy));
 
     gameStateService.updateState((prev) => ({
       ...prev,
@@ -210,132 +257,160 @@ export default function PlayerView({ onNavigateToAdmin }) {
         <div className="w-full max-w-md space-y-3">
 
           {/* ============================================================
-              1. HEADER BAR
+              1. HEADER BAR / STUDIO HEADER
           ============================================================ */}
-          <header className={`bg-white/95 backdrop-blur-md border border-amber-200/90 rounded-3xl px-3.5 py-2.5 shadow-sm flex items-center justify-between ${isNight ? "bg-slate-900/95 border-slate-700 text-white" : "text-slate-900"}`}>
-            {/* Logo + User info */}
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 border-2 border-white/80 flex items-center justify-center text-xl shadow-xs">
-                  🐹
+          {isMoveMode ? (
+            <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl p-3.5 shadow-md flex items-center justify-between animate-slide-in-down border-2 border-white/60">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shadow-inner">
+                  🏡
                 </div>
-                <div
-                  className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                    isCloud ? "bg-emerald-400" : "bg-blue-400"
-                  }`}
-                  title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
-                ></div>
+                <div>
+                  <h2 className="text-sm font-black leading-tight flex items-center">
+                    <span>สตูดิโอจัดกรง (Room Studio)</span>
+                  </h2>
+                  <p className="text-[10px] text-amber-100 font-bold mt-0.5">
+                    🖐️ แตะลากของบนกรงได้โดยตรง • ขยายใหญ่ได้ไม่บังน้อง
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setIsMoveMode(false);
+                }}
+                className="bg-white text-amber-950 hover:bg-amber-100 px-3.5 py-1.5 rounded-2xl font-black text-xs shadow-sm flex items-center space-x-1 active:scale-95 transition-all cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                <span>เสร็จสิ้น</span>
+              </button>
+            </div>
+          ) : (
+            <>
+              <header className={`bg-white/95 backdrop-blur-md border border-amber-200/90 rounded-3xl px-3.5 py-2.5 shadow-sm flex items-center justify-between ${isNight ? "bg-slate-900/95 border-slate-700 text-white" : "text-slate-900"}`}>
+                {/* Logo + User info */}
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 border-2 border-white/80 flex items-center justify-center text-xl shadow-xs">
+                      🐹
+                    </div>
+                    <div
+                      className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                        isCloud ? "bg-emerald-400" : "bg-blue-400"
+                      }`}
+                      title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
+                    ></div>
+                  </div>
 
-              <div>
-                <h1 className="font-black text-sm leading-tight text-amber-950 flex items-center">
-                  <span>{gameState.name || "Heaven (เฮเว่น)"}</span>
-                </h1>
-                {/* Username / Account button */}
+                  <div>
+                    <h1 className="font-black text-sm leading-tight text-amber-950 flex items-center">
+                      <span>{gameState.name || "Heaven (เฮเว่น)"}</span>
+                    </h1>
+                    {/* Username / Account button */}
+                    <button
+                      onClick={() => setIsAuthOpen(true)}
+                      className="flex items-center space-x-1 text-[11px] font-bold text-amber-800 hover:text-amber-950 transition-colors mt-0.5"
+                    >
+                      <User className="w-3 h-3 text-amber-600" />
+                      <span className="underline decoration-amber-400 underline-offset-2">
+                        {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right actions */}
+                <div className="flex items-center space-x-1.5">
+                  {/* Coin wallet */}
+                  <div className="bg-gradient-to-r from-amber-300 to-yellow-300 border border-amber-400 rounded-xl px-2.5 py-1 flex items-center space-x-1 shadow-xs">
+                    <span className="text-sm">🌻</span>
+                    <span className="font-black text-xs text-amber-950">{gameState.coins}</span>
+                  </div>
+
+                  {/* Leaderboard Button 🏆 */}
+                  <button
+                    onClick={() => setIsLeaderboardOpen(true)}
+                    className="p-2 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400 transition-all active:scale-90 shadow-xs"
+                    title="ตารางอันดับผู้เล่น (Leaderboard)"
+                  >
+                    <Trophy className="w-4 h-4 fill-amber-700 text-amber-950" />
+                  </button>
+
+                  {/* Update Log Button 📜 */}
+                  <button
+                    onClick={() => setIsUpdateLogOpen(true)}
+                    className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300 transition-all active:scale-90 shadow-xs"
+                    title="ประวัติการอัปเดต (Update Log v4.0)"
+                  >
+                    <Scroll className="w-4 h-4 text-amber-800" />
+                  </button>
+
+                  {/* Mute button */}
+                  <button
+                    onClick={toggleSound}
+                    className="p-2 bg-amber-100/90 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300/70 transition-all active:scale-90"
+                    title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
+                  >
+                    {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-amber-700" />}
+                  </button>
+
+                  {/* GM button */}
+                  <button
+                    onClick={onNavigateToAdmin}
+                    className="p-2 bg-amber-500 hover:bg-amber-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-xs"
+                    title="แผงควบคุม GM"
+                  >
+                    <Shield className="w-4 h-4" />
+                  </button>
+                </div>
+              </header>
+
+              {/* ⭐ PASS & DAILY STREAK QUICK BANNER */}
+              <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setIsAuthOpen(true)}
-                  className="flex items-center space-x-1 text-[11px] font-bold text-amber-800 hover:text-amber-950 transition-colors mt-0.5"
+                  onClick={() => setIsPassOpen(true)}
+                  className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
                 >
-                  <User className="w-3 h-3 text-amber-600" />
-                  <span className="underline decoration-amber-400 underline-offset-2">
-                    {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl group-hover:scale-110 transition-transform">🎟️</span>
+                    <div>
+                      <div className="text-[10px] font-black uppercase text-amber-900 tracking-wider">SEASON 1</div>
+                      <div className="text-xs font-black leading-tight text-slate-950">Hamster Pass</div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-white/80 font-black px-2 py-0.5 rounded-full border border-amber-300">
+                    เควสต์
                   </span>
                 </button>
-              </div>
-            </div>
 
-            {/* Right actions */}
-            <div className="flex items-center space-x-1.5">
-              {/* Coin wallet */}
-              <div className="bg-gradient-to-r from-amber-300 to-yellow-300 border border-amber-400 rounded-xl px-2.5 py-1 flex items-center space-x-1 shadow-xs">
-                <span className="text-sm">🌻</span>
-                <span className="font-black text-xs text-amber-950">{gameState.coins}</span>
-              </div>
-
-              {/* Leaderboard Button 🏆 */}
-              <button
-                onClick={() => setIsLeaderboardOpen(true)}
-                className="p-2 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400 transition-all active:scale-90 shadow-xs"
-                title="ตารางอันดับผู้เล่น (Leaderboard)"
-              >
-                <Trophy className="w-4 h-4 fill-amber-700 text-amber-950" />
-              </button>
-
-              {/* Update Log Button 📜 */}
-              <button
-                onClick={() => setIsUpdateLogOpen(true)}
-                className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300 transition-all active:scale-90 shadow-xs"
-                title="ประวัติการอัปเดต (Update Log v2.3)"
-              >
-                <Scroll className="w-4 h-4 text-amber-800" />
-              </button>
-
-              {/* Mute button */}
-              <button
-                onClick={toggleSound}
-                className="p-2 bg-amber-100/90 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300/70 transition-all active:scale-90"
-                title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
-              >
-                {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-amber-700" />}
-              </button>
-
-              {/* GM button */}
-              <button
-                onClick={onNavigateToAdmin}
-                className="p-2 bg-amber-500 hover:bg-amber-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-xs"
-                title="แผงควบคุม GM"
-              >
-                <Shield className="w-4 h-4" />
-              </button>
-            </div>
-          </header>
-
-          {/* ============================================================
-              ⭐ PASS & DAILY STREAK QUICK BANNER
-          ============================================================ */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setIsPassOpen(true)}
-              className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
-            >
-              <div className="flex items-center space-x-2">
-                <span className="text-2xl group-hover:scale-110 transition-transform">🎟️</span>
-                <div>
-                  <div className="text-[10px] font-black uppercase text-amber-900 tracking-wider">SEASON 1</div>
-                  <div className="text-xs font-black leading-tight text-slate-950">Hamster Pass</div>
-                </div>
-              </div>
-              <span className="text-[10px] bg-white/80 font-black px-2 py-0.5 rounded-full border border-amber-300">
-                เควสต์
-              </span>
-            </button>
-
-            <button
-              onClick={() => setIsPassOpen(true)}
-              className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
-            >
-              <div className="flex items-center space-x-2">
-                <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
-                <div>
-                  <div className="text-[10px] font-black uppercase text-purple-100 tracking-wider">
-                    {hasStreakToClaim ? "ยังไม่เช็คชื่อ" : "เช็คชื่อแล้ว"}
+                <button
+                  onClick={() => setIsPassOpen(true)}
+                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
+                    <div>
+                      <div className="text-[10px] font-black uppercase text-purple-100 tracking-wider">
+                        {hasStreakToClaim ? "ยังไม่เช็คชื่อ" : "เช็คชื่อแล้ว"}
+                      </div>
+                      <div className="text-xs font-black leading-tight">
+                        วันที่ {streakDays}/7 วัน
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs font-black leading-tight">
-                    วันที่ {streakDays}/7 วัน
-                  </div>
-                </div>
+                  {hasStreakToClaim ? (
+                    <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs">
+                      รับ!
+                    </span>
+                  ) : (
+                    <span className="text-[9px] bg-white/30 text-white font-black px-2 py-0.5 rounded-full">
+                      ✓
+                    </span>
+                  )}
+                </button>
               </div>
-              {hasStreakToClaim ? (
-                <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs">
-                  รับ!
-                </span>
-              ) : (
-                <span className="text-[9px] bg-white/30 text-white font-black px-2 py-0.5 rounded-full">
-                  ✓
-                </span>
-              )}
-            </button>
-          </div>
+            </>
+          )}
 
           {/* ============================================================
               2. CAGE STAGE
@@ -355,9 +430,13 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
             return (
               <div
-                className={`relative w-full rounded-3xl border-4 shadow-lg min-h-[330px] flex flex-col justify-between p-4 cursor-pointer transition-all duration-700 ${wallpaperStyle}`}
+                ref={cageRef}
+                onPointerMove={handlePointerMoveCage}
+                onPointerUp={handlePointerUpCage}
+                onPointerCancel={handlePointerUpCage}
+                className={`relative w-full rounded-3xl border-4 shadow-lg ${isMoveMode ? "min-h-[380px] sm:min-h-[420px] select-none" : "min-h-[330px]"} flex flex-col justify-between p-4 cursor-pointer transition-all duration-500 ${wallpaperStyle}`}
                 onClick={handleCageTap}
-                title="ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"
+                title={isMoveMode ? "สตูดิโอจัดห้อง: แตะลากของได้โดยตรง" : "ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"}
               >
                 {/* Background grid pattern */}
                 <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
@@ -381,79 +460,79 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   )}
                 </div>
 
-                {/* Room Badge & Decor Action */}
-                <div className="relative z-10 flex items-center justify-between w-full">
-                  <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
-                    isNight || equippedFurniture.wallpaper === "galaxy_stars"
-                      ? "bg-slate-800/90 border-slate-600 text-indigo-200"
-                      : "bg-white/95 border-amber-200 text-amber-950"
-                  }`}>
-                    {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
-                  </span>
-
-                  <div className="flex items-center space-x-1.5">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        sound.playClick();
-                        setIsDecorOpen(true);
-                      }}
-                      className="px-2.5 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
-                      title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
-                    >
-                      <span>🛋️</span>
-                      <span>แต่งห้อง</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        sound.playClick();
-                        setIsMoveMode(!isMoveMode);
-                      }}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border ${
-                        isMoveMode
-                          ? "bg-amber-500 text-white border-amber-600 shadow-amber-300 shadow-sm"
-                          : "bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300"
-                      }`}
-                      title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
-                    >
-                      <span>📍</span>
-                      <span>{isMoveMode ? "เสร็จสิ้น" : "ย้ายของ"}</span>
-                    </button>
-
-                    <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full hidden sm:inline-block">
-                      👆👆 ดับเบิ้ลแทปให้อาหารด่วน
+                {/* Room Badge & Decor Action (Hidden in Move Mode to prevent blocking) */}
+                {!isMoveMode && (
+                  <div className="relative z-10 flex items-center justify-between w-full">
+                    <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
+                      isNight || equippedFurniture.wallpaper === "galaxy_stars"
+                        ? "bg-slate-800/90 border-slate-600 text-indigo-200"
+                        : "bg-white/95 border-amber-200 text-amber-950"
+                    }`}>
+                      {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
                     </span>
+
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playClick();
+                          setIsDecorOpen(true);
+                        }}
+                        className="px-2.5 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
+                      >
+                        <span>🛋️</span>
+                        <span>แต่งห้อง</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playClick();
+                          setIsMoveMode(true);
+                        }}
+                        className="px-2.5 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300"
+                        title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
+                      >
+                        <span>📍</span>
+                        <span>ย้ายของ</span>
+                      </button>
+
+                      <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                        👆👆 ดับเบิ้ลแทปให้อาหารด่วน
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* พื้นห้อง / Cage Floor Ground Plane (รองรับเฟอร์นิเจอร์อย่างสมจริง) */}
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-amber-200/35 via-amber-100/15 to-transparent pointer-events-none rounded-b-2xl border-b-2 border-amber-300/30"></div>
 
-                {/* Water bottle */}
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (gameState.isSleeping) return;
-                    sound.playEat();
-                    gameStateService.updateState((prev) => ({
-                      ...prev,
-                      happiness: Math.min(100, prev.happiness + 5),
-                      speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! 💧🐹", timestamp: Date.now(), duration: 3000 },
-                    }));
-                  }}
-                  className="absolute top-12 left-3 z-20 cursor-pointer group flex flex-col items-center"
-                  title="กดเพื่อดื่มน้ำ"
-                >
-                  <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
-                    <div className="w-full h-9 bg-sky-400"></div>
-                    <div className="absolute -bottom-1.5 -right-1 w-2 h-3.5 bg-slate-400 rounded-xs rotate-45 border border-slate-500"></div>
+                {/* Water bottle (Hidden in Move Mode to prevent blocking) */}
+                {!isMoveMode && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (gameState.isSleeping) return;
+                      sound.playEat();
+                      gameStateService.updateState((prev) => ({
+                        ...prev,
+                        happiness: Math.min(100, prev.happiness + 5),
+                        speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! 💧🐹", timestamp: Date.now(), duration: 3000 },
+                      }));
+                    }}
+                    className="absolute top-12 left-3 z-20 cursor-pointer group flex flex-col items-center"
+                    title="กดเพื่อดื่มน้ำ"
+                  >
+                    <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
+                      <div className="w-full h-9 bg-sky-400"></div>
+                      <div className="absolute -bottom-1.5 -right-1 w-2 h-3.5 bg-slate-400 rounded-xs rotate-45 border border-slate-500"></div>
+                    </div>
+                    <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
                   </div>
-                  <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
-                </div>
+                )}
 
                 {/* 🏡 House / Bed Slot (วางบนพื้นกรง ปรับตำแหน่ง & ขนาดได้อิสระ) */}
                 {(() => {
@@ -463,6 +542,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   const scale = currentScales.house || 1.0;
                   return (
                     <div
+                      onPointerDown={(e) => handlePointerDownDecor("house", e)}
                       onClick={(e) => {
                         e.stopPropagation();
                         sound.playClick();
@@ -478,14 +558,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         transform: `translateX(-50%) scale(${scale})`,
                         transformOrigin: "bottom center",
                       }}
-                      className={`absolute z-10 cursor-pointer group flex flex-col items-center select-none transition-all duration-200 ${
+                      className={`absolute z-10 select-none transition-all duration-150 ${
+                        isMoveMode ? "cursor-grab active:cursor-grabbing touch-none" : "cursor-pointer group flex flex-col items-center"
+                      } ${
                         isSelected ? "ring-4 ring-amber-400 ring-offset-2 ring-offset-amber-50 rounded-2xl scale-105 shadow-lg shadow-amber-400/40" : ""
                       }`}
-                      title={isMoveMode ? "คลิกเพื่อเลือกย้ายบ้าน" : `${houseDef.name} (คลิกเพื่อตกแต่งห้อง)`}
+                      title={isMoveMode ? "แตะค้างแล้วลากเพื่อย้ายตำแหน่ง" : `${houseDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
                       {isMoveMode && (
-                        <span className="text-[9px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-full mb-1 shadow-xs animate-bounce">
-                          🏠 บ้าน ({Math.round(scale * 100)}%)
+                        <span className="text-[9px] font-black bg-amber-500 text-white px-2 py-0.5 rounded-full mb-1 shadow-xs animate-bounce flex items-center space-x-0.5">
+                          <span>🏠</span>
+                          <span>บ้าน ({Math.round(scale * 100)}%)</span>
                         </span>
                       )}
                       <div className="relative w-26 h-26 sm:w-32 sm:h-32 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
@@ -495,10 +578,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           <img
                             src={houseDef.image}
                             alt={houseDef.name}
-                            className="w-full h-full object-contain pixel-art drop-shadow-sm"
+                            className="w-full h-full object-contain pixel-art drop-shadow-sm pointer-events-none"
+                            draggable="false"
                           />
                         ) : (
-                          <span className="text-4xl">{houseDef.icon}</span>
+                          <span className="text-4xl pointer-events-none">{houseDef.icon}</span>
                         )}
                       </div>
                     </div>
@@ -513,9 +597,10 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   const scale = currentScales.toy || 1.0;
                   return (
                     <div
+                      onPointerDown={(e) => handlePointerDownDecor("toy", e)}
                       onClick={(e) => {
                         e.stopPropagation();
-                        sound.playPet();
+                        sound.playClick();
                         if (isMoveMode) {
                           setSelectedDecor("toy");
                         } else {
@@ -528,14 +613,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         transform: `translateX(-50%) scale(${scale})`,
                         transformOrigin: "bottom center",
                       }}
-                      className={`absolute z-10 cursor-pointer group flex flex-col items-center select-none transition-all duration-200 ${
+                      className={`absolute z-10 select-none transition-all duration-150 ${
+                        isMoveMode ? "cursor-grab active:cursor-grabbing touch-none" : "cursor-pointer group flex flex-col items-center"
+                      } ${
                         isSelected ? "ring-4 ring-orange-400 ring-offset-2 ring-offset-orange-50 rounded-2xl scale-105 shadow-lg shadow-orange-400/40" : ""
                       }`}
-                      title={isMoveMode ? "คลิกเพื่อเลือกย้ายของเล่น" : `${toyDef.name} (คลิกเพื่อตกแต่งห้อง)`}
+                      title={isMoveMode ? "แตะค้างแล้วลากเพื่อย้ายตำแหน่ง" : `${toyDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
                       {isMoveMode && (
-                        <span className="text-[9px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-full mb-1 shadow-xs animate-bounce">
-                          🎠 ของเล่น ({Math.round(scale * 100)}%)
+                        <span className="text-[9px] font-black bg-orange-500 text-white px-2 py-0.5 rounded-full mb-1 shadow-xs animate-bounce flex items-center space-x-0.5">
+                          <span>🎠</span>
+                          <span>ของเล่น ({Math.round(scale * 100)}%)</span>
                         </span>
                       )}
                       <div className="relative w-22 h-22 sm:w-26 sm:h-26 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
@@ -545,35 +633,38 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           <img
                             src={toyDef.image}
                             alt={toyDef.name}
-                            className={`w-full h-full object-contain pixel-art drop-shadow-sm ${
+                            className={`w-full h-full object-contain pixel-art drop-shadow-sm pointer-events-none ${
                               toyDef.id === "wooden_swing" ? "animate-[floatAngryPuff_2s_ease-in-out_infinite]" : ""
                             }`}
+                            draggable="false"
                           />
                         ) : (
-                          <span className="text-3xl">{toyDef.icon}</span>
+                          <span className="text-3xl pointer-events-none">{toyDef.icon}</span>
                         )}
                       </div>
                     </div>
                   );
                 })()}
 
-                {/* Poop objects (กระจายบนพื้นด้านหน้า) */}
-                <div className="absolute bottom-2 left-32 right-32 flex justify-center items-end pointer-events-auto z-25">
-                  {Array.from({ length: gameState.poopCount || 0 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        gameStateService.cleanCage();
-                      }}
-                      className="cursor-pointer text-2xl filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
-                      style={{ animationDelay: `${idx * 0.2}s`, margin: "0 4px" }}
-                      title="คลิกเพื่อเก็บอึ!"
-                    >
-                      💩
-                    </div>
-                  ))}
-                </div>
+                {/* Poop objects (Hidden in Move Mode to prevent blocking) */}
+                {!isMoveMode && (
+                  <div className="absolute bottom-2 left-32 right-32 flex justify-center items-end pointer-events-auto z-25">
+                    {Array.from({ length: gameState.poopCount || 0 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          gameStateService.cleanCage();
+                        }}
+                        className="cursor-pointer text-2xl filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
+                        style={{ animationDelay: `${idx * 0.2}s`, margin: "0 4px" }}
+                        title="คลิกเพื่อเก็บอึ!"
+                      >
+                        💩
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* 🧶 Rug Slot (พรมปูพื้น Pixel Art รองใต้ตัวน้องบนพื้นกรง) */}
                 {(() => {
@@ -583,6 +674,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   const scale = currentScales.rug || 1.0;
                   return (
                     <div
+                      onPointerDown={(e) => handlePointerDownDecor("rug", e)}
                       onClick={(e) => {
                         if (isMoveMode) {
                           e.stopPropagation();
@@ -596,15 +688,16 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         transform: `translateX(-50%) scale(${scale})`,
                         transformOrigin: "bottom center",
                       }}
-                      className={`absolute z-0 filter drop-shadow-xs flex items-center justify-center transition-all duration-200 ${
-                        isMoveMode ? "cursor-pointer" : "pointer-events-none"
+                      className={`absolute z-0 select-none transition-all duration-150 filter drop-shadow-xs flex items-center justify-center ${
+                        isMoveMode ? "cursor-grab active:cursor-grabbing touch-none" : "pointer-events-none"
                       } ${isSelected ? "ring-4 ring-amber-400 ring-offset-2 ring-offset-amber-50 rounded-2xl scale-105 shadow-lg shadow-amber-400/40" : ""}`}
                     >
                       {rugDef.image ? (
                         <img
                           src={rugDef.image}
                           alt={rugDef.name}
-                          className="w-56 sm:w-68 max-h-20 object-contain pixel-art drop-shadow-xs opacity-95"
+                          className="w-56 sm:w-68 max-h-20 object-contain pixel-art drop-shadow-xs opacity-95 pointer-events-none"
+                          draggable="false"
                         />
                       ) : (
                         <div className="w-52 sm:w-60 h-10 bg-amber-100/90 border-2 border-white rounded-full shadow-inner flex items-center justify-center text-xs opacity-75">
@@ -615,8 +708,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   );
                 })()}
 
-                {/* Hamster Character */}
-                <div className="relative z-10 my-auto py-1" onClick={(e) => e.stopPropagation()}>
+                {/* Hamster Character — ALWAYS ON TOP (z-30) */}
+                <div className={`relative z-30 my-auto py-1 ${isMoveMode ? "pointer-events-none" : ""}`} onClick={(e) => e.stopPropagation()}>
                   <HamsterCharacter
                     state={gameState}
                     onPet={() => gameStateService.pet()}
