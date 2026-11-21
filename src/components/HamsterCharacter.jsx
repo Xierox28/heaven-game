@@ -230,132 +230,149 @@ export default function HamsterCharacter({ state, onPet }) {
           )}
 
           {/* ============================================================
-              4. WARDROBE LAYERS (ตำแหน่งสวมใส่ตรงตัวน้อง 100%)
+              4. WARDROBE LAYERS (สวมใส่ชุดและไอเทม Pixel Art ของแท้ตรงตำแหน่ง)
           ============================================================ */}
 
-          {/* OUTFIT: ผ้าคลุมฮีโร่สีแดง (พาดจากไหล่ไปด้านหลังลำตัว) */}
+          {/* OUTFIT: ผ้าคลุมฮีโร่สีแดง (พาดจากไหล่ขวาไปด้านหลังลำตัว) */}
           {equipped.outfit === "cape_hero" && (
-            <div className="absolute top-[38%] left-[61%] z-10 pointer-events-none rotate-[-15deg] filter drop-shadow-md">
-              <div className="w-9 h-14 bg-gradient-to-b from-rose-500 to-rose-600 rounded-b-xl border-r-2 border-rose-700 shadow-sm"></div>
+            <div className="absolute top-[34%] left-[58%] w-14 sm:w-16 z-10 pointer-events-none filter drop-shadow-md rotate-[-6deg]">
+              <img
+                src="/assets/wardrobe/cape_hero.png"
+                alt="Cape Hero"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* OUTFIT: CLOUD PAJAMAS (Season 1 Gold Pass Master) */}
           {equipped.outfit === "cloud_pajamas" && (
-            <div className="absolute top-[71%] left-[50%] -translate-x-1/2 w-32 sm:w-36 z-20 pointer-events-none filter drop-shadow">
-              <div className="bg-gradient-to-r from-sky-200 via-indigo-100 to-sky-200 border-2 border-white rounded-2xl h-8 sm:h-9 flex items-center justify-around px-2 shadow-inner">
-                <span className="text-[10px]">☁️</span>
-                <span className="text-[8px] font-black text-sky-800 tracking-wider uppercase bg-white/70 px-1.5 py-0.5 rounded-full">
-                  CLOUD 💤
-                </span>
-                <span className="text-[10px]">☁️</span>
-              </div>
+            <div className="absolute top-[67%] left-[48%] -translate-x-1/2 w-28 sm:w-32 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/cloud_pajamas.png"
+                alt="Cloud Pajamas"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* OUTFIT: HOODIE SPECIAL */}
           {equipped.outfit === "hoodie_special" && (
-            <div className="absolute top-[71%] left-[50%] -translate-x-1/2 w-30 sm:w-34 z-20 pointer-events-none filter drop-shadow">
-              <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white rounded-2xl h-8 sm:h-9 flex items-center justify-around px-2 shadow-inner">
-                <span className="text-[8px] font-black text-white tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">
-                  HEAVEN ♡
-                </span>
-              </div>
+            <div className="absolute top-[67%] left-[48%] -translate-x-1/2 w-28 sm:w-32 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/hoodie_special.png"
+                alt="Special Hoodie"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* OUTFIT: CUTE BIB (ผ้ากันเปื้อนลายดาวใต้คาง) */}
           {equipped.outfit === "cute_bib" && (
-            <div className="absolute top-[70%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-xs">
-              <div className="bg-yellow-200 border border-amber-400 text-amber-800 text-[10px] px-2.5 py-0.5 rounded-b-xl shadow-xs flex items-center space-x-1">
-                <span>⭐</span>
-                <span className="font-black text-[8px]">BABY</span>
-              </div>
+            <div className="absolute top-[66%] left-[47.7%] -translate-x-1/2 w-16 sm:w-18 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/cute_bib.png"
+                alt="Cute Bib"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* ACCESSORY: RED BOW (โบว์แดงน่ารัก) */}
           {equipped.accessory === "red_bow" && (
-            <div className="absolute top-[69%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none text-xl sm:text-2xl filter drop-shadow animate-pulse select-none">
-              🎀
+            <div className="absolute top-[67%] left-[47.7%] -translate-x-1/2 w-14 sm:w-16 z-20 pointer-events-none filter drop-shadow-sm animate-pulse">
+              <img
+                src="/assets/wardrobe/red_bow.png"
+                alt="Red Bow"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* ACCESSORY: BELL COLLAR (กระดิ่งทอง) */}
           {equipped.accessory === "bell_collar" && (
-            <div className="absolute top-[70%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none flex items-center justify-center">
-              <div className="bg-amber-400 border border-amber-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-sm animate-bounce">
-                🔔
-              </div>
+            <div className="absolute top-[66%] left-[47.7%] -translate-x-1/2 w-14 sm:w-16 z-20 pointer-events-none filter drop-shadow-sm animate-bounce">
+              <img
+                src="/assets/wardrobe/bell_collar.png"
+                alt="Bell Collar"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* ACCESSORY: STAR BADGE (เข็มกลัดดาวประกาย) */}
           {equipped.accessory === "star_badge" && (
-            <div className="absolute top-[67%] left-[36%] z-20 pointer-events-none text-yellow-400 text-base drop-shadow select-none">
-              ⭐
+            <div className="absolute top-[66%] left-[36%] w-8 sm:w-9 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/star_badge.png"
+                alt="Star Badge"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* HAT: FROG HAT (หมวกกบน้อยตาโต สวมบนหัวตรงกะโหลกระหว่างหู) */}
           {equipped.hat === "frog_hat" && (
-            <div className="absolute top-[12%] left-[47%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md">
-              <div className="flex flex-col items-center">
-                <div className="flex space-x-2.5 mb-[-3px]">
-                  {[0, 1].map((i) => (
-                    <div key={i} className="w-3.5 h-3.5 bg-emerald-500 rounded-full border border-emerald-700 flex items-center justify-center shadow-xs">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full flex items-center justify-center">
-                        <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="w-14 h-5 bg-emerald-400 border-2 border-emerald-600 rounded-t-full shadow-xs"></div>
-              </div>
+            <div className="absolute top-[12%] left-[47.5%] -translate-x-1/2 w-18 sm:w-20 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/frog_hat.png"
+                alt="Frog Hat"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* HAT: FLOWER CROWN (มงกุฎดอกไม้ สวมบนหน้าผากระหว่างสองหู) */}
           {equipped.hat === "flower_crown" && (
-            <div className="absolute top-[20%] left-[47%] -translate-x-1/2 z-20 pointer-events-none text-xs sm:text-sm whitespace-nowrap drop-shadow-sm select-none">
-              🌸🌼🌺🌸
+            <div className="absolute top-[32%] left-[47.5%] -translate-x-1/2 w-20 sm:w-22 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/flower_crown.png"
+                alt="Flower Crown"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* HAT: PARTY HAT (หมวกปาร์ตี้เอียงน่ารักบนหัว) */}
           {equipped.hat === "party_hat" && (
-            <div className="absolute top-[6%] left-[47%] -translate-x-1/2 z-20 pointer-events-none text-2xl sm:text-3xl rotate-[12deg] drop-shadow-md select-none">
-              🎉
+            <div className="absolute top-[3%] left-[47.5%] -translate-x-1/2 w-12 sm:w-14 z-20 pointer-events-none filter drop-shadow-sm rotate-[6deg]">
+              <img
+                src="/assets/wardrobe/party_hat.png"
+                alt="Party Hat"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* HAT: UNICORN HAT (หมวกยูนิคอร์นสายรุ้ง) */}
           {equipped.hat === "unicorn_hat" && (
-            <div className="absolute top-[5%] left-[47%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md flex flex-col items-center select-none">
-              <div className="w-2.5 h-5 bg-gradient-to-t from-yellow-300 via-pink-400 to-indigo-400 rounded-t-full border border-yellow-500 rotate-[10deg] shadow-xs"></div>
-              <div className="flex space-x-2 -mt-1">
-                <span className="text-[10px]">🌸</span>
-                <span className="text-xs">🦄</span>
-                <span className="text-[10px]">🌸</span>
-              </div>
+            <div className="absolute top-[3%] left-[47.5%] -translate-x-1/2 w-16 sm:w-18 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/unicorn_hat.png"
+                alt="Unicorn Hat"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* HAT: SUNGLASSES (แว่นกันแดด สวมตรงตาทั้งสองข้าง) */}
           {equipped.hat === "sunglasses" && (
-            <div className="absolute top-[59%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow">
-              <div className="w-5 h-3 bg-slate-900 rounded-xs border border-slate-600 shadow-xs"></div>
-              <div className="w-2 h-0.5 bg-slate-800"></div>
-              <div className="w-5 h-3 bg-slate-900 rounded-xs border border-slate-600 shadow-xs"></div>
+            <div className="absolute top-[57%] left-[47.7%] -translate-x-1/2 w-16 sm:w-18 z-20 pointer-events-none filter drop-shadow-sm">
+              <img
+                src="/assets/wardrobe/sunglasses.png"
+                alt="Sunglasses"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 
           {/* HAT: STAR GLASSES (แว่นดาว สวมตรงตาทั้งสองข้าง) */}
           {equipped.hat === "star_glasses" && (
-            <div className="absolute top-[56%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-0.5 filter drop-shadow animate-pulse select-none">
-              <span className="text-base sm:text-lg">⭐</span>
-              <div className="w-1.5 h-0.5 bg-yellow-600"></div>
-              <span className="text-base sm:text-lg">⭐</span>
+            <div className="absolute top-[53%] left-[47.7%] -translate-x-1/2 w-18 sm:w-20 z-20 pointer-events-none filter drop-shadow-sm animate-pulse">
+              <img
+                src="/assets/wardrobe/star_glasses.png"
+                alt="Star Glasses"
+                className="w-full h-auto object-contain pixel-art"
+              />
             </div>
           )}
 

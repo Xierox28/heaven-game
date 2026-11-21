@@ -84,8 +84,16 @@ export default function WardrobeModal({
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className="text-3xl bg-white rounded-2xl w-12 h-12 flex items-center justify-center shadow-xs border border-purple-100">
-                    {item.icon}
+                  <div className="bg-white rounded-2xl w-12 h-12 flex items-center justify-center shadow-xs border border-purple-100 overflow-hidden p-1.5 flex-shrink-0">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-contain pixel-art drop-shadow-xs"
+                      />
+                    ) : (
+                      <span className="text-3xl">{item.icon}</span>
+                    )}
                   </div>
                   <div>
                     <h4 className="font-black text-sm text-slate-900 flex items-center">

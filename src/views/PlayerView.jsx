@@ -286,7 +286,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   )}
                 </div>
 
-                {/* Room Badge */}
+                {/* Room Badge & Decor Action */}
                 <div className="relative z-10 flex items-center justify-between w-full">
                   <span className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
                     isNight || equippedFurniture.wallpaper === "galaxy_stars"
@@ -296,10 +296,29 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
                   </span>
 
-                  <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full">
-                    👆👆 ดับเบิ้ลแทปให้อาหารด่วน
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sound.playClick();
+                        setIsDecorOpen(true);
+                      }}
+                      className="px-2.5 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                      title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
+                    >
+                      <span>🛋️</span>
+                      <span>แต่งห้อง</span>
+                    </button>
+
+                    <span className="text-[10px] font-black text-amber-800 bg-amber-200/70 border border-amber-300/80 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                      👆👆 ดับเบิ้ลแทปให้อาหารด่วน
+                    </span>
+                  </div>
                 </div>
+
+                {/* พื้นห้อง / Cage Floor Ground Plane (รองรับเฟอร์นิเจอร์อย่างสมจริง) */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-amber-200/35 via-amber-100/15 to-transparent pointer-events-none rounded-b-2xl border-b-2 border-amber-300/30"></div>
 
                 {/* Water bottle */}
                 <div
@@ -323,7 +342,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
                 </div>
 
-                {/* 🏡 House / Bed Slot (มุมขวาบนของกรง - แสดงภาพ Pixel Art) */}
+                {/* 🏡 House / Bed Slot (วางบนพื้นกรงมุมซ้าย ขนาดใหญ่สมจริง น้องอยู่ได้จริง) */}
                 {(() => {
                   const houseDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.house);
                   if (!houseDef) return null;
@@ -334,28 +353,27 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsDecorOpen(true);
                       }}
-                      className="absolute top-7 right-2.5 z-20 cursor-pointer group flex flex-col items-center animate-cute-breathe"
-                      title={`${houseDef.name} (คลิกเพื่อเปลี่ยน)`}
+                      className="absolute bottom-3 left-2 sm:left-4 z-10 cursor-pointer group flex flex-col items-center select-none"
+                      title={`${houseDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
-                      <div className="w-16 h-16 flex items-center justify-center filter drop-shadow-md group-hover:scale-110 transition-transform">
+                      <div className="relative w-26 h-26 sm:w-32 sm:h-32 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
+                        {/* เงาใต้บ้านบนพื้น */}
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-20 sm:w-26 h-4 bg-amber-950/20 rounded-full blur-[2px] pointer-events-none"></div>
                         {houseDef.image ? (
                           <img
                             src={houseDef.image}
                             alt={houseDef.name}
-                            className="w-full h-full object-contain pixel-art drop-shadow"
+                            className="w-full h-full object-contain pixel-art drop-shadow-sm"
                           />
                         ) : (
                           <span className="text-4xl">{houseDef.icon}</span>
                         )}
                       </div>
-                      <span className="text-[9px] font-black text-amber-900 bg-white/90 border border-amber-300 px-2 py-0.5 rounded-full mt-0.5 shadow-xs">
-                        {houseDef.name}
-                      </span>
                     </div>
                   );
                 })()}
 
-                {/* 🎠 Toy Slot (มุมขวาล่างของกรง - แสดงภาพ Pixel Art) */}
+                {/* 🎠 Toy Slot (วางบนพื้นกรงมุมขวา สมจริง) */}
                 {(() => {
                   const toyDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.toy);
                   if (!toyDef) return null;
@@ -366,15 +384,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playPet();
                         setIsDecorOpen(true);
                       }}
-                      className="absolute bottom-9 right-2 z-20 cursor-pointer group flex flex-col items-center"
-                      title={`${toyDef.name} (คลิกเพื่อเปลี่ยน)`}
+                      className="absolute bottom-3 right-2 sm:right-4 z-10 cursor-pointer group flex flex-col items-center select-none"
+                      title={`${toyDef.name} (คลิกเพื่อตกแต่งห้อง)`}
                     >
-                      <div className="w-14 h-14 flex items-center justify-center filter drop-shadow-md group-hover:scale-110 transition-transform">
+                      <div className="relative w-22 h-22 sm:w-26 sm:h-26 flex items-end justify-center filter drop-shadow-md group-hover:scale-105 transition-all duration-300">
+                        {/* เงาใต้ของเล่นบนพื้น */}
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-18 sm:w-22 h-3.5 bg-amber-950/20 rounded-full blur-[2px] pointer-events-none"></div>
                         {toyDef.image ? (
                           <img
                             src={toyDef.image}
                             alt={toyDef.name}
-                            className={`w-full h-full object-contain pixel-art drop-shadow ${
+                            className={`w-full h-full object-contain pixel-art drop-shadow-sm ${
                               toyDef.id === "wooden_swing" ? "animate-[floatAngryPuff_2s_ease-in-out_infinite]" : ""
                             }`}
                           />
@@ -382,15 +402,12 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           <span className="text-3xl">{toyDef.icon}</span>
                         )}
                       </div>
-                      <span className="text-[9px] font-black text-orange-900 bg-white/90 border border-orange-300 px-2 py-0.5 rounded-full mt-0.5 shadow-xs">
-                        {toyDef.name}
-                      </span>
                     </div>
                   );
                 })()}
 
-                {/* Poop objects */}
-                <div className="absolute bottom-3 left-6 right-6 flex items-end pointer-events-auto z-20">
+                {/* Poop objects (กระจายบนพื้นด้านหน้า) */}
+                <div className="absolute bottom-2 left-32 right-32 flex justify-center items-end pointer-events-auto z-25">
                   {Array.from({ length: gameState.poopCount || 0 }).map((_, idx) => (
                     <div
                       key={idx}
@@ -399,7 +416,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         gameStateService.cleanCage();
                       }}
                       className="cursor-pointer text-2xl filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
-                      style={{ animationDelay: `${idx * 0.2}s`, marginLeft: idx > 0 ? "10px" : "0" }}
+                      style={{ animationDelay: `${idx * 0.2}s`, margin: "0 4px" }}
                       title="คลิกเพื่อเก็บอึ!"
                     >
                       💩
@@ -407,20 +424,20 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   ))}
                 </div>
 
-                {/* 🧶 Rug Slot (พรมปูพื้น Pixel Art ใต้ตัวน้อง) */}
+                {/* 🧶 Rug Slot (พรมปูพื้น Pixel Art รองใต้ตัวน้องบนพื้นกรง) */}
                 {(() => {
                   const rugDef = FURNITURE_ITEMS.find((f) => f.id === equippedFurniture.rug);
                   if (!rugDef) return null;
                   return (
-                    <div className="absolute top-[63%] left-1/2 -translate-x-1/2 z-0 pointer-events-none filter drop-shadow-xs flex items-center justify-center">
+                    <div className="absolute bottom-6 sm:bottom-7 left-1/2 -translate-x-1/2 z-0 pointer-events-none filter drop-shadow-xs flex items-center justify-center">
                       {rugDef.image ? (
                         <img
                           src={rugDef.image}
                           alt={rugDef.name}
-                          className="w-52 sm:w-60 max-h-16 object-contain pixel-art drop-shadow-xs opacity-95"
+                          className="w-56 sm:w-68 max-h-20 object-contain pixel-art drop-shadow-xs opacity-95"
                         />
                       ) : (
-                        <div className="w-48 sm:w-56 h-10 bg-amber-100/90 border-2 border-white rounded-full shadow-inner flex items-center justify-center text-xs opacity-75">
+                        <div className="w-52 sm:w-60 h-10 bg-amber-100/90 border-2 border-white rounded-full shadow-inner flex items-center justify-center text-xs opacity-75">
                           {rugDef.icon}
                         </div>
                       )}
