@@ -182,16 +182,18 @@ export default function HamsterCharacter({ state, onPet }) {
       )}
 
       {/* ============================================================
-          3. HAMSTER BODY + WARDROBE LAYERS
+          3. HAMSTER BODY + WARDROBE LAYERS (EXACT 16:9 PROPORTIONAL FIT)
       ============================================================ */}
       <div
         onClick={handleHamsterClick}
-        className={`relative cursor-pointer transition-all duration-300 active:scale-90 group ${animClass}`}
+        className={`relative cursor-pointer transition-all duration-300 active:scale-95 group ${animClass}`}
         title="กดที่น้องเพื่อลูบหัว"
       >
-        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-44 h-8 bg-amber-950/20 rounded-full blur-sm pointer-events-none"></div>
+        {/* เงาใต้น้อง */}
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-48 sm:w-56 h-7 bg-amber-950/20 rounded-full blur-sm pointer-events-none"></div>
 
-        <div className="relative w-52 h-36 sm:w-60 sm:h-40 flex items-center justify-center">
+        {/* กล่องบรรจุตัวน้อง 16:9 อัตราส่วนตรงกับภาพ 1024x576 เป๊ะๆ */}
+        <div className="relative w-64 sm:w-72 aspect-[16/9] flex items-center justify-center">
           <img
             src="/assets/heaven-hamster.png"
             alt="Nong Heaven Hamster"
@@ -199,144 +201,169 @@ export default function HamsterCharacter({ state, onPet }) {
             draggable="false"
           />
 
-          {/* Blush */}
-          <div className="absolute top-[50%] left-[33%] w-5 h-3 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
-          <div className="absolute top-[48%] right-[31%] w-5 h-3 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+          {/* แก้มแดง (Blush) ตรงตำแหน่งแก้มทั้งสองข้าง */}
+          <div className="absolute top-[64%] left-[34%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
+          <div className="absolute top-[66%] left-[59%] w-4 h-2.5 bg-pink-400/50 rounded-full blur-[2px] pointer-events-none"></div>
 
-          {/* Eyes */}
+          {/* ดวงตาตอนหลับ (Sleeping Eyes) ทับตาจริงพอดิบพอดี */}
           {isSleeping && (
-            <div className="absolute top-[43%] left-0 right-0 flex justify-center gap-9 pointer-events-none">
-              <div className="w-4 h-1 border-b-2 border-slate-700 rounded-full"></div>
-              <div className="w-4 h-1 border-b-2 border-slate-700 rounded-full"></div>
-            </div>
+            <>
+              <div className="absolute top-[60.5%] left-[40.5%] w-3.5 h-1 border-b-2 border-slate-700 rounded-full pointer-events-none"></div>
+              <div className="absolute top-[62.5%] left-[52.5%] w-3.5 h-1 border-b-2 border-slate-700 rounded-full pointer-events-none"></div>
+            </>
           )}
 
+          {/* ดวงตาตอนป่วย (Sick Eyes) */}
           {mood === "sick" && !isSleeping && (
-            <div className="absolute top-[40%] left-0 right-0 flex justify-center gap-8 pointer-events-none">
-              <div className="text-[12px] font-black text-slate-800">×</div>
-              <div className="text-[12px] font-black text-slate-800">×</div>
-            </div>
+            <>
+              <div className="absolute top-[57%] left-[41%] text-[10px] font-black text-slate-800 pointer-events-none">×</div>
+              <div className="absolute top-[59%] left-[53%] text-[10px] font-black text-slate-800 pointer-events-none">×</div>
+            </>
           )}
 
+          {/* คิ้วตอนโกรธ (Angry Eyebrows) */}
           {mood === "angry" && !isSleeping && (
-            <div className="absolute top-[32%] left-0 right-0 flex justify-center gap-7 pointer-events-none">
-              <div className="w-5 h-1 bg-slate-800 rounded-full rotate-[20deg]"></div>
-              <div className="w-5 h-1 bg-slate-800 rounded-full rotate-[-20deg]"></div>
-            </div>
+            <>
+              <div className="absolute top-[55%] left-[39%] w-4 h-1 bg-slate-800 rounded-full rotate-[20deg] pointer-events-none"></div>
+              <div className="absolute top-[57%] left-[51%] w-4 h-1 bg-slate-800 rounded-full rotate-[-20deg] pointer-events-none"></div>
+            </>
           )}
 
-          {/* ---- WARDROBE LAYERS ---- */}
+          {/* ============================================================
+              4. WARDROBE LAYERS (ตำแหน่งสวมใส่ตรงตัวน้อง 100%)
+          ============================================================ */}
+
+          {/* OUTFIT: ผ้าคลุมฮีโร่สีแดง (พาดจากไหล่ไปด้านหลังลำตัว) */}
+          {equipped.outfit === "cape_hero" && (
+            <div className="absolute top-[38%] left-[61%] z-10 pointer-events-none rotate-[-15deg] filter drop-shadow-md">
+              <div className="w-9 h-14 bg-gradient-to-b from-rose-500 to-rose-600 rounded-b-xl border-r-2 border-rose-700 shadow-sm"></div>
+            </div>
+          )}
 
           {/* OUTFIT: CLOUD PAJAMAS (Season 1 Gold Pass Master) */}
           {equipped.outfit === "cloud_pajamas" && (
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-44 z-10 pointer-events-none filter drop-shadow">
-              <div className="bg-gradient-to-r from-sky-200 via-indigo-100 to-sky-200 border-2 border-white rounded-3xl h-12 flex items-center justify-around px-2 shadow-inner">
-                <span className="text-xs">☁️</span>
-                <span className="text-[9px] font-black text-sky-800 tracking-wider uppercase bg-white/70 px-2 py-0.5 rounded-full">
+            <div className="absolute top-[71%] left-[50%] -translate-x-1/2 w-32 sm:w-36 z-20 pointer-events-none filter drop-shadow">
+              <div className="bg-gradient-to-r from-sky-200 via-indigo-100 to-sky-200 border-2 border-white rounded-2xl h-8 sm:h-9 flex items-center justify-around px-2 shadow-inner">
+                <span className="text-[10px]">☁️</span>
+                <span className="text-[8px] font-black text-sky-800 tracking-wider uppercase bg-white/70 px-1.5 py-0.5 rounded-full">
                   CLOUD 💤
                 </span>
-                <span className="text-xs">☁️</span>
+                <span className="text-[10px]">☁️</span>
               </div>
             </div>
           )}
 
-          {/* OUTFIT: HOODIE */}
+          {/* OUTFIT: HOODIE SPECIAL */}
           {equipped.outfit === "hoodie_special" && (
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-40 z-10 pointer-events-none filter drop-shadow">
-              <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white rounded-3xl h-11 flex items-center justify-around px-3 shadow-inner">
-                <span className="text-[9px] font-black text-white tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">HEAVEN ♡</span>
+            <div className="absolute top-[71%] left-[50%] -translate-x-1/2 w-30 sm:w-34 z-20 pointer-events-none filter drop-shadow">
+              <div className="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 border-2 border-white rounded-2xl h-8 sm:h-9 flex items-center justify-around px-2 shadow-inner">
+                <span className="text-[8px] font-black text-white tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">
+                  HEAVEN ♡
+                </span>
               </div>
             </div>
           )}
 
+          {/* OUTFIT: CUTE BIB (ผ้ากันเปื้อนลายดาวใต้คาง) */}
           {equipped.outfit === "cute_bib" && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-              <div className="bg-yellow-200 border-2 border-amber-400 text-amber-800 text-xs px-3 py-1 rounded-b-2xl shadow-sm flex items-center space-x-1">
-                <span>⭐</span><span className="font-bold text-[9px]">BABY</span>
+            <div className="absolute top-[70%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-xs">
+              <div className="bg-yellow-200 border border-amber-400 text-amber-800 text-[10px] px-2.5 py-0.5 rounded-b-xl shadow-xs flex items-center space-x-1">
+                <span>⭐</span>
+                <span className="font-black text-[8px]">BABY</span>
               </div>
             </div>
           )}
 
-          {equipped.outfit === "cape_hero" && (
-            <div className="absolute top-8 -left-1 z-0 pointer-events-none rotate-12">
-              <div className="w-10 h-16 bg-rose-500 rounded-b-2xl shadow-md border-r-2 border-rose-700"></div>
-            </div>
-          )}
-
-          {/* ACCESSORY */}
+          {/* ACCESSORY: RED BOW (โบว์แดงน่ารัก) */}
           {equipped.accessory === "red_bow" && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-2xl animate-pulse filter drop-shadow">🎀</div>
-          )}
-          {equipped.accessory === "bell_collar" && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none w-5 h-5 flex items-center justify-center">
-              <div className="bg-amber-400 border border-amber-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow animate-bounce">🔔</div>
+            <div className="absolute top-[69%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none text-xl sm:text-2xl filter drop-shadow animate-pulse select-none">
+              🎀
             </div>
           )}
-          {equipped.accessory === "star_badge" && (
-            <div className="absolute bottom-7 left-[35%] z-10 pointer-events-none text-yellow-400 text-lg drop-shadow">⭐</div>
-          )}
 
-          {/* HAT: UNICORN HAT (7-Day Streak Master) */}
-          {equipped.hat === "unicorn_hat" && (
-            <div className="absolute -top-7 left-[45%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md flex flex-col items-center">
-              {/* Magic Horn */}
-              <div className="w-3 h-6 bg-gradient-to-t from-yellow-300 via-pink-400 to-indigo-400 rounded-t-full border border-yellow-500 rotate-[12deg] shadow-xs"></div>
-              {/* Ears with flowers */}
-              <div className="flex space-x-4 -mt-2">
-                <span className="text-xs">🌸</span>
-                <span className="text-xs">🦄</span>
-                <span className="text-xs">🌸</span>
+          {/* ACCESSORY: BELL COLLAR (กระดิ่งทอง) */}
+          {equipped.accessory === "bell_collar" && (
+            <div className="absolute top-[70%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none flex items-center justify-center">
+              <div className="bg-amber-400 border border-amber-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-sm animate-bounce">
+                🔔
               </div>
             </div>
           )}
 
-          {/* HAT: STAR GLASSES (Gold Pass) */}
-          {equipped.hat === "star_glasses" && (
-            <div className="absolute top-[41%] left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow animate-pulse">
-              <span className="text-xl">⭐</span>
-              <div className="w-2 h-0.5 bg-yellow-600"></div>
-              <span className="text-xl">⭐</span>
+          {/* ACCESSORY: STAR BADGE (เข็มกลัดดาวประกาย) */}
+          {equipped.accessory === "star_badge" && (
+            <div className="absolute top-[67%] left-[36%] z-20 pointer-events-none text-yellow-400 text-base drop-shadow select-none">
+              ⭐
             </div>
           )}
 
+          {/* HAT: FROG HAT (หมวกกบน้อยตาโต สวมบนหัวตรงกะโหลกระหว่างหู) */}
           {equipped.hat === "frog_hat" && (
-            <div className="absolute -top-5 left-[44%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md">
+            <div className="absolute top-[12%] left-[47%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md">
               <div className="flex flex-col items-center">
-                <div className="flex space-x-3 mb-[-5px]">
+                <div className="flex space-x-2.5 mb-[-3px]">
                   {[0, 1].map((i) => (
-                    <div key={i} className="w-4 h-4 bg-emerald-500 rounded-full border border-emerald-700 flex items-center justify-center shadow-sm">
-                      <div className="w-2 h-2 bg-white rounded-full flex items-center justify-center">
-                        <div className="w-1 h-1 bg-black rounded-full"></div>
+                    <div key={i} className="w-3.5 h-3.5 bg-emerald-500 rounded-full border border-emerald-700 flex items-center justify-center shadow-xs">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full flex items-center justify-center">
+                        <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="w-20 h-7 bg-emerald-400 border-2 border-emerald-600 rounded-t-full shadow-sm"></div>
+                <div className="w-14 h-5 bg-emerald-400 border-2 border-emerald-600 rounded-t-full shadow-xs"></div>
               </div>
             </div>
           )}
 
-          {equipped.hat === "sunglasses" && (
-            <div className="absolute top-[41%] left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow">
-              <div className="w-7 h-4 bg-slate-900 rounded-sm border border-slate-600 shadow-sm"></div>
-              <div className="w-2 h-0.5 bg-slate-800"></div>
-              <div className="w-7 h-4 bg-slate-900 rounded-sm border border-slate-600 shadow-sm"></div>
+          {/* HAT: FLOWER CROWN (มงกุฎดอกไม้ สวมบนหน้าผากระหว่างสองหู) */}
+          {equipped.hat === "flower_crown" && (
+            <div className="absolute top-[20%] left-[47%] -translate-x-1/2 z-20 pointer-events-none text-xs sm:text-sm whitespace-nowrap drop-shadow-sm select-none">
+              🌸🌼🌺🌸
             </div>
           )}
 
-          {equipped.hat === "flower_crown" && (
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-base whitespace-nowrap">🌸🌼🌺🌸</div>
+          {/* HAT: PARTY HAT (หมวกปาร์ตี้เอียงน่ารักบนหัว) */}
+          {equipped.hat === "party_hat" && (
+            <div className="absolute top-[6%] left-[47%] -translate-x-1/2 z-20 pointer-events-none text-2xl sm:text-3xl rotate-[12deg] drop-shadow-md select-none">
+              🎉
+            </div>
           )}
 
-          {equipped.hat === "party_hat" && (
-            <div className="absolute -top-7 left-[46%] -translate-x-1/2 z-20 pointer-events-none text-3xl rotate-12">🎉</div>
+          {/* HAT: UNICORN HAT (หมวกยูนิคอร์นสายรุ้ง) */}
+          {equipped.hat === "unicorn_hat" && (
+            <div className="absolute top-[5%] left-[47%] -translate-x-1/2 z-20 pointer-events-none filter drop-shadow-md flex flex-col items-center select-none">
+              <div className="w-2.5 h-5 bg-gradient-to-t from-yellow-300 via-pink-400 to-indigo-400 rounded-t-full border border-yellow-500 rotate-[10deg] shadow-xs"></div>
+              <div className="flex space-x-2 -mt-1">
+                <span className="text-[10px]">🌸</span>
+                <span className="text-xs">🦄</span>
+                <span className="text-[10px]">🌸</span>
+              </div>
+            </div>
+          )}
+
+          {/* HAT: SUNGLASSES (แว่นกันแดด สวมตรงตาทั้งสองข้าง) */}
+          {equipped.hat === "sunglasses" && (
+            <div className="absolute top-[59%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-1 filter drop-shadow">
+              <div className="w-5 h-3 bg-slate-900 rounded-xs border border-slate-600 shadow-xs"></div>
+              <div className="w-2 h-0.5 bg-slate-800"></div>
+              <div className="w-5 h-3 bg-slate-900 rounded-xs border border-slate-600 shadow-xs"></div>
+            </div>
+          )}
+
+          {/* HAT: STAR GLASSES (แว่นดาว สวมตรงตาทั้งสองข้าง) */}
+          {equipped.hat === "star_glasses" && (
+            <div className="absolute top-[56%] left-[47.7%] -translate-x-1/2 z-20 pointer-events-none flex items-center space-x-0.5 filter drop-shadow animate-pulse select-none">
+              <span className="text-base sm:text-lg">⭐</span>
+              <div className="w-1.5 h-0.5 bg-yellow-600"></div>
+              <span className="text-base sm:text-lg">⭐</span>
+            </div>
           )}
 
           {/* Eating bowl */}
           {isEating && (
-            <div className="absolute bottom-0 right-6 z-20 pointer-events-none animate-bounce flex items-center">
-              <span className="text-3xl">🥣</span>
-              <span className="absolute -top-2 -right-1 text-xs">✨</span>
+            <div className="absolute top-[68%] left-[50%] z-20 pointer-events-none animate-bounce flex items-center">
+              <span className="text-2xl sm:text-3xl">🥣</span>
+              <span className="absolute -top-1.5 -right-1 text-xs">✨</span>
             </div>
           )}
         </div>
