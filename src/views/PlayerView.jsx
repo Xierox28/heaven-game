@@ -315,8 +315,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
             </div>
           ) : (
             <>
-              <header className={`bg-white/95 backdrop-blur-md border border-amber-200/90 rounded-3xl px-3.5 py-2.5 shadow-sm flex items-center justify-between ${isNight ? "bg-slate-900/95 border-slate-700 text-white" : "text-slate-900"}`}>
-                {/* Logo + User info */}
+              <header className={`bg-white/95 backdrop-blur-md border-2 border-amber-200/90 rounded-3xl px-3 sm:px-4 py-2.5 shadow-xs flex items-center justify-between transition-all ${isNight ? "bg-slate-900/95 border-slate-700 text-white" : "text-slate-900"}`}>
+                {/* Profile: Avatar + Name + Title */}
                 <div className="flex items-center space-x-2">
                   <div
                     onClick={() => { sound.playClick(); setIsProfileModalOpen(true); }}
@@ -330,9 +330,15 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         className="w-full h-full object-contain pixel-art"
                       />
                     </div>
+                    {/* Prestige star badge on avatar corner if prestige rank > 0 */}
+                    {gameState.prestige?.rank > 0 && (
+                      <span className="absolute -top-1.5 -left-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border border-amber-600 shadow-2xs animate-pulse">
+                        ★{gameState.prestige.rank}
+                      </span>
+                    )}
                     <div
                       className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                        isCloud ? "bg-emerald-400" : "bg-blue-400"
+                        isCloud ? "bg-emerald-400 shadow-emerald-300 shadow-2xs" : "bg-blue-400"
                       }`}
                       title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
                     ></div>
@@ -345,7 +351,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                       </h1>
                       <button
                         onClick={() => { sound.playClick(); setIsProfileModalOpen(true); }}
-                        className="text-[9px] bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold px-1.5 py-0.2 rounded-full cursor-pointer max-w-[110px] truncate"
+                        className="text-[9px] bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 text-amber-900 border border-amber-300/80 font-black px-2 py-0.2 rounded-full cursor-pointer max-w-[110px] truncate shadow-2xs transition-all"
                         title="แตะเพื่อเปลี่ยนฉายา"
                       >
                         {gameState.playerTitle || "เด็กเส้นแอดมินดิว 💎"}
@@ -364,84 +370,96 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   </div>
                 </div>
 
-                {/* Right actions */}
-                <div className="flex items-center space-x-1 sm:space-x-1.5">
-                  {/* Coin wallet */}
-                  <div className="bg-gradient-to-r from-amber-300 to-yellow-300 border border-amber-400 rounded-xl px-2 py-1 flex items-center space-x-1 shadow-xs">
-                    <span className="text-sm">🌻</span>
-                    <span className="font-black text-xs text-amber-950">{gameState.coins}</span>
+                {/* Right: Currencies & Utility Dock */}
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
+                  {/* Currency Capsule (Sunflower Seeds & VIP Diamonds) */}
+                  <div className="flex items-center space-x-1 sm:space-x-1.5">
+                    {/* Coin wallet */}
+                    <div className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border border-amber-400/90 rounded-xl px-2 py-1 flex items-center space-x-1 shadow-2xs">
+                      <span className="text-sm">🌻</span>
+                      <span className="font-black text-xs text-amber-950 max-w-[70px] truncate">
+                        {(gameState.coins || 0).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* 💎 Diamond Wallet with + Button */}
+                    <button
+                      onClick={() => { sound.playClick(); setIsDiamondModalOpen(true); }}
+                      className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 border-b-2 border-b-blue-600 text-white rounded-xl px-2 py-1 flex items-center space-x-1 shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
+                      title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
+                    >
+                      <span className="text-sm animate-pulse">💎</span>
+                      <span className="font-black text-xs max-w-[50px] truncate">
+                        {(gameState.diamonds || 0).toLocaleString()}
+                      </span>
+                      <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5">
+                        +
+                      </span>
+                    </button>
                   </div>
 
-                  {/* 💎 Diamond Wallet */}
-                  <button
-                    onClick={() => { sound.playClick(); setIsDiamondModalOpen(true); }}
-                    className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 text-white rounded-xl px-2 py-1 flex items-center space-x-1 shadow-xs active:scale-95 transition-all cursor-pointer"
-                    title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
-                  >
-                    <span className="text-sm animate-pulse">💎</span>
-                    <span className="font-black text-xs">{gameState.diamonds || 0}</span>
-                    <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5">+</span>
-                  </button>
+                  {/* Utility Quick Dock */}
+                  <div className="flex items-center space-x-1 bg-amber-50/80 border border-amber-200/80 p-0.5 rounded-2xl shadow-2xs">
+                    {/* Leaderboard Button 🏆 */}
+                    <button
+                      onClick={() => { sound.playClick(); setIsLeaderboardOpen(true); }}
+                      className="p-1.5 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400/90 transition-all active:scale-90 shadow-2xs cursor-pointer"
+                      title="ตารางอันดับผู้เล่น (Leaderboard)"
+                    >
+                      <Trophy className="w-3.5 h-3.5 fill-amber-700 text-amber-950" />
+                    </button>
 
-                  {/* Leaderboard Button 🏆 */}
-                  <button
-                    onClick={() => setIsLeaderboardOpen(true)}
-                    className="p-2 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400 transition-all active:scale-90 shadow-xs"
-                    title="ตารางอันดับผู้เล่น (Leaderboard)"
-                  >
-                    <Trophy className="w-4 h-4 fill-amber-700 text-amber-950" />
-                  </button>
+                    {/* Update Log Button 📜 */}
+                    <button
+                      onClick={() => { sound.playClick(); setIsUpdateLogOpen(true); }}
+                      className="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300/80 transition-all active:scale-90 shadow-2xs cursor-pointer"
+                      title="ประวัติการอัปเดต (Update Log v7.0)"
+                    >
+                      <Scroll className="w-3.5 h-3.5 text-amber-800" />
+                    </button>
 
-                  {/* Update Log Button 📜 */}
-                  <button
-                    onClick={() => setIsUpdateLogOpen(true)}
-                    className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300 transition-all active:scale-90 shadow-xs"
-                    title="ประวัติการอัปเดต (Update Log v4.0)"
-                  >
-                    <Scroll className="w-4 h-4 text-amber-800" />
-                  </button>
+                    {/* Mute button */}
+                    <button
+                      onClick={toggleSound}
+                      className="p-1.5 bg-amber-100/90 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300/70 transition-all active:scale-90 cursor-pointer"
+                      title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
+                    >
+                      {isMuted ? <VolumeX className="w-3.5 h-3.5 text-slate-500" /> : <Volume2 className="w-3.5 h-3.5 text-amber-700" />}
+                    </button>
 
-                  {/* Mute button */}
-                  <button
-                    onClick={toggleSound}
-                    className="p-2 bg-amber-100/90 hover:bg-amber-200 text-amber-900 rounded-xl border border-amber-300/70 transition-all active:scale-90"
-                    title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
-                  >
-                    {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-amber-700" />}
-                  </button>
-
-                  {/* GM button */}
-                  <button
-                    onClick={onNavigateToAdmin}
-                    className="p-2 bg-amber-500 hover:bg-amber-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-xs"
-                    title="แผงควบคุม GM"
-                  >
-                    <Shield className="w-4 h-4" />
-                  </button>
+                    {/* GM button */}
+                    <button
+                      onClick={onNavigateToAdmin}
+                      className="p-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-2xs cursor-pointer"
+                      title="แผงควบคุม GM"
+                    >
+                      <Shield className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </header>
 
-              {/* ⭐ PASS & DAILY STREAK QUICK BANNER */}
+              {/* ⭐ PASS & DAILY STREAK TACTILE CARDS */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setIsPassOpen(true)}
-                  className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
+                  className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2.5 rounded-2xl border-2 border-white border-b-4 border-b-orange-500 shadow-sm flex items-center justify-between text-left transition-all active:translate-y-0.5 active:border-b-2 group cursor-pointer"
                 >
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl group-hover:scale-110 transition-transform">🎟️</span>
                     <div>
-                      <div className="text-[10px] font-black uppercase text-amber-900 tracking-wider">SEASON 1</div>
+                      <div className="text-[10px] font-black uppercase text-amber-950 tracking-wider">SEASON 1</div>
                       <div className="text-xs font-black leading-tight text-slate-950">Hamster Pass</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-white/80 font-black px-2 py-0.5 rounded-full border border-amber-300">
+                  <span className="text-[10px] bg-white/90 font-black px-2 py-0.5 rounded-full border border-amber-300 shadow-2xs text-amber-950">
                     เควสต์
                   </span>
                 </button>
 
                 <button
                   onClick={() => setIsPassOpen(true)}
-                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2.5 rounded-2xl border-2 border-white shadow-sm flex items-center justify-between text-left transition-all active:scale-95 group"
+                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2.5 rounded-2xl border-2 border-white border-b-4 border-b-purple-600 shadow-sm flex items-center justify-between text-left transition-all active:translate-y-0.5 active:border-b-2 group cursor-pointer"
                 >
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
@@ -455,8 +473,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     </div>
                   </div>
                   {hasStreakToClaim ? (
-                    <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs">
-                      รับ!
+                    <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs border border-white">
+                      รับ! 🎁
                     </span>
                   ) : (
                     <span className="text-[9px] bg-white/30 text-white font-black px-2 py-0.5 rounded-full">
@@ -509,7 +527,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 onPointerMove={handlePointerMoveCage}
                 onPointerUp={handlePointerUpCage}
                 onPointerCancel={handlePointerUpCage}
-                className={`relative w-full rounded-3xl border-4 shadow-lg ${isMoveMode ? "min-h-[380px] sm:min-h-[420px] select-none" : "min-h-[330px]"} flex flex-col justify-between p-4 cursor-pointer transition-all duration-500 ${wallpaperStyle}`}
+                className={`relative w-full rounded-3xl border-4 cage-frame-cozy shadow-lg ${isMoveMode ? "min-h-[380px] sm:min-h-[420px] select-none" : "min-h-[330px]"} flex flex-col justify-between p-4 cursor-pointer transition-all duration-500 ${wallpaperStyle}`}
                 onClick={handleCageTap}
                 title={isMoveMode ? "สตูดิโอจัดห้อง: แตะลากของได้โดยตรง" : "ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"}
               >
@@ -555,7 +573,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsDecorOpen(true);
                         }}
-                        className="px-2.5 sm:px-3 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 pointer-events-auto"
+                        className="px-2.5 sm:px-3 py-1 bg-white/95 hover:bg-amber-50 text-amber-900 border-2 border-amber-300 border-b-3 border-b-amber-500 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:translate-y-0.5 pointer-events-auto"
                         title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
                       >
                         <span>🛋️</span>
@@ -569,7 +587,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsMoveMode(true);
                         }}
-                        className="px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95 border bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300 pointer-events-auto"
+                        className="px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:translate-y-0.5 border-2 bg-white/95 hover:bg-amber-50 text-amber-900 border-amber-300 border-b-3 border-b-amber-500 pointer-events-auto"
                         title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
                       >
                         <span>📍</span>
@@ -590,7 +608,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsGardenOpen(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-teal-700 group cursor-pointer pointer-events-auto relative z-40"
                       title="สวนผักออร์แกนิก & ครัวปรุงอาหาร"
                     >
                       <span className="text-base sm:text-lg leading-none pointer-events-none">🌱</span>
@@ -605,7 +623,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsGashaponOpen(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-purple-700 group cursor-pointer pointer-events-auto relative z-40"
                       title="ตู้สุ่มกาชาปอง & คฤหาสน์"
                     >
                       <span className="text-base sm:text-lg leading-none pointer-events-none">🎰</span>
@@ -620,7 +638,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                         sound.playClick();
                         setIsJumpOpen(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-orange-600 group cursor-pointer pointer-events-auto relative z-40"
                       title="มินิเกม Hamster Jump ไต่เมฆ"
                     >
                       <span className="text-base sm:text-lg leading-none pointer-events-none">🚀</span>
@@ -636,7 +654,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                           sound.playClick();
                           setIsTricksMenuOpen((prev) => !prev);
                         }}
-                        className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center border-2 border-white/90 group cursor-pointer pointer-events-auto relative z-40 ${
+                        className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-rose-700 group cursor-pointer pointer-events-auto relative z-40 ${
                           isTricksMenuOpen ? "ring-2 ring-pink-400 ring-offset-1" : ""
                         }`}
                         title="สั่งทำท่าทางพิเศษเล่นกับน้องเฮเว่น"
@@ -1147,10 +1165,10 @@ export default function PlayerView({ onNavigateToAdmin }) {
             </span>
             <button
               onClick={() => setIsUpdateLogOpen(true)}
-              className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1"
+              className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline flex items-center space-x-1 cursor-pointer"
             >
               <Scroll className="w-3 h-3 text-amber-700" />
-              <span>ประวัติอัปเดต (v6.0 Luxury)</span>
+              <span>ประวัติอัปเดต (v7.0 UI & Tycoon)</span>
             </button>
           </div>
         </div>
