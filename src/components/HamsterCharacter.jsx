@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
 import { WARDROBE_ITEMS, HAMSTER_BREEDS, PERSONALITIES, BUDDY_PETS } from "../constants/gameData";
-import { haptic } from "../utils/audio";
 
 // Mood → animation class map
 const MOOD_ANIMATIONS = {
@@ -80,7 +79,6 @@ export default function HamsterCharacter({ state, onPet }) {
     };
     setPetHearts((prev) => [...prev, heart]);
     setTimeout(() => setPetHearts((prev) => prev.filter((h) => h.id !== heart.id)), 1200);
-    haptic.pet();
     if (onPet) onPet();
   };
 

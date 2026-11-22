@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { X, Play, RotateCcw, Trophy, Sparkles, Zap, Flame, Award } from "lucide-react";
-import { sound, haptic } from "../utils/audio";
+import { sound } from "../utils/audio";
 import { gameStateService } from "../services/gameStateService";
 
 export default function HamsterWheelModal({ isOpen, onClose, gameState }) {
@@ -27,7 +27,6 @@ export default function HamsterWheelModal({ isOpen, onClose, gameState }) {
   // เริ่มต้นเกมใหม่
   const startGame = () => {
     sound.playLevelUp();
-    haptic.burst();
     setGameStateMode("playing");
     setTimeLeft(25);
     setRpm(0);
@@ -101,7 +100,6 @@ export default function HamsterWheelModal({ isOpen, onClose, gameState }) {
   const handleGameOver = () => {
     setGameStateMode("gameover");
     sound.playLevelUp();
-    haptic.burst();
 
     // บันทึกลงใน Game State Service
     setDistance((finalDist) => {
@@ -121,7 +119,6 @@ export default function HamsterWheelModal({ isOpen, onClose, gameState }) {
     if (gameStateMode !== "playing") return;
 
     sound.playClick();
-    haptic.tap();
 
     const isAlternate = lastPaw && lastPaw !== paw;
 

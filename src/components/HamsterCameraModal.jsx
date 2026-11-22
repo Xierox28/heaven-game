@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { X, Camera, Download, Share2, Sparkles, Heart, Check, Palette } from "lucide-react";
-import { sound, haptic } from "../utils/audio";
+import { sound } from "../utils/audio";
 import { MANSION_THEMES, WARDROBE_ITEMS, BUDDY_PETS } from "../constants/gameData";
 
 const POLAROID_FRAMES = [
@@ -50,7 +50,6 @@ export default function HamsterCameraModal({ isOpen, onClose, gameState, isDarkM
 
   const handleDownload = async () => {
     sound.playClick();
-    haptic.burst();
     setIsCapturing(true);
 
     try {
@@ -156,7 +155,6 @@ export default function HamsterCameraModal({ isOpen, onClose, gameState, isDarkM
 
   const handleShare = async () => {
     sound.playClick();
-    haptic.tap();
     if (navigator.share) {
       try {
         await navigator.share({
@@ -279,7 +277,6 @@ export default function HamsterCameraModal({ isOpen, onClose, gameState, isDarkM
                   type="button"
                   onClick={() => {
                     sound.playClick();
-                    haptic.tap();
                     setSelectedFrame(f.id);
                   }}
                   className={`py-1.5 px-1 rounded-xl text-[10px] font-black border transition-all cursor-pointer flex flex-col items-center space-y-0.5 ${
@@ -308,7 +305,6 @@ export default function HamsterCameraModal({ isOpen, onClose, gameState, isDarkM
                   type="button"
                   onClick={() => {
                     sound.playClick();
-                    haptic.tap();
                     setSelectedSticker(s.id);
                   }}
                   className={`px-2.5 py-1 rounded-xl text-[11px] font-black border transition-all whitespace-nowrap cursor-pointer ${
