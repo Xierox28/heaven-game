@@ -17,6 +17,11 @@ import {
   BUDDY_PETS,
   GASHAPON_POOL,
   MANSION_THEMES,
+  PRESTIGE_TIERS,
+  HIGH_ROLLER_GASHAPON_POOL,
+  MINT_EXCHANGE_TIERS,
+  SHRINE_DONATION_TIERS,
+  SHRINE_BLESSING_SHOP,
 } from "../constants/gameData";
 import { FURNITURE_ITEMS, MYSTERY_BOXES } from "../constants/furnitureData";
 import { sound } from "../utils/audio";
@@ -1624,6 +1629,206 @@ class GameStateService {
     });
 
     return results;
+  }
+
+  // ==============================================================================
+  // 👑 v7.0 HIGH-ROLLER VIP GASHAPON HANDLER (สุ่มมหาเศรษฐี 5,000 / 45,000 เมล็ด)
+  // ==============================================================================
+  spinHighRollerGashapon(count = 1) {
+    const cost = count === 10 ? 45000 : 5000;
+    if (this.currentState.coins < cost) return null;
+
+    sound.playLevelUp();
+    const results = [];
+    const pool = HIGH_ROLLER_GASHAPON_POOL;
+
+    for (let i = 0; i < count; i++) {
+      const rand = Math.random() * 100;
+      let selected = pool[pool.length - 1];
+      let accum = 0;
+      for (const item of pool) {
+        accum += item.rate;
+        if (rand <= accum) {
+          selected = item;
+          break;
+        }
+      }
+      results.push(selected);
+    }
+
+    this.updateState((prev) => {
+      let coins = prev.coins - cost;
+      let diamonds = prev.diamonds || 0;
+      let inv = [...(prev.inventory || [])];
+      let furnitureInv = [...(prev.furniture?.inventory || [])];
+      let playerTitle = prev.playerTitle || "";
+
+      for (const r of results) {
+        if (r.type === "diamonds") diamonds += r.amount;
+        if (r.type === "wardrobe" && !inv.includes(r.itemId)) inv.push(r.itemId);
+        if (r.type === "furniture" && !furnitureInv.includes(r.itemId)) furnitureInv.push(r.itemId);
+        if (r.type === "title") playerTitle = r.title;
+      }
+
+      return {
+        ...prev,
+        coins,
+        diamonds,
+        inventory: inv,
+        furniture: {
+          ...prev.furniture,
+          inventory: furnitureInv,
+        },
+        playerTitle,
+        speechBubble: {
+          text: `กรี๊ดดด! หมุนตู้สุ่มมหาเศรษฐี VIP ได้ของรางวัลระดับเทพเจ้ามาครอง! 👑💎✨`,
+          timestamp: Date.now(),
+          duration: 5000,
+        },
+      };
+    });
+
+    return results;
+  }
+
+  // ==============================================================================
+  // ⭐ v7.0 PRESTIGE REBIRTH SYSTEM (ระบบจุติเกียรติยศ)
+  // ==============================================================================
+  performPrestige() {
+    const currentRank = this.currentState.prestige?.rank || 0;
+    const nextTier = PRESTIGE_TIERS.find((t) => t.rank === currentRank + 1);
+    if (!nextTier) return { success: false, reason: "จุติถึงขั้นสูงสุดแล้ว!" };
+
+    if ((this.currentState.level || 1) < nextTier.reqLevel) {
+      return { success: false, reason: `ต้องมีเลเวลขั้นต่ำ Lv.${nextTier.reqLevel}` };
+    }
+    if ((this.currentState.coins || 0) < nextTier.cost) {
+      return { success: false, reason: `ต้องการเมล็ดทานตะวัน ${nextTier.cost.toLocaleString()} เมล็ด` };
+    }
+
+    sound.playLevelUp();
+    this.updateState((prev) => {
+      const newRank = currentRank + 1;
+      const newDiamonds = (prev.diamonds || 0) + nextTier.bonusDiamonds;
+      const unlockedBreeds = [...(prev.unlockedBreeds || ["winter_white"])];
+      if (newRank >= 4 && !unlockedBreeds.includes("golden_celestial")) {
+        unlockedBreeds.push("golden_celestial");
+      }
+
+      return {
+        ...prev,
+        coins: prev.coins - nextTier.cost,
+        diamonds: newDiamonds,
+        level: 1,
+        exp: 0,
+        maxExp: 100,
+        hunger: 100,
+        happiness: 100,
+        cleanliness: 100,
+        energy: 100,
+        unlockedBreeds,
+        prestige: {
+          rank: newRank,
+          totalRebirths: (prev.prestige?.totalRebirths || 0) + 1,
+          perks: [...(prev.prestige?.perks || []), nextTier.perkDesc],
+        },
+        playerTitle: nextTier.name,
+        speechBubble: {
+          text: `🌟 น้องเฮเว่นบรรลุพิธีจุติ ${nextTier.star} '${nextTier.name}' รับโบนัส +${nextTier.bonusDiamonds} 💎 และพลังถาวร!`,
+          timestamp: Date.now(),
+          duration: 7000,
+        },
+      };
+    });
+
+    return { success: true, nextTier };
+  }
+
+  // ==============================================================================
+  // 💱 v7.0 SEED-TO-DIAMOND CENTRAL MINT (โรงกษาปณ์หลอมเพชร)
+  // ==============================================================================
+  mintDiamondsFromSeeds(tierId) {
+    const tier = MINT_EXCHANGE_TIERS.find((t) => t.id === tierId);
+    if (!tier) return { success: false, reason: "ไม่พบรายการแลกเปลี่ยน" };
+    if ((this.currentState.coins || 0) < tier.seedCost) {
+      return { success: false, reason: "เมล็ดทานตะวันไม่เพียงพอ" };
+    }
+
+    sound.playLevelUp();
+    this.updateState((prev) => ({
+      ...prev,
+      coins: prev.coins - tier.seedCost,
+      diamonds: (prev.diamonds || 0) + tier.diamondYield,
+      speechBubble: {
+        text: `หลอมเมล็ดทานตะวันสำเร็จ! ได้รับเพชรแท้ +${tier.diamondYield} 💎 วิบวับเลยงับ! ✨`,
+        timestamp: Date.now(),
+        duration: 4000,
+      },
+    }));
+
+    return { success: true, diamondYield: tier.diamondYield };
+  }
+
+  // ==============================================================================
+  // 🏛️ v7.0 GOLDEN SHRINE DONATIONS & BLESSINGS (แท่นบูชาเทพแฮมสเตอร์)
+  // ==============================================================================
+  donateToGoldenShrine(tierId) {
+    const tier = SHRINE_DONATION_TIERS.find((t) => t.id === tierId);
+    if (!tier) return { success: false, reason: "ไม่พบรายการบริจาค" };
+    if ((this.currentState.coins || 0) < tier.amount) {
+      return { success: false, reason: "เมล็ดทานตะวันไม่เพียงพอ" };
+    }
+
+    sound.playLevelUp();
+    this.updateState((prev) => ({
+      ...prev,
+      coins: prev.coins - tier.amount,
+      faithPoints: (prev.faithPoints || 0) + tier.faithYield,
+      totalDonatedSeeds: (prev.totalDonatedSeeds || 0) + tier.amount,
+      happiness: 100,
+      speechBubble: {
+        text: `สาธุ! บริจาค ${tier.amount.toLocaleString()} เมล็ดสู่แท่นบูชา ได้รับ +${tier.faithYield} แต้มศรัทธา 🕊️✨`,
+        timestamp: Date.now(),
+        duration: 4500,
+      },
+    }));
+
+    return { success: true, faithYield: tier.faithYield };
+  }
+
+  claimFaithReward(rewardId) {
+    const item = SHRINE_BLESSING_SHOP.find((s) => s.id === rewardId);
+    if (!item) return { success: false, reason: "ไม่พบพรที่เลือก" };
+    if ((this.currentState.faithPoints || 0) < item.cost) {
+      return { success: false, reason: "แต้มศรัทธาไม่เพียงพอ" };
+    }
+
+    sound.playLevelUp();
+    if (item.type === "title") {
+      this.setTitle(item.title);
+    } else if (item.type === "server_event") {
+      this.triggerSeedRain(180000);
+    } else if (item.type === "server_fever") {
+      this.updateState((prev) => ({
+        ...prev,
+        activeBuffs: {
+          ...prev.activeBuffs,
+          doubleCoinUntil: Date.now() + 30 * 60 * 1000,
+        },
+      }));
+    }
+
+    this.updateState((prev) => ({
+      ...prev,
+      faithPoints: prev.faithPoints - item.cost,
+      speechBubble: {
+        text: `อธิษฐานรับ '${item.name}' สำเร็จ! ขอให้มีแต่ความสุขสมหวังน้า 💖✨`,
+        timestamp: Date.now(),
+        duration: 5000,
+      },
+    }));
+
+    return { success: true };
   }
 
   // ==============================================================================

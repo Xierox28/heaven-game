@@ -382,10 +382,16 @@ export default function HamsterCharacter({ state, onPet }) {
         const stageBadge = level >= 25 ? "👑 วัยโตเต็มวัย" : level >= 10 ? "🏃 วัยรุ่น" : "🍼 วัยเบบี้";
         const breedDef = HAMSTER_BREEDS.find((b) => b.id === state.breed);
         const pDef = PERSONALITIES.find((p) => p.id === state.personality);
+        const prestigeRank = state.prestige?.rank || 0;
 
         return (
           <div className="mt-2 pointer-events-none flex flex-col items-center space-y-1">
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 flex-wrap justify-center gap-y-1">
+              {prestigeRank > 0 && (
+                <span className="text-[10px] bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-amber-950 border border-amber-600 font-black px-2 py-0.5 rounded-full shadow-xs animate-pulse">
+                  ★{prestigeRank} จุติ
+                </span>
+              )}
               <span className="text-[10px] bg-purple-100 text-purple-900 border border-purple-300 font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
                 {stageBadge}
               </span>

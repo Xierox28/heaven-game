@@ -132,6 +132,15 @@ export const INITIAL_GAME_STATE = {
     hamsterJump: 0,
   },
 
+  // 🏛️ v7.0 TYCOON ECONOMY & PRESTIGE
+  prestige: {
+    rank: 0,
+    totalRebirths: 0,
+    perks: [],
+  },
+  faithPoints: 0,
+  totalDonatedSeeds: 0,
+
   lastDecayTime: Date.now(),
   lastUpdated: Date.now(),
 };
@@ -329,6 +338,93 @@ export const GASHAPON_POOL = [
 ];
 
 // ============================================================
+// 👑 HIGH-ROLLER VIP GASHAPON (ตู้สุ่มมหาเศรษฐี v7.0)
+// สุ่ม 5,000 เมล็ด / สุ่ม 10 ครั้ง 45,000 เมล็ด
+// ============================================================
+export const HIGH_ROLLER_GASHAPON_POOL = [
+  // Jackpot SSR (10%)
+  { id: "hr_wings_cosmic", name: "ปีกเนบิวลาจักรวาล 6 แฉก (SSR)", type: "wardrobe", itemId: "wings_cosmic_nebula", icon: "🌌", rarity: "SSR", rate: 3.0 },
+  { id: "hr_statue_gold", name: "รูปปั้นทองคำแท้น้องเฮเว่น (SSR)", type: "furniture", itemId: "statue_golden_hamster", icon: "🏆", rarity: "SSR", rate: 3.0 },
+  { id: "hr_diamond_500", name: "หีบเพชรเจ้าสัว +500 💎", type: "diamonds", amount: 500, icon: "💎", rarity: "SSR", rate: 4.0 },
+  // SR (30%)
+  { id: "hr_title_sultan", name: "ฉายาทองคำ: 'สุลต่านแห่งกรงสวรรค์ 👑'", type: "title", title: "สุลต่านแห่งกรงสวรรค์ 👑", icon: "👑", rarity: "SR", rate: 8.0 },
+  { id: "hr_diamond_150", name: "ถุงเพชรแท้ +150 💎", type: "diamonds", amount: 150, icon: "💎", rarity: "SR", rate: 10.0 },
+  { id: "hr_shabu_x5", name: "ปาร์ตี้ชาบูหม้อไฟทองคำ x5 ชุด", type: "food", foodId: "shabu_pot", count: 5, icon: "🍲", rarity: "SR", rate: 12.0 },
+  // Common (60%)
+  { id: "hr_diamond_50", name: "ถุงเพชรย่อย +50 💎", type: "diamonds", amount: 50, icon: "💎", rarity: "Common", rate: 25.0 },
+  { id: "hr_kaprao_x10", name: "กะเพราไข่ดาวพรีเมียม x10 จาน", type: "food", foodId: "kaprao_rice", count: 10, icon: "🍳", rarity: "Common", rate: 35.0 },
+];
+
+// ============================================================
+// ⭐ PRESTIGE REBIRTH TIERS (ระบบจุติเกียรติยศ v7.0)
+// ============================================================
+export const PRESTIGE_TIERS = [
+  {
+    rank: 1,
+    cost: 50000,
+    reqLevel: 10,
+    star: "★1",
+    name: "จุติขั้น 1: ดาราทองคำ",
+    perkDesc: "ความหิวและความสะอาดลดช้าลง 20% ถาวร",
+    bonusDiamonds: 100,
+  },
+  {
+    rank: 2,
+    cost: 200000,
+    reqLevel: 15,
+    star: "★2",
+    name: "จุติขั้น 2: สุลต่านทานตะวัน",
+    perkDesc: "ได้รับเพชรฟรี +10 💎 ทุกครั้งที่อัปเลเวล & เพิ่มความสุขไวขึ้น 30%",
+    bonusDiamonds: 300,
+  },
+  {
+    rank: 3,
+    cost: 1000000,
+    reqLevel: 20,
+    star: "★3",
+    name: "จุติขั้น 3: จักรพรรดิแห่งสวรรค์",
+    perkDesc: "ผลผลิตการปลูกผักในสวน x2 ถาวร & มินิเกมได้เหรียญโบนัส +50%",
+    bonusDiamonds: 1000,
+  },
+  {
+    rank: 4,
+    cost: 5000000,
+    reqLevel: 25,
+    star: "★4",
+    name: "จุติขั้น 4: มหาเทพแฮมสเตอร์ทองคำ",
+    perkDesc: "ปลดล็อคสายพันธุ์ลับ 'แฮมสเตอร์ทองคำจุติ' & รัศมีออร่าดาวรอบตัวถาวร",
+    bonusDiamonds: 5000,
+  },
+];
+
+// ============================================================
+// 💱 SEED-TO-DIAMOND CENTRAL MINT (โรงกษาปณ์แลกเพชร v7.0)
+// ============================================================
+export const MINT_EXCHANGE_TIERS = [
+  { id: "mint_25k", seedCost: 25000, diamondYield: 50, label: "25,000 เมล็ด ➔ 50 💎", bonus: "" },
+  { id: "mint_50k", seedCost: 50000, diamondYield: 120, label: "50,000 เมล็ด ➔ 120 💎", bonus: "+20% โบนัส" },
+  { id: "mint_100k", seedCost: 100000, diamondYield: 260, label: "100,000 เมล็ด ➔ 260 💎", bonus: "+30% โบนัส" },
+  { id: "mint_1m", seedCost: 1000000, diamondYield: 3000, label: "1,000,000 เมล็ด ➔ 3,000 💎", bonus: "+50% โบนัสเจ้าสัว" },
+];
+
+// ============================================================
+// 🏛️ GOLDEN SHRINE DONATIONS & BLESSINGS (แท่นบูชาทานตะวัน v7.0)
+// ============================================================
+export const SHRINE_DONATION_TIERS = [
+  { id: "shrine_1k", amount: 1000, faithYield: 10, label: "บริจาค 1,000 เมล็ด", desc: "รับ +10 แต้มศรัทธา" },
+  { id: "shrine_10k", amount: 10000, faithYield: 120, label: "บริจาค 10,000 เมล็ด", desc: "รับ +120 แต้มศรัทธา (โบนัส +20%)" },
+  { id: "shrine_100k", amount: 100000, faithYield: 1500, label: "บริจาค 100,000 เมล็ด", desc: "รับ +1,500 แต้มศรัทธา (โบนัส +50%)" },
+  { id: "shrine_1m", amount: 1000000, faithYield: 20000, label: "บริจาค 1,000,000 เมล็ด", desc: "รับ +20,000 แต้มศรัทธา (โบนัสเศรษฐี x2)" },
+];
+
+export const SHRINE_BLESSING_SHOP = [
+  { id: "faith_title_saint", name: "ฉายา: 'ผู้ใจบุญแห่งสวรรค์' ✨", cost: 100, type: "title", title: "ผู้ใจบุญแห่งสวรรค์ ✨", icon: "🕊️", desc: "ฉายาประกายแสงสีฟ้าสำหรับผู้บำเพ็ญบุญ" },
+  { id: "faith_title_billionaire", name: "ฉายา: 'มหาเศรษฐีใจบุญพันล้าน' 💰", cost: 500, type: "title", title: "มหาเศรษฐีใจบุญพันล้าน 💰", icon: "👑", desc: "ฉายาทองคำสะท้อนความมั่งคั่งและใจกว้าง" },
+  { id: "faith_server_rain", name: "เสกฝนเมล็ดทานตะวันให้ทั้งเซิร์ฟเวอร์! 🌧️", cost: 1000, type: "server_event", icon: "🌻", desc: "เปิด Event ฝนเมล็ดทานตะวันตกให้ผู้เล่นทุกคนเป็นเวลา 3 นาที" },
+  { id: "faith_server_fever", name: "เปิด Golden Fever Time ทั้งเซิร์ฟเวอร์! 🔥", cost: 2500, type: "server_fever", icon: "⚡", desc: "เปิดมินิเกม x2 เหรียญให้ทุกคนในเซิร์ฟเวอร์เป็นเวลา 30 นาที" },
+];
+
+// ============================================================
 // MANSION THEMES (อัพเกรดกรงคฤหาสน์หรู v5.0 & 2-Story Balcony)
 // ============================================================
 export const MANSION_THEMES = [
@@ -377,6 +473,18 @@ export const MANSION_THEMES = [
     themeType: "cyber",
     ambientIcon: "🚀",
   },
+  {
+    id: "mansion_diamond_palace",
+    name: "พระราชวังคริสตัลเพชรแสงเหนือ",
+    cost: 150000,
+    bgStyle: "bg-gradient-to-b from-cyan-900/90 via-sky-950/90 to-indigo-950/90 text-white border-cyan-300",
+    bgClass: "bg-gradient-to-b from-cyan-950 via-sky-950 to-indigo-950 border-cyan-300 shadow-cyan-400/50 text-white",
+    desc: "พระราชวังคริสตัลระยิบระยับ ประดับแสงออโรร่าเหนือฟ้า สัญลักษณ์แห่งอัครมหาเศรษฐี",
+    hasSecondFloor: true,
+    floorName: "หอคอยเพชรชมแสงออโรร่า",
+    themeType: "crystal",
+    ambientIcon: "💎",
+  },
 ];
 
 // ============================================================
@@ -401,6 +509,9 @@ export const WARDROBE_ITEMS = [
   { id: "wings_devil",  type: "wings", name: "ปีกค้างคาวปีศาจน้อย",     icon: "🦇", image: "/assets/wardrobe/thumbs/wings_devil.png", cost: 750, reqLevel: 4, desc: "ปีกค้างคาวปีศาจ ขยับกระพือดุ๊กดิ๊ก เพิ่มความซน", isAnimated: true },
   { id: "wings_fairy",  type: "wings", name: "ปีกภูตแฟรี่ประกายรุ้ง",     icon: "🧚", image: "/assets/wardrobe/thumbs/wings_fairy.png", cost: 900, reqLevel: 5, desc: "ปีกภูตแฟรี่โปร่งแสง เปล่งประกายละอองเวทมนตร์", isAnimated: true },
   { id: "wings_golden", type: "wings", name: "ปีกฟีนิกซ์ทองคำ (SSR)",   icon: "✨", image: "/assets/wardrobe/thumbs/wings_golden.png", cost: 2500, reqLevel: 6, desc: "ปีกทองคำเปล่งประกาย สัญลักษณ์แห่งความยิ่งใหญ่", isAnimated: true },
+  // 👑 TYCOON LUXURY PIECES (v7.0)
+  { id: "wings_cosmic_nebula", type: "wings", name: "ปีกเนบิวลาจักรวาล 6 แฉก (SSR)", icon: "🌌", image: "/assets/wardrobe/thumbs/wings_fairy.png", cost: 300000, reqLevel: 8, desc: "ปีกคอสมิกแห่งมิติสวรรค์ ขยับกระพือละอองดาวจักรวาลเรืองแสง", isAnimated: true },
+  { id: "crown_sunflower_tycoon", type: "hat", name: "มงกุฎจักรพรรดิทานตะวัน (1M)", icon: "👑", image: "/assets/wardrobe/thumbs/flower_crown.png", cost: 1000000, reqLevel: 10, desc: "มงกุฎทองคำประดับอัญมณี 1 ล้านเมล็ดทานตะวัน สัญลักษณ์แห่งเจ้าสัวที่แท้จริง" },
 ];
 
 // ============================================================
@@ -506,6 +617,17 @@ export const HAMSTER_BREEDS = [
     cost: 0,
     reqLevel: 15,
   },
+  {
+    id: "golden_celestial",
+    name: "แฮมสเตอร์ทองคำจุติ (Golden Celestial)",
+    tag: "ปลดล็อค Prestige ★4",
+    image: "/assets/breeds/golden_giant.png",
+    thumb: "/assets/breeds/thumbs/golden_giant.png",
+    desc: "แฮมสเตอร์ระดับเทพเจ้า จุติจากสรวงสวรรค์ เปล่งรัศมีทองคำบริสุทธิ์รอบตัวตลอดเวลา",
+    cost: 0,
+    reqLevel: 1,
+    reqPrestige: 4,
+  },
 ];
 
 // ==============================================================================
@@ -582,4 +704,8 @@ export const PLAYER_TITLES = [
   "ผู้พิทักษ์แห่งความน่ารัก ✨",
   "เชฟกระทะร้อนกะเพราไข่ดาว 🍳",
   "แชมป์กระโดดเมฆ Hamster Jump ☁️",
+  "สุลต่านแห่งกรงสวรรค์ 👑",
+  "ผู้ใจบุญแห่งสวรรค์ ✨",
+  "มหาเศรษฐีใจบุญพันล้าน 💰",
+  "มหาเทพแฮมสเตอร์ทองคำ ★4 🌟",
 ];

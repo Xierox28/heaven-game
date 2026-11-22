@@ -1266,6 +1266,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
         isOpen={isGashaponOpen}
         onClose={() => setIsGashaponOpen(false)}
         onSpin={(count) => gameStateService.spinGashapon(count)}
+        onSpinHighRoller={(count) => gameStateService.spinHighRollerGashapon(count)}
+        onPrestige={() => gameStateService.performPrestige()}
+        onMintDiamonds={(tierId) => gameStateService.mintDiamondsFromSeeds(tierId)}
+        onDonateShrine={(tierId) => gameStateService.donateToGoldenShrine(tierId)}
+        onClaimFaithReward={(id) => gameStateService.claimFaithReward(id)}
         onEquipBuddy={(id) => gameStateService.equipBuddy(id)}
         onBuyTheme={(id) => gameStateService.buyMansionTheme(id)}
         onEquipTheme={(id) => gameStateService.equipMansionTheme(id)}

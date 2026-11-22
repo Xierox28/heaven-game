@@ -58,6 +58,19 @@ export const FURNITURE_ITEMS = [
     perkDesc: "👑 ชาร์จพลังงานเร็วขึ้น +50% & อารมณ์ดีตลอดวัน",
     perk: { energyRegenBonus: 0.5 },
   },
+  {
+    id: "diamond_chandelier_bed",
+    category: "house",
+    name: "แท่นบรรทมคริสตัลเพชรระย้า",
+    icon: "💎",
+    image: "/assets/furniture/fairy_castle.png",
+    rarity: "legendary",
+    cost: 75000,
+    reqLevel: 5,
+    desc: "เตียงนอนคริสตัลบริสุทธิ์ ประดับโคมระย้าเพชรวิบวับ ชาร์จพลังงานรวดเร็วดั่งแสง",
+    perkDesc: "⚡ ชาร์จพลังงานตอนนอนเร็วขึ้น +100%",
+    perk: { energyRegenBonus: 1.0 },
+  },
 
   // ----------------------------------------------------------------------------
   // 2. TOYS (ของเล่นและเครื่องเล่น)
@@ -113,6 +126,19 @@ export const FURNITURE_ITEMS = [
     desc: "ชิงช้าสวรรค์หมุนได้จริง มีไฟกะพริบวิ้งค์ๆ ราวกับอยู่ในสวนสนุก",
     perkDesc: "✨ ความสุขลดช้าลง 50% & ปั่นวงล้อได้แต้มคูณสอง",
     perk: { happinessDecayReduction: 0.5, wheelBonus: 1 },
+  },
+  {
+    id: "statue_golden_hamster",
+    category: "toy",
+    name: "รูปปั้นทองคำแท้น้องเฮเว่น",
+    icon: "🏆",
+    image: "/assets/furniture/ferris_wheel.png",
+    rarity: "legendary",
+    cost: 50000,
+    reqLevel: 5,
+    desc: "รูปปั้นทองคำแท้ 24K หล่อขึ้นมาเพื่อเป็นอนุสรณ์แด่ความร่ำรวยและความน่ารัก",
+    perkDesc: "👑 ออร่าเศรษฐี: ความสุขเต็มหลอดเสมอ",
+    perk: { happinessDecayReduction: 0.8 },
   },
 
   // ----------------------------------------------------------------------------

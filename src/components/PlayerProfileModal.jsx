@@ -54,10 +54,15 @@ export default function PlayerProfileModal({ state, isOpen, onClose, onSave }) {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 flex-wrap">
               <span className="text-sm font-black text-white drop-shadow-xs truncate">
                 {state?.name || "น้องเฮเว่น"}
               </span>
+              {state?.prestige?.rank > 0 && (
+                <span className="text-[10px] bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 text-amber-950 font-black px-2 py-0.5 rounded-full border border-amber-600 shadow-xs animate-pulse">
+                  ★{state.prestige.rank} จุติ
+                </span>
+              )}
               <span className="text-[10px] bg-slate-950/80 text-amber-300 font-black px-2 py-0.5 rounded-full border border-amber-400">
                 Lv.{level}
               </span>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import PlayerView from "./views/PlayerView";
-import AdminView from "./views/AdminView";
+
+const AdminView = lazy(() => import("./views/AdminView"));
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -87,7 +88,14 @@ export default function App() {
     <main className="min-h-screen">
       <ErrorBoundary>
         {currentRoute === "/admin" ? (
-          <AdminView onNavigateToPlayer={() => navigateTo("/")} />
+          <Suspense fallback={
+            <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center font-['Itim',sans-serif]">
+              <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+              <span className="text-xs font-black text-amber-300">กำลังเปิดแผงควบคุม GM... 👑</span>
+            </div>
+          }>
+            <AdminView onNavigateToPlayer={() => navigateTo("/")} />
+          </Suspense>
         ) : (
           <PlayerView onNavigateToAdmin={() => navigateTo("/admin")} />
         )}
