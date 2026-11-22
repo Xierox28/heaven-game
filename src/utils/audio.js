@@ -306,6 +306,105 @@ class SoundFX {
       osc.stop(t + 0.22);
     });
   }
+
+  // 🪜 เสียงวิ่งขึ้นบันไดกรง (Pitter-patter ascending steps)
+  playClimbStairs() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const steps = [350, 420, 520, 659];
+    steps.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "triangle";
+      const t = this.ctx.currentTime + idx * 0.08;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.8, t + 0.04);
+
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.07);
+    });
+  }
+
+  // 🛝 เสียงสไลเดอร์วนลงมาชั้นล่าง (Whimsical slide whoosh)
+  playSlideDown() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sine";
+    const now = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.35);
+
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.36);
+  }
+
+  // 🔭 เสียงส่องกล้องดูดาวบนชั้น 2 (Celestial sparkle chime)
+  playStargaze() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const freqs = [523.25, 659.25, 783.99, 1046.5, 1318.51];
+    freqs.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const t = this.ctx.currentTime + idx * 0.06;
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.1, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.3);
+    });
+  }
+
+  // 🛋️ เสียงนอนไกวเปลชั้นลอย (Gentle soothing lullaby chime)
+  playHammock() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const notes = [440, 554.37, 659.25, 554.37];
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const t = this.ctx.currentTime + idx * 0.12;
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.09, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.24);
+    });
+  }
 }
 
 export const sound = new SoundFX();

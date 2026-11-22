@@ -21,6 +21,7 @@ import LeaderboardModal from "../components/LeaderboardModal";
 import HamsterPassModal from "../components/HamsterPassModal";
 import UpdateLogModal from "../components/UpdateLogModal";
 import CageDecorModal from "../components/CageDecorModal";
+import CageTwoStoryArchitecture from "../components/CageTwoStoryArchitecture";
 import HamsterGardenModal from "../components/HamsterGardenModal";
 import LuckyGashaponModal from "../components/LuckyGashaponModal";
 import HamsterJumpMiniGame from "../components/HamsterJumpMiniGame";
@@ -592,20 +593,21 @@ export default function PlayerView({ onNavigateToAdmin }) {
   // ============================================================
   const renderCageStage = () => {
     const equippedFurniture = gameState.furniture?.equipped || {};
-    let wallpaperStyle = "bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100 border-amber-300 shadow-amber-200/50";
-    const mansionDef = MANSION_THEMES?.find((t) => t.id === gameState.mansionTheme);
-    if (mansionDef) {
-      wallpaperStyle = mansionDef.bgClass;
-    } else if (isDarkMode) {
-      wallpaperStyle = "bg-gradient-to-b from-slate-900/95 via-indigo-950/70 to-slate-950 border-slate-700 shadow-slate-950/60 text-slate-100";
+    const mansionDef = MANSION_THEMES?.find((t) => t.id === gameState.mansionTheme) || MANSION_THEMES[0];
+    
+    let frameStyle = mansionDef?.bgClass || "border-amber-300 shadow-amber-200/50";
+    let wallBg = mansionDef?.wallClass || "bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100";
+    
+    if (isDarkMode) {
+      wallBg = "bg-gradient-to-b from-slate-900/95 via-indigo-950/70 to-slate-950 text-slate-100";
     } else if (isNight) {
-      wallpaperStyle = "bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border-slate-700 shadow-indigo-950/40";
+      wallBg = "bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 text-slate-100";
     } else if (equippedFurniture.wallpaper === "sakura_blossom") {
-      wallpaperStyle = "bg-gradient-to-b from-pink-100 via-rose-50 to-pink-200 border-pink-300 shadow-pink-200/50";
+      wallBg = "bg-gradient-to-b from-pink-100 via-rose-50 to-pink-200 border-pink-300 shadow-pink-200/50";
     } else if (equippedFurniture.wallpaper === "forest_camp") {
-      wallpaperStyle = "bg-gradient-to-b from-emerald-100 via-green-50 to-emerald-200 border-emerald-400 shadow-emerald-200/50";
+      wallBg = "bg-gradient-to-b from-emerald-100 via-green-50 to-emerald-200 border-emerald-400 shadow-emerald-200/50";
     } else if (equippedFurniture.wallpaper === "galaxy_stars") {
-      wallpaperStyle = "bg-gradient-to-b from-indigo-950 via-purple-900 to-slate-950 border-purple-500 shadow-purple-950/50";
+      wallBg = "bg-gradient-to-b from-indigo-950 via-purple-900 to-slate-950 border-purple-500 shadow-purple-950/50";
     }
 
     return (
@@ -631,17 +633,23 @@ export default function PlayerView({ onNavigateToAdmin }) {
           onPointerMove={handlePointerMoveCage}
           onPointerUp={handlePointerUpCage}
           onPointerCancel={handlePointerUpCage}
-          className={`relative w-full rounded-3xl border-4 cage-frame-cozy shadow-lg ${
-            isMoveMode ? "min-h-[380px] sm:min-h-[420px] select-none" : "min-h-[320px] sm:min-h-[340px]"
-          } flex flex-col justify-between p-3.5 sm:p-4 cursor-pointer transition-all duration-500 ${wallpaperStyle} ${
+          className={`relative w-full rounded-3xl border-4 cage-frame-cozy shadow-xl ${
+            isMoveMode ? "min-h-[460px] sm:min-h-[500px] select-none" : "min-h-[460px] sm:min-h-[500px]"
+          } flex flex-col justify-between p-3.5 sm:p-4 cursor-pointer transition-all duration-500 overflow-hidden ${frameStyle} ${wallBg} ${
             isDarkMode ? "dark-cage-frame" : ""
           }`}
           onClick={handleCageTap}
           title={isMoveMode ? "สตูดิโอจัดห้อง: แตะลากของได้โดยตรง" : "ดับเบิ้ลแทปเพื่อให้อาหารด่วน!"}
         >
-          {/* Background grid pattern */}
+          {/* Background grid / wallpaper pattern */}
           <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-            <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:18px_18px]"></div>
+            {mansionDef?.wallPattern === "cyber_grid" ? (
+              <div className="absolute inset-0 opacity-20 bg-[linear-gradient(rgba(6,182,212,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.4)_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+            ) : mansionDef?.wallPattern === "aurora" ? (
+              <div className="absolute inset-0 opacity-30 bg-gradient-to-t from-transparent via-cyan-500/20 to-purple-600/30 animate-pulse-slow"></div>
+            ) : (
+              <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:18px_18px]"></div>
+            )}
 
             {/* Wallpaper ambiance */}
             {equippedFurniture.wallpaper === "sakura_blossom" && !isNight && (
@@ -661,18 +669,53 @@ export default function PlayerView({ onNavigateToAdmin }) {
             )}
           </div>
 
-          {/* Room Badge & Decor Action (Hidden in Move Mode) */}
+          {/* 🏰 Real 2-Story Architecture Component (Loft Deck, Stairs, & Floor 2 Interactive Stations) */}
+          <CageTwoStoryArchitecture
+            theme={mansionDef}
+            currentFloor={gameState.currentFloor || 1}
+            onSwitchFloor={(f) => gameStateService.switchFloor(f)}
+            onUseTelescope={() => gameStateService.useFloor2Telescope()}
+            onUseHammock={() => gameStateService.useFloor2Hammock()}
+            onUseSnack={() => gameStateService.useFloor2Snack()}
+            isMoveMode={isMoveMode}
+            isDarkMode={isDarkMode}
+            isNight={isNight}
+          />
+
+          {/* Room Badge & Floor Switcher & Decor Action (Hidden in Move Mode) */}
           {!isMoveMode && (
             <div className="relative z-40 pointer-events-auto flex items-center justify-between gap-1.5 w-full">
-              <span
-                className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
-                  isDarkMode || isNight || equippedFurniture.wallpaper === "galaxy_stars"
-                    ? "bg-slate-800/90 border-slate-600 text-indigo-200"
-                    : "bg-white/95 border-amber-200 text-amber-950"
-                }`}
-              >
-                {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
-              </span>
+              <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                <span
+                  className={`text-xs font-black px-3 py-1 rounded-full border shadow-xs ${
+                    isDarkMode || isNight || equippedFurniture.wallpaper === "galaxy_stars" || mansionDef.themeType === "cyber" || mansionDef.themeType === "crystal"
+                      ? "bg-slate-900/90 border-slate-700 text-amber-200"
+                      : "bg-white/95 border-amber-200 text-amber-950"
+                  }`}
+                >
+                  {isNight ? "🌙 Sweet Dreams Room" : `🏡 บ้านของ${gameState.name || "น้องเฮเว่น"}`}
+                </span>
+
+                {/* 🏢 Interactive Floor Toggle Badge */}
+                {mansionDef?.hasSecondFloor && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      gameStateService.switchFloor(gameState.currentFloor === 2 ? 1 : 2);
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border shadow-xs transition-all flex items-center space-x-1 active:scale-95 cursor-pointer ${
+                      gameState.currentFloor === 2
+                        ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white border-amber-300 animate-pulse shadow-amber-500/30"
+                        : "bg-white/95 hover:bg-amber-100 text-amber-950 border-amber-300"
+                    }`}
+                    title="แตะเพื่อสลับชั้น (ชั้น 1 / ชั้น 2)"
+                  >
+                    <span>{gameState.currentFloor === 2 ? `🏢 ชั้น 2: ${mansionDef.floorName || "ดาดฟ้า"}` : "🏠 ชั้น 1: ห้องนั่งเล่น"}</span>
+                    <span className="text-[8px] bg-black/20 text-white px-1 py-0.2 rounded-full">สลับ</span>
+                  </button>
+                )}
+              </div>
 
               {/* Decor & Move Room tools */}
               <div className="flex items-center space-x-1 sm:space-x-1.5 pointer-events-auto">
@@ -859,45 +902,6 @@ export default function PlayerView({ onNavigateToAdmin }) {
             </div>
           )}
 
-          {/* 🏰 2-Story Balcony when Mansion Theme is active */}
-          {mansionDef?.hasSecondFloor && !isMoveMode && (
-            <div className="absolute top-12 left-4 right-14 sm:right-16 h-11 pointer-events-none z-10 animate-fade-in">
-              <img
-                src="/assets/cage/cage_balcony.png"
-                alt="2nd Floor Balcony"
-                className="w-full h-full object-fill pixel-art drop-shadow-sm opacity-95"
-              />
-              <div className="absolute top-1 left-2 bg-amber-950/70 text-amber-200 text-[8px] font-black px-1.5 py-0.2 rounded-full border border-amber-400/40">
-                {mansionDef.floorName || "ระเบียงชั้น 2"}
-              </div>
-            </div>
-          )}
-
-          {/* 🪜 Interactive Ladder to climb to 2nd Floor */}
-          {mansionDef?.hasSecondFloor && !isMoveMode && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                gameStateService.switchFloor(gameState.currentFloor === 2 ? 1 : 2);
-              }}
-              className="absolute top-10 left-12 w-10 h-28 z-25 cursor-pointer group flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"
-              title={gameState.currentFloor === 2 ? "แตะบันไดเพื่อลงมาชั้น 1" : "แตะบันไดเพื่อปีนขึ้นชั้น 2"}
-            >
-              <img
-                src="/assets/cage/cage_ladder.png"
-                alt="Cage Ladder"
-                className="w-full h-full object-contain pixel-art drop-shadow-md"
-              />
-              <span
-                className={`text-[8px] font-black px-1.5 py-0.5 rounded-full mt-0.5 shadow-xs transition-colors ${
-                  gameState.currentFloor === 2 ? "bg-amber-700 text-white" : "bg-emerald-500 text-white animate-bounce"
-                }`}
-              >
-                {gameState.currentFloor === 2 ? "ลงชั้น 1" : "ปีนชั้น 2 🪜"}
-              </span>
-            </div>
-          )}
-
           {/* 🎁 Pending Mystery Box Drop */}
           {gameState.mysteryBoxPending && !isMoveMode && (
             <div
@@ -926,10 +930,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
             </div>
           )}
 
-          {/* พื้นห้อง / Cage Floor Ground Plane */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-amber-200/35 via-amber-100/15 to-transparent pointer-events-none rounded-b-2xl border-b-2 border-amber-300/30"></div>
-
-          {/* Water bottle */}
+          {/* Water bottle on Floor 1 Ground (Cleanly positioned on ground level away from stairs) */}
           {!isMoveMode && (
             <div
               onClick={(e) => {
@@ -944,7 +945,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! หายเหนื่อยเลย 💧🐹✨", timestamp: Date.now(), duration: 3500 },
                 }));
               }}
-              className="absolute top-12 left-3 z-40 pointer-events-auto cursor-pointer group flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"
+              className="absolute bottom-6 left-3.5 z-35 pointer-events-auto cursor-pointer group flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"
               title="กดเพื่อดื่มน้ำเย็นสดชื่น (+ความสุข & ความสะอาด)"
             >
               <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
@@ -1134,8 +1135,14 @@ export default function PlayerView({ onNavigateToAdmin }) {
             );
           })()}
 
-          {/* Hamster Character */}
-          <div className="relative z-20 my-auto py-1 pointer-events-none flex justify-center w-full">
+          {/* Hamster Character with Realistic Multi-Story Positioning */}
+          <div
+            className={`absolute left-0 right-0 z-20 pointer-events-none flex justify-center transition-all duration-700 ease-in-out ${
+              gameState.currentFloor === 2
+                ? "top-14 sm:top-16 scale-90 sm:scale-95"
+                : "bottom-14 sm:bottom-16 scale-100"
+            }`}
+          >
             <HamsterCharacter
               state={gameState}
               onPet={() => gameStateService.pet()}

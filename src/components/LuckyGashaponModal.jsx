@@ -694,6 +694,11 @@ export default function LuckyGashaponModal({
         ========================================================================= */}
         {activeTab === "mansion" && (
           <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+            <div className="bg-amber-100/80 border border-amber-300 rounded-2xl p-2.5 text-xs font-black text-amber-950 flex items-center space-x-1.5 shadow-2xs">
+              <span className="text-base">🏰</span>
+              <span>อัปเกรดกรงคฤหาสน์ 2 ชั้น! สัมผัสความหรูหราพร้อมดาดฟ้าชมวิว ส่องกล้องดูดาว และกิจกรรมพิเศษ</span>
+            </div>
+
             {MANSION_THEMES.map((theme) => {
               const isOwned = unlockedThemes.includes(theme.id);
               const isEquipped = mansionTheme === theme.id;
@@ -701,47 +706,70 @@ export default function LuckyGashaponModal({
               return (
                 <div
                   key={theme.id}
-                  className="bg-white rounded-2xl border-2 border-amber-200 p-3 shadow-xs flex items-center justify-between"
+                  className={`bg-white rounded-2xl border-2 p-3 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all ${
+                    isEquipped ? "border-amber-500 ring-2 ring-amber-400/30" : "border-amber-200"
+                  }`}
                 >
-                  <div className="flex-1 min-w-0 pr-3">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="text-base">🏰</span>
+                  <div className="flex-1 min-w-0 pr-1">
+                    <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                      <span className="text-base">{theme.ambientIcon || "🏰"}</span>
                       <h3 className="text-xs sm:text-sm font-black text-slate-900 truncate">{theme.name}</h3>
+                      {theme.hasSecondFloor && (
+                        <span className="text-[9px] bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-2 py-0.5 rounded-full shadow-2xs">
+                          🏢 คฤหาสน์ 2 ชั้น
+                        </span>
+                      )}
                     </div>
-                    <p className="text-[10px] text-slate-600 font-bold mt-0.5 leading-tight">{theme.desc}</p>
+                    <p className="text-[10px] text-slate-600 font-bold mt-1 leading-tight">{theme.desc}</p>
+                    
+                    {theme.hasSecondFloor && (
+                      <div className="mt-1.5 flex flex-wrap gap-1 text-[9px] font-black">
+                        <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-300">
+                          ชั้น 2: {theme.floorName}
+                        </span>
+                        {theme.perk && (
+                          <span className="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md border border-emerald-300">
+                            ✨ {theme.perk}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <div className="text-[11px] font-extrabold text-amber-700 mt-1">
                       {theme.cost === 0 ? "เริ่มต้นฟรี" : `🌻 ${theme.cost.toLocaleString()} เมล็ดทานตะวัน`}
                     </div>
                   </div>
 
-                  {isEquipped ? (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-emerald-100 text-emerald-800 font-black text-xs rounded-xl flex items-center space-x-1 cursor-default"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>ใช้งานอยู่</span>
-                    </button>
-                  ) : isOwned ? (
-                    <button
-                      onClick={() => onEquipTheme(theme.id)}
-                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-                    >
-                      เลือกใช้
-                    </button>
-                  ) : (
-                    <button
-                      disabled={coins < theme.cost}
-                      onClick={() => onBuyTheme(theme.id)}
-                      className={`px-3 py-1.5 rounded-xl font-black text-xs shadow-xs transition-all ${
-                        coins >= theme.cost
-                          ? "bg-amber-500 hover:bg-amber-600 text-white active:scale-95 shadow-md cursor-pointer"
-                          : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                      }`}
-                    >
-                      ซื้ออัปเกรด
-                    </button>
-                  )}
+                  <div className="flex-shrink-0 self-end sm:self-center">
+                    {isEquipped ? (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-emerald-100 text-emerald-800 font-black text-xs rounded-xl flex items-center space-x-1 cursor-default shadow-xs"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>ใช้งานอยู่</span>
+                      </button>
+                    ) : isOwned ? (
+                      <button
+                        onClick={() => onEquipTheme(theme.id)}
+                        className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center space-x-1"
+                      >
+                        <span>เลือกใช้</span>
+                      </button>
+                    ) : (
+                      <button
+                        disabled={coins < theme.cost}
+                        onClick={() => onBuyTheme(theme.id)}
+                        className={`px-3.5 py-1.5 rounded-xl font-black text-xs shadow-xs transition-all ${
+                          coins >= theme.cost
+                            ? "bg-amber-500 hover:bg-amber-600 text-white active:scale-95 shadow-md cursor-pointer"
+                            : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                        }`}
+                      >
+                        ซื้ออัปเกรด
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

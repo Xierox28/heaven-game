@@ -101,10 +101,10 @@ export default function HamsterCharacter({ state, onPet }) {
 
   const tintClass = MOOD_TINT[mood] || "";
   const sleepTint = isSleeping ? "brightness-70 saturate-50" : "";
-  const floorOffset = state.currentFloor === 2 ? "-translate-y-10 sm:-translate-y-14" : "translate-y-0";
+  const isFloor2 = state.currentFloor === 2;
 
   return (
-    <div className={`relative flex flex-col items-center justify-center select-none pt-2 transition-transform duration-500 ease-out ${floorOffset}`}>
+    <div className={`relative flex flex-col items-center justify-center select-none pt-2 transition-transform duration-500 ease-out ${isFloor2 ? "filter drop-shadow-md" : ""}`}>
       {/* ============================================================
           1. SPEECH BUBBLE (อยู่เหนือน้องอย่างพอดี คมชัด 100% ไม่ตกขอบ)
       ============================================================ */}

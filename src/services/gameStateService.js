@@ -2080,18 +2080,116 @@ class GameStateService {
 
   // 🪜 สลับชั้นกรง (Floor 1: พื้นกรง / Floor 2: ระเบียงชั้นลอย)
   switchFloor(floor) {
-    sound.playClick();
-    this.updateState((prev) => ({
+    const targetFloor = Number(floor);
+    const theme = MANSION_THEMES.find((t) => t.id === this.currentState.mansionTheme) || MANSION_THEMES[0];
+
+    if (targetFloor === 2) {
+      sound.playClimbStairs();
+    } else {
+      sound.playSlideDown();
+    }
+
+    const quotes = targetFloor === 2 ? (theme.floorQuotes || []) : (theme.groundQuotes || []);
+    const randomQuote = quotes.length > 0
+      ? quotes[Math.floor(Math.random() * quotes.length)]
+      : targetFloor === 2
+      ? "ปีนขึ้นมาชั้น 2 แล้วงับ! ลมพัดเย็นสบายจังเลยยย~ 🪜✨"
+      : "สไลด์ลงมาชั้น 1 แล้วงับ! อบอุ่นคุ้นเคยเหมือนเดิม~ 🐾";
+
+    return this.updateState((prev) => ({
       ...prev,
-      currentFloor: floor,
+      currentFloor: targetFloor,
+      happiness: targetFloor === 2 ? Math.min(100, prev.happiness + 8) : prev.happiness,
+      energy: targetFloor === 2 ? Math.min(100, prev.energy + 5) : prev.energy,
       speechBubble: {
-        text: floor === 2
-          ? "ปีนบันไดขึ้นมาชั้น 2 แล้วงับ! รับลมชมวิวสบายจังเลยยย~ 🪜✨"
-          : "ไต่ลงมาชั้นล่างแล้วงับ! พื้นกรงอบอุ่นเหมือนเดิม~ 🐾",
+        text: randomQuote,
         timestamp: Date.now(),
-        duration: 3500,
+        duration: 4000,
       },
     }));
+  }
+
+  // 🔭 กิจกรรมชั้น 2: ส่องกล้องดูดาว / ชมวิว
+  useFloor2Telescope() {
+    sound.playStargaze();
+    const theme = MANSION_THEMES.find((t) => t.id === this.currentState.mansionTheme);
+    const earnedExp = 50;
+    const earnedCoins = Math.floor(Math.random() * 35) + 25;
+
+    return this.updateState((prev) => {
+      const newExp = prev.exp + earnedExp;
+      const newCoins = prev.coins + earnedCoins;
+      const quote = theme?.themeType === "cyber"
+        ? "ส่องกล้องเห็นกาแล็กซีแอนโดรเมดากับสถานีอวกาศลอยฟ้าด้วย! 🔭🌌✨"
+        : theme?.themeType === "crystal"
+        ? "แสงออโรร่าสีมรกตเต้นระบำเต็มท้องฟ้า สวยงามมหัศจรรย์จับใจ! 🌌💎✨"
+        : theme?.themeType === "pastel"
+        ? "เห็นกลุ่มดาวรูปหัวใจสีชมพูบนท้องฟ้าด้วยงับ น่ารักที่สุด! ⭐💖✨"
+        : "ส่องกล้องเห็นดอกทานตะวันบานสะพรั่งเต็มทุ่งหญ้า สดชื่นจังงับ! 🌻🍃✨";
+
+      return {
+        ...prev,
+        coins: newCoins,
+        exp: newExp,
+        happiness: Math.min(100, prev.happiness + 15),
+        speechBubble: {
+          text: `${quote} (+${earnedCoins} 🌻, +${earnedExp} EXP)`,
+          timestamp: Date.now(),
+          duration: 4500,
+        },
+      };
+    });
+  }
+
+  // 🛋️ กิจกรรมชั้น 2: นอนไกวเปลชั้นลอย / พักผ่อนบนเบาะ
+  useFloor2Hammock() {
+    sound.playHammock();
+    const theme = MANSION_THEMES.find((t) => t.id === this.currentState.mansionTheme);
+
+    return this.updateState((prev) => {
+      const quote = theme?.themeType === "cyber"
+        ? "เข้าแคปซูลชาร์จพลังงานควอนตัม... พลังฟื้นฟูเต็ม 100%! ⚡🔋✨"
+        : theme?.themeType === "crystal"
+        ? "นั่งพักผ่อนบนบัลลังก์ผลึกเพชรหิมะ เย็นสบายคลายร้อนสุดๆ 👑❄️"
+        : theme?.themeType === "pastel"
+        ? "นอนกลิ้งบนเบาะปุยนุ่นพาสเทล นุ่มฟูจนแทบไม่อยากลุกเลยงับ ☁️💖"
+        : "แกว่งเปลญวนรับลมชั้น 2 สบายใจจนเคลิ้มหลับเลย... ฟี้~ 🛋️💤";
+
+      return {
+        ...prev,
+        happiness: Math.min(100, prev.happiness + 20),
+        energy: Math.min(100, prev.energy + 15),
+        cleanliness: Math.min(100, prev.cleanliness + 5),
+        speechBubble: {
+          text: quote,
+          timestamp: Date.now(),
+          duration: 4000,
+        },
+      };
+    });
+  }
+
+  // 🍪 กิจกรรมชั้น 2: กินขนมพรีเมียมบนดาดฟ้า
+  useFloor2Snack() {
+    sound.playEat();
+    const theme = MANSION_THEMES.find((t) => t.id === this.currentState.mansionTheme);
+
+    return this.updateState((prev) => {
+      const quote = theme?.snackLabel
+        ? `แอบขึ้นมากิน '${theme.snackLabel}' บนชั้น 2 อร่อยฟินเป็นสองเท่าเลยงับ! 😋✨`
+        : "แอบขึ้นมากินขนมลับบนระเบียงชั้น 2 อร่อยสุดๆ ไปเล้ยยย! 🌻🍪✨";
+
+      return {
+        ...prev,
+        hunger: Math.min(100, prev.hunger + 20),
+        happiness: Math.min(100, prev.happiness + 15),
+        speechBubble: {
+          text: quote,
+          timestamp: Date.now(),
+          duration: 4000,
+        },
+      };
+    });
   }
 
   // 👤 เปลี่ยนรูปโปรไฟล์ Avatar
