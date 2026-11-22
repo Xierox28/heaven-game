@@ -452,16 +452,20 @@ export default function PlayerView({ onNavigateToAdmin }) {
               </div>
               <button
                 onClick={() => setIsAuthOpen(true)}
-                className={`flex items-center space-x-1 text-[10px] sm:text-[11px] font-bold transition-colors mt-0.5 ${
+                className={`flex items-center space-x-1 text-[10px] sm:text-[11px] font-bold transition-colors mt-0.5 cursor-pointer ${
                   isDarkMode
                     ? "text-slate-300 hover:text-white"
                     : "text-amber-800 hover:text-amber-950"
                 }`}
+                title={currentUser ? "คลิกเพื่อจัดการบัญชีและตรวจสอบการซิงก์ Cloud" : "คลิกเพื่อเข้าสู่ระบบหรือสมัครสมาชิก"}
               >
                 <User className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? "text-amber-400" : "text-amber-600"}`} />
                 <span className="underline underline-offset-2 truncate max-w-[110px] sm:max-w-[150px]">
                   {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
                 </span>
+                {currentUser && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block ml-0.5" title="Cloud Synced" />
+                )}
               </button>
             </div>
           </div>
@@ -1451,6 +1455,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
+        currentUser={currentUser}
+        gameState={gameState}
         onSuccess={() => {}}
       />
 

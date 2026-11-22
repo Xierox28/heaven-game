@@ -38,6 +38,8 @@ const toSafeArray = (val, defaultVal = []) => {
 class GameStateService {
   constructor() {
     this.currentUser = authService.currentUser;
+    this.isSyncingWithCloud = false;
+    this.hasLoadedCloudOnce = false;
     this.currentState = this.loadInitialFromStorage();
     this.listeners = new Set();
     this.achievementListeners = new Set();
@@ -247,34 +249,87 @@ class GameStateService {
     };
   }
 
-  bindUser(user) {
+  async bindUser(user) {
     this.currentUser = user;
     if (this.unsubFirebase) {
       this.unsubFirebase();
       this.unsubFirebase = null;
     }
 
-    // โหลดข้อมูลที่มีอยู่ของบัญชีนี้
-    let loadedState = this.loadInitialFromStorage();
+    if (!user) {
+      // ผู้เล่นสลับเป็น Guest
+      this.isSyncingWithCloud = false;
+      this.hasLoadedCloudOnce = true;
+      this.currentState = this.loadInitialFromStorage();
+      this.notify();
+      this.initFirebase();
+      return;
+    }
 
-    // กฎป้องกันเลเวลลด/ข้อมูลหาย: ถ้าผู้ใช้ใหม่เพิ่งสมัครแล้วในเครื่องมีข้อมูลเดิม (Guest) ที่มีเลเวล > 1 หรือมีของ/เหรียญ
-    // ให้นำความก้าวหน้านั้นย้ายมาเป็นของบัญชีใหม่ทันที เลเวลจะได้ไม่ลดลงเหลือ 1
-    if (this.currentState && (this.currentState.level > 1 || this.currentState.coins > 60 || this.currentState.exp > 0)) {
-      if (!loadedState || (loadedState.level <= 1 && loadedState.coins <= 60 && loadedState.exp === 0)) {
-        loadedState = {
-          ...this.currentState,
-          name: user?.hamsterName || this.currentState.name,
-          lastUpdated: Date.now(),
-        };
-        this.saveToStorage(loadedState);
+    // กำหนดสถานะกำลังเชื่อมต่อและดึงข้อมูลจาก Cloud
+    this.isSyncingWithCloud = true;
+    this.hasLoadedCloudOnce = false;
+
+    // 1. ดึงข้อมูลจาก LocalStorage มาพรีวิวก่อน (เพื่อให้หน้าจอไม่กระตุก)
+    let localSaved = this.loadInitialFromStorage();
+    if (localSaved && (localSaved.level > 1 || localSaved.coins > 60 || (localSaved.inventory && localSaved.inventory.length > 1))) {
+      this.currentState = localSaved;
+      this.notify();
+    }
+
+    // 2. ดึงข้อมูลจริงจาก Firebase Cloud ทันที!
+    if (isFirebaseConfigured() && database) {
+      try {
+        const gameRef = ref(database, this.getDbPath());
+        const snapshot = await get(gameRef);
+
+        if (snapshot.exists()) {
+          const cloudVal = snapshot.val();
+          console.log(`🐹 [Heaven Game] Cloud data found for @${user.username}: Lv. ${cloudVal.level}, Coins: ${cloudVal.coins}`);
+          const merged = this.mergeState(cloudVal);
+          this.currentState = merged;
+          this.saveToStorage(merged);
+          this.hasLoadedCloudOnce = true;
+          this.notify();
+        } else {
+          console.log(`🐹 [Heaven Game] No existing cloud data for @${user.username}. Checking for guest migration...`);
+          // หากเป็นบัญชีใหม่ แต่ในเครื่องมีข้อมูลเดิม (Guest) ที่มีเลเวล > 1 หรือมีของ/เหรียญ
+          let candidate = null;
+          if (localSaved && (localSaved.level > 1 || localSaved.coins > 60)) {
+            candidate = localSaved;
+          } else if (this.currentState && (this.currentState.level > 1 || this.currentState.coins > 60)) {
+            candidate = this.currentState;
+          }
+
+          const newState = candidate
+            ? {
+                ...candidate,
+                name: user.hamsterName || candidate.name || "น้องเฮเว่น",
+                lastUpdated: Date.now(),
+              }
+            : {
+                ...INITIAL_GAME_STATE,
+                name: user.hamsterName || "น้องเฮเว่น",
+                lastUpdated: Date.now(),
+              };
+
+          this.currentState = newState;
+          this.saveToStorage(newState);
+          await set(gameRef, newState);
+          this.updateLeaderboard(newState);
+          this.hasLoadedCloudOnce = true;
+          this.notify();
+        }
+      } catch (err) {
+        console.warn("⚠️ [Heaven Game] Cloud sync error during bindUser:", err);
+      } finally {
+        this.isSyncingWithCloud = false;
       }
+    } else {
+      this.isSyncingWithCloud = false;
+      this.hasLoadedCloudOnce = true;
     }
 
-    this.currentState = loadedState;
-    if (user && user.hamsterName) {
-      this.currentState.name = user.hamsterName;
-    }
-    this.notify();
     this.initFirebase();
   }
 
@@ -308,78 +363,89 @@ class GameStateService {
   initFirebase() {
     if (!isFirebaseConfigured() || !database) return;
 
+    if (this.unsubFirebase) {
+      this.unsubFirebase();
+      this.unsubFirebase = null;
+    }
+
     const dbPath = this.getDbPath();
     const gameRef = ref(database, dbPath);
 
-    get(gameRef).then((snapshot) => {
-      if (!snapshot.exists()) {
-        const initData = {
-          ...this.currentState,
-          name: this.currentUser?.hamsterName || this.currentState.name,
-          lastUpdated: Date.now(),
-        };
-        set(gameRef, initData);
-        this.updateLeaderboard(initData);
-      }
-    }).catch(() => {});
-
     this.unsubFirebase = onValue(gameRef, (snapshot) => {
       const val = snapshot.val();
-      if (val) {
-        // Timestamp Guard: ป้องกันข้อมูลเก่ากว่ามาเขียนทับ
+      if (!val) return;
+
+      // 🛡️ Anti-wipe / Multi-device Progress Guard:
+      // ป้องกันเครื่องใหม่ที่เพิ่งเปิดมาเป็น Level 1 สุ่มเสี่ยงตีตกข้อมูลคลาวด์
+      // หากข้อมูลในเครื่องเป็นสถานะเริ่มต้น (Lv <= 1, 60 เหรียญ) หรือข้อมูลจากคลาวด์มีเลเวล/เหรียญสูงกว่า ให้รับเสมอ!
+      const isLocalFreshDefault =
+        (this.currentState?.level <= 1 &&
+          (this.currentState?.coins || 0) <= 60 &&
+          (this.currentState?.exp || 0) === 0);
+      const isCloudHigherProgress =
+        (val.level > (this.currentState?.level || 1)) ||
+        ((val.coins || 0) > (this.currentState?.coins || 0));
+
+      if (!isLocalFreshDefault && !isCloudHigherProgress && this.hasLoadedCloudOnce) {
         if (this.currentState?.lastUpdated && val.lastUpdated && val.lastUpdated < this.currentState.lastUpdated) {
           return;
         }
-        const merged = this.mergeState(val);
-        this.applyIncomingState(merged, false);
       }
-    }, () => {});
 
-    const globalRef = ref(database, "global_events");
-    this.unsubGlobal = onValue(globalRef, (snapshot) => {
-      const g = snapshot.val();
-      if (g) {
-        this.updateState((prev) => {
-          let box = prev.mysteryBoxPending;
-          if (g.globalMysteryDrop && (Date.now() - (g.globalMysteryDrop.timestamp || 0) < 120000)) {
-            if (!box || box.id !== g.globalMysteryDrop.id) {
-              box = g.globalMysteryDrop;
-            }
-          }
-          let ann = prev.announcement;
-          if (g.announcement) {
-            let dismissedId = null;
-            try { dismissedId = localStorage.getItem("last_dismissed_announcement_id"); } catch (e) {}
-            const isDismissed = dismissedId && String(dismissedId) === String(g.announcement.id);
-            if (!g.announcement.active || isDismissed) {
-              ann = { ...g.announcement, active: false };
-            } else {
-              ann = { ...g.announcement };
-            }
-          }
+      this.hasLoadedCloudOnce = true;
+      const merged = this.mergeState(val);
+      this.applyIncomingState(merged, false, true);
+    }, (err) => {
+      console.warn("⚠️ Firebase onValue error:", err);
+    });
 
-          return {
-            ...prev,
-            announcement: ann,
-            seedRainEvent: (() => {
-              if (!g.seedRainEvent) return prev.seedRainEvent;
-              // ตรวจสอบความสดของอีเวนต์ฝนตกจาก Firebase หากเกิน 25 วินาทีให้หยุดฝน
-              const isFresh = g.seedRainEvent.active && Date.now() - (g.seedRainEvent.timestamp || 0) < 25000;
-              return {
-                ...prev.seedRainEvent,
-                ...g.seedRainEvent,
-                active: Boolean(isFresh),
-              };
-            })(),
-            serverFever: g.serverFever || prev.serverFever,
-            mysteryBoxPending: box,
-            speechBubble: g.globalSpeech && Date.now() - g.globalSpeech.timestamp < 10000
-              ? g.globalSpeech
-              : prev.speechBubble,
-          };
-        });
-      }
-    }, () => {});
+    if (!this.unsubGlobal) {
+      const globalRef = ref(database, "global_events");
+      this.unsubGlobal = onValue(globalRef, (snapshot) => {
+        const g = snapshot.val();
+        if (g) {
+          this.updateState((prev) => {
+            let box = prev.mysteryBoxPending;
+            if (g.globalMysteryDrop && (Date.now() - (g.globalMysteryDrop.timestamp || 0) < 120000)) {
+              if (!box || box.id !== g.globalMysteryDrop.id) {
+                box = g.globalMysteryDrop;
+              }
+            }
+            let ann = prev.announcement;
+            if (g.announcement) {
+              let dismissedId = null;
+              try { dismissedId = localStorage.getItem("last_dismissed_announcement_id"); } catch (e) {}
+              const isDismissed = dismissedId && String(dismissedId) === String(g.announcement.id);
+              if (!g.announcement.active || isDismissed) {
+                ann = { ...g.announcement, active: false };
+              } else {
+                ann = { ...g.announcement };
+              }
+            }
+
+            return {
+              ...prev,
+              announcement: ann,
+              seedRainEvent: (() => {
+                if (!g.seedRainEvent) return prev.seedRainEvent;
+                // ตรวจสอบความสดของอีเวนต์ฝนตกจาก Firebase หากเกิน 25 วินาทีให้หยุดฝน
+                const isFresh = g.seedRainEvent.active && Date.now() - (g.seedRainEvent.timestamp || 0) < 25000;
+                return {
+                  ...prev.seedRainEvent,
+                  ...g.seedRainEvent,
+                  active: Boolean(isFresh),
+                };
+              })(),
+              serverFever: g.serverFever || prev.serverFever,
+              mysteryBoxPending: box,
+              speechBubble: g.globalSpeech && Date.now() - g.globalSpeech.timestamp < 10000
+                ? g.globalSpeech
+                : prev.speechBubble,
+            };
+          });
+        }
+      }, () => {});
+    }
   }
 
   updateLeaderboard(state) {
@@ -397,12 +463,28 @@ class GameStateService {
     }).catch(() => {});
   }
 
-  applyIncomingState(newState, broadcast = true) {
+  applyIncomingState(newState, broadcast = true, force = false) {
     if (!newState) return;
 
-    // 1. Timestamp Guard: ถ้าข้อมูลที่ได้รับมี lastUpdated เก่ากว่าของปัจจุบัน ไม่ยอมให้เขียนทับ
-    if (this.currentState?.lastUpdated && newState.lastUpdated && newState.lastUpdated < this.currentState.lastUpdated) {
-      return;
+    if (!force) {
+      const isLocalFreshDefault =
+        this.currentState?.level <= 1 &&
+        (this.currentState?.coins || 0) <= 60 &&
+        (this.currentState?.exp || 0) === 0;
+      const isIncomingHigher =
+        newState.level > (this.currentState?.level || 1) ||
+        (newState.coins || 0) > (this.currentState?.coins || 0);
+
+      // 1. Timestamp Guard: ถ้าข้อมูลที่ได้รับมี lastUpdated เก่ากว่าของปัจจุบัน และไม่ใช่กรณีเครื่องใหม่เพิ่งเปิด ไม่ยอมให้เขียนทับ
+      if (!isLocalFreshDefault && !isIncomingHigher) {
+        if (
+          this.currentState?.lastUpdated &&
+          newState.lastUpdated &&
+          newState.lastUpdated < this.currentState.lastUpdated
+        ) {
+          return;
+        }
+      }
     }
 
     // 2. Strict Level Monotonic Guard: ป้องกันเลเวลลดลงเองโดยเด็ดขาด!
@@ -411,11 +493,27 @@ class GameStateService {
     const finalLevel = Math.max(currentLevel, incomingLevel);
     const finalMaxExp = finalLevel * 100;
 
+    // Anti-wipe: รวมไอเทมในตู้เสื้อผ้าและเฟอร์นิเจอร์
+    const prevInventory = toSafeArray(this.currentState?.inventory, []);
+    const incomingInventory = toSafeArray(newState?.inventory, []);
+    const mergedInventory = Array.from(new Set([...prevInventory, ...incomingInventory]));
+
+    const prevFurnitureInv = toSafeArray(this.currentState?.furniture?.inventory, []);
+    const incomingFurnitureInv = toSafeArray(newState?.furniture?.inventory, []);
+    const mergedFurnitureInv = Array.from(new Set([...prevFurnitureInv, ...incomingFurnitureInv]));
+
     const validatedState = {
+      ...this.currentState,
       ...newState,
       level: finalLevel,
       maxExp: finalMaxExp,
-      coins: Math.max(0, newState.coins ?? this.currentState?.coins ?? 60),
+      coins: Math.max(0, newState.coins !== undefined ? Number(newState.coins) : (this.currentState?.coins ?? 60)),
+      inventory: mergedInventory.length > 0 ? mergedInventory : (this.currentState?.inventory || INITIAL_GAME_STATE.inventory),
+      furniture: {
+        ...(this.currentState?.furniture || {}),
+        ...(newState?.furniture || {}),
+        inventory: mergedFurnitureInv.length > 0 ? mergedFurnitureInv : (this.currentState?.furniture?.inventory || INITIAL_GAME_STATE.furniture.inventory),
+      },
     };
 
     this.currentState = validatedState;
@@ -423,6 +521,50 @@ class GameStateService {
     this.notify();
     if (broadcast && this.channel) {
       this.channel.postMessage({ type: "STATE_UPDATE", state: validatedState });
+    }
+  }
+
+  // 🔄 ซิงก์ดึงข้อมูลจาก Cloud มาใช้งานทันที (Manual / Re-connect Sync)
+  async forceCloudReload() {
+    if (!isFirebaseConfigured() || !database) return null;
+    this.isSyncingWithCloud = true;
+    try {
+      const gameRef = ref(database, this.getDbPath());
+      const snapshot = await get(gameRef);
+      if (snapshot.exists()) {
+        const cloudVal = snapshot.val();
+        const merged = this.mergeState(cloudVal);
+        this.currentState = merged;
+        this.saveToStorage(merged);
+        this.hasLoadedCloudOnce = true;
+        this.notify();
+        sound.playLevelUp();
+        return merged;
+      }
+    } catch (e) {
+      console.warn("⚠️ forceCloudReload failed:", e);
+    } finally {
+      this.isSyncingWithCloud = false;
+    }
+    return null;
+  }
+
+  // ☁️ สำรองข้อมูลขึ้น Cloud ทันที (Manual Cloud Backup)
+  async saveCurrentToCloud() {
+    if (!isFirebaseConfigured() || !database) return false;
+    try {
+      const gameRef = ref(database, this.getDbPath());
+      const stateToSave = {
+        ...this.currentState,
+        lastUpdated: Date.now(),
+      };
+      await set(gameRef, stateToSave);
+      this.updateLeaderboard(stateToSave);
+      sound.playLevelUp();
+      return true;
+    } catch (e) {
+      console.warn("⚠️ saveCurrentToCloud failed:", e);
+      return false;
     }
   }
 
@@ -469,12 +611,24 @@ class GameStateService {
       this.channel.postMessage({ type: "STATE_UPDATE", state: nextState });
     }
 
+    // 🛡️ CRITICAL CLOUD PROTECTION GUARDS:
+    // 1. ถ้ายังอยู่ในกระบวนการดาวน์โหลด/เชื่อมต่อ Cloud ห้ามเขียนข้อมูลในเครื่องทับ Cloud เด็ดขาด
+    if (this.isSyncingWithCloud) {
+      return;
+    }
+    // 2. ถ้าล็อกอินอยู่ แต่ยังไม่เคยโหลด Cloud ได้สำเร็จ ห้ามบันทึกทับ (กันเครื่องใหม่ Lv.1 ลบข้อมูลบนเซิร์ฟเวอร์)
+    if (this.currentUser && !this.hasLoadedCloudOnce) {
+      return;
+    }
+
     if (isFirebaseConfigured() && database) {
       try {
         const gameRef = ref(database, this.getDbPath());
         await set(gameRef, nextState);
         this.updateLeaderboard(nextState);
-      } catch {}
+      } catch (err) {
+        console.warn("⚠️ Firebase save error:", err);
+      }
     }
   }
 
