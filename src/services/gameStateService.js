@@ -169,7 +169,12 @@ class GameStateService {
       },
       speechBubble: { ...INITIAL_GAME_STATE.speechBubble, ...(val?.speechBubble || this.currentState?.speechBubble || {}) },
       announcement: { ...INITIAL_GAME_STATE.announcement, ...(val?.announcement || {}) },
-      seedRainEvent: { ...INITIAL_GAME_STATE.seedRainEvent, ...(val?.seedRainEvent || {}) },
+      seedRainEvent: (() => {
+        const sr = { ...INITIAL_GAME_STATE.seedRainEvent, ...(val?.seedRainEvent || {}) };
+        // ตรวจสอบความสดของอีเวนต์ หากเกิน 25 วินาทีให้ถือว่าหมดอายุ (ไม่ขึ้นกวนใจตอนเข้าเกมใหม่)
+        const isFresh = sr.active && Date.now() - (sr.timestamp || 0) < 25000;
+        return { ...sr, active: Boolean(isFresh) };
+      })(),
       furniture: {
         equipped: {
           house: val?.furniture?.equipped?.house !== undefined ? val.furniture.equipped.house : (this.currentState?.furniture?.equipped?.house ?? null),
@@ -356,7 +361,16 @@ class GameStateService {
           return {
             ...prev,
             announcement: ann,
-            seedRainEvent: g.seedRainEvent ? { ...prev.seedRainEvent, ...g.seedRainEvent } : prev.seedRainEvent,
+            seedRainEvent: (() => {
+              if (!g.seedRainEvent) return prev.seedRainEvent;
+              // ตรวจสอบความสดของอีเวนต์ฝนตกจาก Firebase หากเกิน 25 วินาทีให้หยุดฝน
+              const isFresh = g.seedRainEvent.active && Date.now() - (g.seedRainEvent.timestamp || 0) < 25000;
+              return {
+                ...prev.seedRainEvent,
+                ...g.seedRainEvent,
+                active: Boolean(isFresh),
+              };
+            })(),
             serverFever: g.serverFever || prev.serverFever,
             mysteryBoxPending: box,
             speechBubble: g.globalSpeech && Date.now() - g.globalSpeech.timestamp < 10000
@@ -1303,6 +1317,9 @@ class GameStateService {
   }
 
   stopSeedRain() {
+    if (isFirebaseConfigured() && database) {
+      set(ref(database, "global_events/seedRainEvent"), { id: 0, active: false, timestamp: Date.now() }).catch(() => {});
+    }
     return this.updateState((prev) => ({
       ...prev,
       seedRainEvent: { ...prev.seedRainEvent, active: false },

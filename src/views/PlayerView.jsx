@@ -285,7 +285,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
           sound.playClick();
           setIsLeaderboardOpen(true);
         }}
-        className="p-1.5 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400/90 transition-all active:scale-90 shadow-2xs cursor-pointer"
+        className="p-1.5 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400/90 transition-all active:scale-90 shadow-2xs cursor-pointer flex items-center justify-center flex-shrink-0"
         title="ตารางอันดับผู้เล่น (Leaderboard)"
       >
         <Trophy className="w-3.5 h-3.5 fill-amber-700 text-amber-950" />
@@ -297,7 +297,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
           sound.playClick();
           setIsUpdateLogOpen(true);
         }}
-        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer ${
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer flex items-center justify-center flex-shrink-0 ${
           isDarkMode
             ? "bg-slate-750 hover:bg-slate-700 text-slate-200 border-slate-650"
             : "bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300/80"
@@ -310,7 +310,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
       {/* Dark Mode toggle button 🌙 / ☀️ */}
       <button
         onClick={toggleDarkMode}
-        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer ${
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer flex items-center justify-center flex-shrink-0 ${
           isDarkMode
             ? "bg-indigo-900/80 border-indigo-500/60 text-yellow-300 hover:bg-indigo-800"
             : "bg-amber-100 hover:bg-amber-200 text-indigo-900 border-amber-300/80"
@@ -323,7 +323,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
       {/* Mute button */}
       <button
         onClick={toggleSound}
-        className={`p-1.5 rounded-xl border transition-all active:scale-90 cursor-pointer ${
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 cursor-pointer flex items-center justify-center flex-shrink-0 ${
           isDarkMode
             ? "bg-slate-750 hover:bg-slate-700 text-slate-200 border-slate-650"
             : "bg-amber-100/90 hover:bg-amber-200 text-amber-900 border-amber-300/70"
@@ -331,16 +331,16 @@ export default function PlayerView({ onNavigateToAdmin }) {
         title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
       >
         {isMuted ? (
-          <VolumeX className="w-3.5 h-3.5 text-slate-400" />
+          <VolumeX className="w-3.5 h-3.5 text-slate-400 stroke-[2.5]" />
         ) : (
-          <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+          <Volume2 className="w-3.5 h-3.5 text-amber-700 stroke-[2.5]" />
         )}
       </button>
 
       {/* GM button */}
       <button
         onClick={onNavigateToAdmin}
-        className="p-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-2xs cursor-pointer"
+        className="p-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-2xs cursor-pointer flex items-center justify-center flex-shrink-0"
         title="แผงควบคุม GM"
       >
         <Shield className="w-3.5 h-3.5" />
@@ -389,136 +389,134 @@ export default function PlayerView({ onNavigateToAdmin }) {
             : "bg-white/95 border-amber-200/90 text-slate-900"
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-          {/* Section 1: Profile (Avatar + Name + Title + @user) and Mobile Quick Dock */}
-          <div className="flex items-center justify-between sm:justify-start space-x-2 sm:space-x-3 min-w-0">
-            {/* Avatar & Profile Meta */}
-            <div className="flex items-center space-x-2 min-w-0">
+        {/* Row 1: Profile Info (Avatar + Name + Title + @user) and Quick Utility Dock */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Avatar & Profile Meta */}
+          <div className="flex items-center space-x-2 sm:space-x-2.5 min-w-0 flex-1">
+            <div
+              onClick={() => {
+                sound.playClick();
+                setIsProfileModalOpen(true);
+              }}
+              className="relative cursor-pointer group flex-shrink-0"
+              title="แตะเพื่อเปลี่ยนรูปโปรไฟล์และฉายา"
+            >
               <div
-                onClick={() => {
-                  sound.playClick();
-                  setIsProfileModalOpen(true);
-                }}
-                className="relative cursor-pointer group flex-shrink-0"
-                title="แตะเพื่อเปลี่ยนรูปโปรไฟล์และฉายา"
+                className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center p-0.5 shadow-xs overflow-hidden group-hover:scale-105 transition-transform ${
+                  isDarkMode ? "bg-slate-800 border-amber-500/50" : "bg-white border-amber-300"
+                }`}
               >
-                <div
-                  className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center p-0.5 shadow-xs overflow-hidden group-hover:scale-105 transition-transform ${
-                    isDarkMode ? "bg-slate-800 border-amber-500/50" : "bg-white border-amber-300"
-                  }`}
-                >
-                  <img
-                    src={`/assets/avatars/${gameState.playerAvatar || "avatar_hamster_classic"}.png`}
-                    alt="Avatar"
-                    className="w-full h-full object-contain pixel-art"
-                  />
-                </div>
-                {gameState.prestige?.rank > 0 && (
-                  <span className="absolute -top-1.5 -left-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border border-amber-600 shadow-2xs animate-pulse">
-                    ★{gameState.prestige.rank}
-                  </span>
-                )}
-                <div
-                  className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                    isCloud ? "bg-emerald-400 shadow-emerald-300 shadow-2xs" : "bg-blue-400"
-                  }`}
-                  title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
-                ></div>
+                <img
+                  src={`/assets/avatars/${gameState.playerAvatar || "avatar_hamster_classic"}.png`}
+                  alt="Avatar"
+                  className="w-full h-full object-contain pixel-art"
+                />
               </div>
+              {gameState.prestige?.rank > 0 && (
+                <span className="absolute -top-1.5 -left-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border border-amber-600 shadow-2xs animate-pulse">
+                  ★{gameState.prestige.rank}
+                </span>
+              )}
+              <div
+                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                  isCloud ? "bg-emerald-400 shadow-emerald-300 shadow-2xs" : "bg-blue-400"
+                }`}
+                title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
+              ></div>
+            </div>
 
-              <div className="min-w-0">
-                <div className="flex items-center space-x-1.5 flex-wrap">
-                  <h1
-                    className={`font-black text-xs sm:text-sm leading-tight whitespace-nowrap ${
-                      isDarkMode ? "text-amber-200" : "text-amber-950"
-                    }`}
-                  >
-                    {gameState.name || "Heaven (เฮเว่น)"}
-                  </h1>
-                  <button
-                    onClick={() => {
-                      sound.playClick();
-                      setIsProfileModalOpen(true);
-                    }}
-                    className={`text-[9px] border font-black px-2 py-0.5 rounded-full cursor-pointer max-w-[130px] truncate shadow-2xs transition-all whitespace-nowrap ${
-                      isDarkMode
-                        ? "bg-slate-800 text-amber-300 border-amber-500/40 hover:bg-slate-700"
-                        : "bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 text-amber-900 border-amber-300/80"
-                    }`}
-                    title="แตะเพื่อเปลี่ยนฉายา"
-                  >
-                    {gameState.playerTitle || "เด็กเส้นแอดมินดิว 💎"}
-                  </button>
-                </div>
-                <button
-                  onClick={() => setIsAuthOpen(true)}
-                  className={`flex items-center space-x-1 text-[10px] sm:text-[11px] font-bold transition-colors mt-0.5 ${
-                    isDarkMode
-                      ? "text-slate-300 hover:text-white"
-                      : "text-amber-800 hover:text-amber-950"
+            <div className="min-w-0">
+              <div className="flex items-center space-x-1.5 flex-wrap">
+                <h1
+                  className={`font-black text-xs sm:text-sm leading-tight whitespace-nowrap ${
+                    isDarkMode ? "text-amber-200" : "text-amber-950"
                   }`}
                 >
-                  <User className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? "text-amber-400" : "text-amber-600"}`} />
-                  <span className="underline underline-offset-2 truncate max-w-[120px]">
-                    {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
-                  </span>
+                  {gameState.name || "Heaven (เฮเว่น)"}
+                </h1>
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    setIsProfileModalOpen(true);
+                  }}
+                  className={`text-[9px] border font-black px-2 py-0.5 rounded-full cursor-pointer max-w-[120px] sm:max-w-none truncate shadow-2xs transition-all whitespace-nowrap ${
+                    isDarkMode
+                      ? "bg-slate-800 text-amber-300 border-amber-500/40 hover:bg-slate-700"
+                      : "bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 text-amber-900 border-amber-300/80"
+                  }`}
+                  title="แตะเพื่อเปลี่ยนฉายา"
+                >
+                  {gameState.playerTitle || "เด็กเส้นแอดมินดิว 💎"}
                 </button>
               </div>
-            </div>
-
-            {/* Quick Dock on small screens (< sm) sits on top-right */}
-            <div className="sm:hidden flex-shrink-0">
-              {renderQuickDock()}
-            </div>
-          </div>
-
-          {/* Section 2: Currencies & Desktop Quick Dock */}
-          <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-3">
-            {/* Wallets (Seed & Diamond) */}
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:space-x-2 w-full sm:w-auto">
-              {/* Sunflower Seed Wallet */}
-              <div
-                className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border border-amber-400/90 rounded-xl px-2.5 py-1 flex items-center justify-center sm:justify-start space-x-1.5 shadow-2xs"
-                title={`${(gameState.coins || 0).toLocaleString()} เมล็ดทานตะวัน`}
-              >
-                <img
-                  src="/assets/icons/icon_seed.png"
-                  alt="Seeds"
-                  className="w-4 h-4 object-contain pixel-art flex-shrink-0"
-                />
-                <span className="font-black text-xs text-amber-950 whitespace-nowrap">
-                  {(gameState.coins || 0).toLocaleString()}
-                </span>
-              </div>
-
-              {/* VIP Diamond Wallet */}
               <button
-                onClick={() => {
-                  sound.playClick();
-                  setIsDiamondModalOpen(true);
-                }}
-                className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 border-b-2 border-b-blue-600 text-white rounded-xl px-2.5 py-1 flex items-center justify-center sm:justify-start space-x-1.5 shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
-                title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
+                onClick={() => setIsAuthOpen(true)}
+                className={`flex items-center space-x-1 text-[10px] sm:text-[11px] font-bold transition-colors mt-0.5 ${
+                  isDarkMode
+                    ? "text-slate-300 hover:text-white"
+                    : "text-amber-800 hover:text-amber-950"
+                }`}
               >
-                <img
-                  src="/assets/icons/icon_diamond.png"
-                  alt="Diamond"
-                  className="w-4 h-4 object-contain pixel-art animate-pulse flex-shrink-0"
-                />
-                <span className="font-black text-xs whitespace-nowrap">
-                  {(gameState.diamonds || 0).toLocaleString()}
-                </span>
-                <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5 flex-shrink-0">
-                  +
+                <User className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? "text-amber-400" : "text-amber-600"}`} />
+                <span className="underline underline-offset-2 truncate max-w-[110px] sm:max-w-[150px]">
+                  {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
                 </span>
               </button>
             </div>
-
-            {/* Quick Dock on tablet/desktop (sm:) sits on the right */}
-            <div className="hidden sm:block flex-shrink-0">
-              {renderQuickDock()}
-            </div>
           </div>
+
+          {/* Quick Utility Buttons (Right on Row 1) */}
+          <div className="flex-shrink-0">
+            {renderQuickDock()}
+          </div>
+        </div>
+
+        {/* Row 2: Wallets (Sunflower Seeds & VIP Diamonds) */}
+        <div className="mt-2.5 pt-2 border-t border-amber-200/50 dark:border-slate-800/80 grid grid-cols-2 gap-2">
+          {/* Sunflower Seed Wallet */}
+          <div
+            className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border border-amber-400/90 rounded-xl px-2.5 py-1.5 flex items-center justify-between shadow-2xs"
+            title={`${(gameState.coins || 0).toLocaleString()} เมล็ดทานตะวัน`}
+          >
+            <div className="flex items-center space-x-1.5 min-w-0">
+              <img
+                src="/assets/icons/icon_seed.png"
+                alt="Seeds"
+                className="w-4 h-4 object-contain pixel-art flex-shrink-0"
+              />
+              <span className="text-[10px] font-black text-amber-900/80 uppercase">เมล็ด</span>
+            </div>
+            <span className="font-black text-xs sm:text-sm text-amber-950 whitespace-nowrap pl-1">
+              {(gameState.coins || 0).toLocaleString()}
+            </span>
+          </div>
+
+          {/* VIP Diamond Wallet */}
+          <button
+            onClick={() => {
+              sound.playClick();
+              setIsDiamondModalOpen(true);
+            }}
+            className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 border-b-2 border-b-blue-600 text-white rounded-xl px-2.5 py-1.5 flex items-center justify-between shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
+            title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
+          >
+            <div className="flex items-center space-x-1.5 min-w-0">
+              <img
+                src="/assets/icons/icon_diamond.png"
+                alt="Diamond"
+                className="w-4 h-4 object-contain pixel-art animate-pulse flex-shrink-0"
+              />
+              <span className="text-[10px] font-black text-white/90 uppercase">เพชร</span>
+            </div>
+            <div className="flex items-center space-x-1 pl-1">
+              <span className="font-black text-xs sm:text-sm whitespace-nowrap">
+                {(gameState.diamonds || 0).toLocaleString()}
+              </span>
+              <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5 flex-shrink-0">
+                +
+              </span>
+            </div>
+          </button>
         </div>
       </header>
     );
@@ -1523,7 +1521,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
       />
 
       <SeedRainOverlay
-        isActive={gameState.seedRainEvent?.active}
+        isActive={Boolean(gameState.seedRainEvent?.active && Date.now() - (gameState.seedRainEvent?.timestamp || 0) < 25000)}
         onCollect={() => gameStateService.collectRainSeed()}
         onEnd={() => gameStateService.stopSeedRain()}
       />

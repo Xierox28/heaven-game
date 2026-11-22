@@ -308,15 +308,128 @@ class AdminService {
     return this.updatePlayerHamster(username, stats);
   }
 
-  // เปิด Event ฝนเมล็ดทานตะวัน
-  async triggerSeedRain() {
+  // เปิด Event ฝนเมล็ดทานตะวัน (มีกำหนดเวลาหมดอายุ 25 วินาทีชัดเจน)
+  async triggerSeedRain(durationSeconds = 25) {
     sound.playNotification();
-    const eventData = { id: Date.now(), active: true, timestamp: Date.now() };
+    const now = Date.now();
+    const eventData = {
+      id: now,
+      active: true,
+      timestamp: now,
+      durationMs: durationSeconds * 1000,
+      expiresAt: now + durationSeconds * 1000,
+    };
 
     if (isFirebaseConfigured() && database) {
       await set(ref(database, "global_events/seedRainEvent"), eventData);
     }
     return eventData;
+  }
+
+  // ปิด Event ฝนเมล็ดทานตะวันทันที
+  async stopSeedRain() {
+    sound.playClick();
+    const eventData = { id: 0, active: false, timestamp: Date.now() };
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, "global_events/seedRainEvent"), eventData);
+    }
+    return eventData;
+  }
+
+  // ล้างอีเวนต์ค้างทั้งหมดในเซิร์ฟเวอร์ (Reset & Clear Global Events)
+  async clearAllGlobalEvents() {
+    sound.playLevelUp();
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, "global_events/seedRainEvent"), { id: 0, active: false, timestamp: Date.now() });
+      await set(ref(database, "global_events/globalMysteryDrop"), null);
+      await set(ref(database, "global_events/serverFever"), { active: false, expiresAt: 0, timestamp: Date.now() });
+      await set(ref(database, "global_events/globalSpeech"), null);
+      await set(ref(database, "global_events/announcement"), { active: false, timestamp: Date.now() });
+    }
+    return true;
+  }
+
+  // ปิดประกาศฉุกเฉินปัจจุบัน
+  async dismissGlobalAnnouncement() {
+    sound.playClick();
+    if (isFirebaseConfigured() && database) {
+      await set(ref(database, "global_events/announcement"), { active: false, timestamp: Date.now() });
+    }
+  }
+
+  // ปรับบูสต์ด่วนให้ผู้เล่น (Quick Cheat Boost)
+  async quickBoostPlayer(username, boostType) {
+    sound.playLevelUp();
+    const curr = await this.getPlayerHamster(username);
+    if (!curr) return;
+
+    let updates = {};
+    let speechMsg = "";
+
+    switch (boostType) {
+      case "coins_10k":
+        updates = { coins: (curr.coins || 0) + 10000 };
+        speechMsg = "GM เสกเงินก้อนโตให้ +10,000 เมล็ดทานตะวัน! 🌻💸";
+        break;
+      case "coins_100k":
+        updates = { coins: (curr.coins || 0) + 100000 };
+        speechMsg = "มหาเศรษฐีตัวจริง! GM เสกเงินให้ +100,000 เมล็ดทานตะวัน! 🌻👑";
+        break;
+      case "diamonds_1k":
+        updates = { diamonds: (curr.diamonds || 0) + 1000 };
+        speechMsg = "GM อนุมัติเพชรฟ้าพรีเมียม +1,000 เม็ด! 💎✨";
+        break;
+      case "diamonds_5k":
+        updates = { diamonds: (curr.diamonds || 0) + 5000 };
+        speechMsg = "ว้าวซ่า! GM เสกเพชรชุดใหญ่ +5,000 เม็ด! 💎🌟";
+        break;
+      case "max_vitals":
+        updates = { hunger: 100, happiness: 100, cleanliness: 100, energy: 100 };
+        speechMsg = "GM ร่ายมนตร์ฟื้นฟูพลัง! สดชื่น อิ่มท้อง แฮปปี้ 100% เต็มทุกหลอด! 💖⚡";
+        break;
+      case "clean_poop":
+        updates = { poopCount: 0, cleanliness: 100 };
+        speechMsg = "GM เก็บกวาดอึในกรงให้หมดเกลี้ยง สะอาดเอี่ยมวิ้งวับ! ✨🧹";
+        break;
+      case "level_plus_5":
+        updates = { level: (curr.level || 1) + 5 };
+        speechMsg = `พลังเทพพุ่งทะยาน! GM เพิ่มเลเวลให้ +5 ระดับ (Lv. ${updates.level})! 🚀⭐`;
+        break;
+      case "reset_level":
+        updates = { level: 1, exp: 0 };
+        speechMsg = "GM รีเซ็ตระดับเลเวลกลับมาที่เริ่มต้น Lv.1 เรียบร้อย 🔄";
+        break;
+      default:
+        break;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      updates.speechBubble = { text: speechMsg, timestamp: Date.now(), duration: 5000 };
+      await this.updatePlayerHamster(username, updates);
+    }
+    return updates;
+  }
+
+  // ลบหรือรีเซ็ตข้อมูลผู้เล่นออกจากระบบ
+  async deletePlayerAccount(username) {
+    sound.playPrank();
+    if (isFirebaseConfigured() && database) {
+      if (username !== "guest") {
+        await remove(ref(database, `users/${username}`)).catch(() => {});
+        await remove(ref(database, `players/${username}`)).catch(() => {});
+        await remove(ref(database, `leaderboard/${username}`)).catch(() => {});
+      } else {
+        await set(ref(database, "heaven_game"), INITIAL_GAME_STATE).catch(() => {});
+      }
+    }
+    try {
+      if (username === "guest") {
+        localStorage.removeItem("heaven_game_state_guest");
+      } else {
+        localStorage.removeItem(`heaven_game_state_user_${username}`);
+      }
+    } catch {}
+    return true;
   }
 
   // แจกเหรียญให้ทุกคนในเซิร์ฟเวอร์พร้อมกัน (Mass Coins)

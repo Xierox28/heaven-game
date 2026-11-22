@@ -11,6 +11,9 @@ export default function SeedRainOverlay({ isActive, onCollect, onEnd }) {
       return;
     }
 
+    // มีเสียงเตือนเมื่อเริ่มอีเวนต์
+    sound.playNotification();
+
     // สร้างเมล็ดฝนตกต่อเนื่องเป็นเวลา 15 วินาที
     const interval = setInterval(() => {
       const newSeed = {
@@ -46,14 +49,25 @@ export default function SeedRainOverlay({ isActive, onCollect, onEnd }) {
     <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
       {/* Banner แจ้งเตือนอีเวนต์ฝนตก */}
       {isActive && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-amber-400 text-amber-950 font-black px-4 py-2 rounded-full shadow-lg border-2 border-white flex items-center space-x-2 animate-bounce">
+        <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-amber-400 text-amber-950 font-black px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg border-2 border-white flex items-center space-x-2 animate-bounce">
           <img
             src="/assets/icons/icon_seed.png"
             alt="Seeds"
             className="w-5 h-5 object-contain pixel-art animate-spin"
           />
-          <span className="text-xs sm:text-sm">ฝนเมล็ดทานตะวัน! รีบแตะเพื่อเก็บเหรียญ (+5)!</span>
-          <Sparkles className="w-4 h-4" />
+          <span className="text-xs sm:text-sm whitespace-nowrap">ฝนเมล็ดทานตะวัน! รีบแตะเก็บเหรียญ (+5)!</span>
+          <Sparkles className="w-4 h-4 text-amber-700 flex-shrink-0" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              sound.playClick();
+              if (onEnd) onEnd();
+            }}
+            className="w-5 h-5 rounded-full bg-amber-950/20 hover:bg-amber-950/40 text-amber-950 flex items-center justify-center text-[10px] font-black ml-1 cursor-pointer transition-all active:scale-90 flex-shrink-0"
+            title="ปิดการแจ้งเตือน"
+          >
+            ✕
+          </button>
         </div>
       )}
 
