@@ -51,6 +51,7 @@ class GameStateService {
     this.sleepRechargeInterval = null;
     this.unsubFirebase = null;
     this.unsubGlobal = null;
+    this.unsubConnection = null;
 
     authService.subscribe((user) => {
       this.bindUser(user);
@@ -293,13 +294,22 @@ class GameStateService {
           this.notify();
         } else {
           console.log(`🐹 [Heaven Game] No existing cloud data for @${user.username}. Checking for guest migration...`);
-          // หากเป็นบัญชีใหม่ แต่ในเครื่องมีข้อมูลเดิม (Guest) ที่มีเลเวล > 1 หรือมีของ/เหรียญ
+          // หากเป็นบัญชีใหม่ ให้ตรวจดูว่ามีข้อมูลที่เล่นไว้ในฐานะ Guest ก่อนหน้าเพื่อนำมาโอนย้าย (Migrate) หรือไม่
           let candidate = null;
-          if (localSaved && (localSaved.level > 1 || localSaved.coins > 60)) {
-            candidate = localSaved;
-          } else if (this.currentState && (this.currentState.level > 1 || this.currentState.coins > 60)) {
-            candidate = this.currentState;
-          }
+          try {
+            const guestRaw = localStorage.getItem("heaven_game_state_guest");
+            if (guestRaw) {
+              const parsedGuest = JSON.parse(guestRaw);
+              if (
+                parsedGuest &&
+                (parsedGuest.level > 1 ||
+                  (parsedGuest.coins || 0) > 60 ||
+                  (parsedGuest.inventory && parsedGuest.inventory.length > 1))
+              ) {
+                candidate = parsedGuest;
+              }
+            }
+          } catch (e) {}
 
           const newState = candidate
             ? {
@@ -446,6 +456,18 @@ class GameStateService {
         }
       }, () => {});
     }
+
+    // 🌐 Realtime Online/Offline Connectivity Watcher: ซิงก์ข้อมูลอัตโนมัติเมื่อเน็ตหลุดแล้วกลับมาต่อใหม่
+    if (!this.unsubConnection) {
+      const connRef = ref(database, ".info/connected");
+      this.unsubConnection = onValue(connRef, (snap) => {
+        const isConnected = Boolean(snap.val());
+        if (isConnected && this.currentUser && this.hasLoadedCloudOnce) {
+          console.log(`🌐 [Heaven Game] Realtime connection restored for @${this.currentUser.username}`);
+          this.forceCloudReload(false);
+        }
+      }, () => {});
+    }
   }
 
   updateLeaderboard(state) {
@@ -525,7 +547,7 @@ class GameStateService {
   }
 
   // 🔄 ซิงก์ดึงข้อมูลจาก Cloud มาใช้งานทันที (Manual / Re-connect Sync)
-  async forceCloudReload() {
+  async forceCloudReload(playSfx = true) {
     if (!isFirebaseConfigured() || !database) return null;
     this.isSyncingWithCloud = true;
     try {
@@ -538,7 +560,7 @@ class GameStateService {
         this.saveToStorage(merged);
         this.hasLoadedCloudOnce = true;
         this.notify();
-        sound.playLevelUp();
+        if (playSfx) sound.playLevelUp();
         return merged;
       }
     } catch (e) {

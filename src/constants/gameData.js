@@ -3,6 +3,7 @@
 // ==============================================================================
 
 export const INITIAL_GAME_STATE = {
+  schemaVersion: 8,
   name: "น้องเฮเว่น (Heaven)",
   hunger: 80,
   happiness: 85,
