@@ -42,8 +42,12 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
         {/* Top Header */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-cyan-200">
           <div className="flex items-center space-x-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-500 border-2 border-white flex items-center justify-center shadow-md text-xl">
-              💎
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-500 border-2 border-white flex items-center justify-center shadow-md">
+              <img
+                src="/assets/icons/icon_diamond.png"
+                alt="Diamond"
+                className="w-6 h-6 object-contain pixel-art drop-shadow"
+              />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
@@ -65,7 +69,11 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
         {/* Current Balance Banner */}
         <div className="my-3 p-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl text-white shadow-md flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-2xl animate-bounce">💎</span>
+            <img
+              src="/assets/icons/icon_diamond.png"
+              alt="Diamond"
+              className="w-8 h-8 object-contain pixel-art animate-bounce drop-shadow"
+            />
             <div>
               <div className="text-[10px] font-black uppercase text-cyan-100">เพชรปัจจุบันของคุณ</div>
               <div className="text-lg font-black">{currentDiamonds.toLocaleString()} เม็ด</div>
@@ -96,13 +104,18 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
                   key={amt}
                   type="button"
                   onClick={() => { sound.playClick(); setAmount(amt); }}
-                  className={`py-2 px-1 rounded-xl font-black text-xs border transition-all ${
+                  className={`py-2 px-1 rounded-xl font-black text-xs border transition-all flex items-center justify-center space-x-1 ${
                     amount === amt
                       ? "bg-cyan-500 text-white border-cyan-600 shadow-sm scale-102"
                       : "bg-white hover:bg-cyan-50 text-slate-800 border-cyan-200"
                   }`}
                 >
-                  +{amt} 💎
+                  <span>+{amt}</span>
+                  <img
+                    src="/assets/icons/icon_diamond.png"
+                    alt="Diamond"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
                 </button>
               ))}
             </div>
@@ -151,10 +164,24 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || !message.trim()}
-            className="w-full py-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-cyan-500/30 flex items-center justify-center space-x-2 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+            className="w-full py-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-cyan-500/30 flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
-            <span>{isSubmitting ? "กำลังส่งคำขอ..." : `ส่งคำขออ้อนพี่ดิว (${amount} 💎)`}</span>
+            <span className="flex items-center">
+              {isSubmitting ? (
+                "กำลังส่งคำขอ..."
+              ) : (
+                <>
+                  <span>ส่งคำขออ้อนพี่ดิว ({amount}</span>
+                  <img
+                    src="/assets/icons/icon_diamond.png"
+                    alt="Diamond"
+                    className="w-4 h-4 object-contain pixel-art inline-block mx-1"
+                  />
+                  <span>)</span>
+                </>
+              )}
+            </span>
           </button>
 
           {/* Requests History */}
@@ -168,7 +195,14 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
                 {requests.slice(0, 5).map((r, i) => (
                   <div key={r.id || i} className="p-2 bg-white/90 border border-cyan-200 rounded-xl text-[10px]">
                     <div className="flex items-center justify-between font-black">
-                      <span className="text-cyan-800">ขอ +{r.amount} 💎</span>
+                      <span className="text-cyan-800 flex items-center">
+                        <span>ขอ +{r.amount}</span>
+                        <img
+                          src="/assets/icons/icon_diamond.png"
+                          alt="Diamond"
+                          className="w-3 h-3 object-contain pixel-art inline ml-0.5"
+                        />
+                      </span>
                       <span className={`px-2 py-0.5 rounded-full ${
                         r.status === "approved"
                           ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
@@ -185,12 +219,17 @@ export default function AskDewDiamondModal({ state, isOpen, onClose, onRequest }
                     </div>
                     <p className="text-slate-600 font-semibold mt-1 italic">"{r.message}"</p>
                     {r.reply && (
-                      <p className={`font-bold mt-1 p-1 rounded-lg border text-[10px] ${
+                      <p className={`font-bold mt-1 p-1 rounded-lg border text-[10px] flex items-center ${
                         r.status === "rejected"
                           ? "bg-rose-50 text-rose-700 border-rose-200"
                           : "bg-emerald-50 text-emerald-700 border-emerald-200"
                       }`}>
-                        👑 พี่ดิว: {r.reply}
+                        <img
+                          src="/assets/icons/icon_crown.png"
+                          alt="Crown"
+                          className="w-3.5 h-3.5 object-contain pixel-art inline mr-1"
+                        />
+                        <span>พี่ดิว: {r.reply}</span>
                       </p>
                     )}
                   </div>

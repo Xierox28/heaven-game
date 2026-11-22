@@ -123,7 +123,11 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
 
         {/* หัวข้อ */}
         <div className="mb-3">
-          <span className="text-3xl">🎡</span>
+          <img
+            src="/assets/ui/btn_wheel.png"
+            alt="Wheel"
+            className="w-10 h-10 object-contain pixel-art mx-auto mb-1 drop-shadow-sm"
+          />
           <h3 className="text-lg font-black text-amber-900 mt-1">มินิเกม ปั่นวงล้อ 10 วินาที!</h3>
           <p className="text-xs text-amber-700">รัวนิ้วให้ไวที่สุด เพื่อสะสมเมล็ดทานตะวันและ EXP</p>
         </div>
@@ -131,15 +135,27 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
         {/* ผลลัพธ์เมื่อเล่นจบ */}
         {gameResult ? (
           <div className="bg-white/90 rounded-2xl p-4 border-2 border-amber-200 mb-4 shadow-sm animate-cute-bounce">
-            <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-1 drop-shadow" />
+            <img
+              src="/assets/icons/icon_trophy.png"
+              alt="Trophy"
+              className="w-12 h-12 object-contain pixel-art mx-auto mb-1 drop-shadow"
+            />
             <h4 className="font-black text-base text-amber-900">สุดยอดมากก! ปั่นไป {gameResult.taps} ครั้ง</h4>
             <div className="flex items-center justify-center space-x-4 my-3">
-              <div className="bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-300 flex items-center space-x-1 font-black text-amber-900 text-sm">
-                <span>🌻</span>
+              <div className="bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-300 flex items-center space-x-1.5 font-black text-amber-900 text-sm">
+                <img
+                  src="/assets/icons/icon_seed.png"
+                  alt="Seeds"
+                  className="w-4 h-4 object-contain pixel-art inline"
+                />
                 <span>+{gameResult.coins} เหรียญ</span>
               </div>
-              <div className="bg-orange-100 px-3 py-1.5 rounded-xl border border-orange-300 flex items-center space-x-1 font-black text-orange-900 text-sm">
-                <span>🌟</span>
+              <div className="bg-orange-100 px-3 py-1.5 rounded-xl border border-orange-300 flex items-center space-x-1.5 font-black text-orange-900 text-sm">
+                <img
+                  src="/assets/icons/icon_star.png"
+                  alt="EXP"
+                  className="w-4 h-4 object-contain pixel-art inline"
+                />
                 <span>+{gameResult.exp} EXP</span>
               </div>
             </div>
@@ -172,7 +188,11 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
                 }}
               >
                 <div className="w-10 h-10 rounded-full bg-amber-400 border-2 border-amber-600 flex items-center justify-center text-xs font-bold text-amber-900 shadow">
-                  ⚙️
+                  <img
+                    src="/assets/icons/icon_gear.png"
+                    alt="Gear"
+                    className="w-5 h-5 object-contain pixel-art animate-spin"
+                  />
                 </div>
               </div>
 
@@ -199,8 +219,13 @@ export default function MiniGameWheel({ isOpen, onClose, onFinish }) {
               <div className="w-px h-8 bg-amber-200"></div>
               <div className="text-center">
                 <div className="text-[11px] font-bold text-slate-500">จำนวนครั้งที่ปั่น</div>
-                <div className="text-xl font-black text-orange-600">
-                  ⚡ {taps} ครั้ง
+                <div className="text-xl font-black text-orange-600 flex items-center justify-center space-x-1">
+                  <img
+                    src="/assets/icons/icon_energy.png"
+                    alt="Energy"
+                    className="w-4 h-4 object-contain pixel-art inline"
+                  />
+                  <span>{taps} ครั้ง</span>
                 </div>
               </div>
             </div>

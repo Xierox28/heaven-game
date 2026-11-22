@@ -26,7 +26,14 @@ export function AchievementToast({ achievement, onDone }) {
         <div className="text-3xl animate-badge-pop">{achievement.icon}</div>
         <div className="flex-1 min-w-0">
           <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>🏆 Achievement ปลดล็อคแล้ว!</span>
+            <span className="flex items-center">
+              <img
+                src="/assets/icons/icon_trophy.png"
+                alt="Trophy"
+                className="w-3.5 h-3.5 object-contain pixel-art inline mr-1"
+              />
+              <span>Achievement ปลดล็อคแล้ว!</span>
+            </span>
             <span className="text-[9px] text-slate-400 font-normal">แตะเพื่อปิด ✕</span>
           </div>
           <div className={`font-black text-sm ${style.text} truncate`}>{achievement.name}</div>
@@ -60,7 +67,11 @@ export function AchievementPanel({ isOpen, onClose, earnedIds = [] }) {
         </button>
 
         <div className="text-center mb-4">
-          <span className="text-3xl">🏆</span>
+          <img
+            src="/assets/icons/icon_trophy.png"
+            alt="Trophy"
+            className="w-12 h-12 object-contain pixel-art mx-auto mb-1 drop-shadow-md"
+          />
           <h3 className="text-lg font-black text-amber-900 mt-1">Achievement ของน้องเฮเว่น</h3>
           <p className="text-xs text-amber-700">
             ปลดล็อคแล้ว {earned.length} / {ACHIEVEMENT_DEFS.length} รางวัล

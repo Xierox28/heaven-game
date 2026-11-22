@@ -31,7 +31,7 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
         {/* Top Header */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-amber-200">
           <div className="flex items-center space-x-2">
-            <span className="text-2xl">🌱</span>
+            <img src="/assets/ui/btn_garden.png" alt="Garden" className="w-7 h-7 object-contain pixel-art" />
             <div>
               <h2 className="text-lg font-black text-amber-950">สวนผัก & ห้องครัวแฮมสเตอร์</h2>
               <p className="text-[11px] font-bold text-amber-800">ปลูกผักออร์แกนิก ปรุงข้าวกะเพราไข่ดาวแสนอร่อย</p>
@@ -39,7 +39,7 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
           </div>
           <button
             onClick={() => { sound.playClick(); onClose(); }}
-            className="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full transition-colors active:scale-90"
+            className="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full transition-colors active:scale-90 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -49,7 +49,7 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
         <div className="flex p-1 mt-3 bg-amber-200/60 rounded-2xl">
           <button
             onClick={() => { sound.playClick(); setActiveTab("garden"); }}
-            className={`flex-1 py-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all ${
+            className={`flex-1 py-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
               activeTab === "garden" ? "bg-white text-emerald-800 shadow-md scale-[1.02]" : "text-amber-900 hover:bg-white/40"
             }`}
           >
@@ -58,7 +58,7 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
           </button>
           <button
             onClick={() => { sound.playClick(); setActiveTab("kitchen"); }}
-            className={`flex-1 py-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all ${
+            className={`flex-1 py-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
               activeTab === "kitchen" ? "bg-white text-orange-800 shadow-md scale-[1.02]" : "text-amber-900 hover:bg-white/40"
             }`}
           >
@@ -70,19 +70,19 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
         {/* Pantry Quick Ribbon */}
         <div className="flex flex-wrap items-center justify-around gap-2 py-2 px-3 my-2 bg-white/90 rounded-2xl border border-amber-200 shadow-xs text-xs font-black text-amber-950">
           <div className="flex items-center space-x-1">
-            <span className="text-base">🌿</span>
+            <img src="/assets/garden/basil.png" alt="Basil" className="w-5 h-5 object-contain pixel-art" />
             <span>กะเพรา: <span className="text-emerald-700">{pantry.basil_leaf || 0}</span></span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="text-base">🌶️</span>
+            <img src="/assets/garden/chili.png" alt="Chili" className="w-5 h-5 object-contain pixel-art" />
             <span>พริก: <span className="text-red-700">{pantry.chili_pepper || 0}</span></span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="text-base">🍓</span>
+            <img src="/assets/garden/strawberry.png" alt="Strawberry" className="w-5 h-5 object-contain pixel-art" />
             <span>เบอร์รี: <span className="text-pink-700">{pantry.fresh_strawberry || 0}</span></span>
           </div>
           <div className="flex items-center space-x-1 bg-cyan-100 border border-cyan-300 px-2 py-0.5 rounded-full text-cyan-900">
-            <span>💎</span>
+            <img src="/assets/icons/icon_diamond.png" alt="Diamond" className="w-3.5 h-3.5 object-contain pixel-art animate-pulse" />
             <span>{state?.diamonds || 0} เม็ด</span>
           </div>
         </div>
@@ -144,8 +144,8 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
 
                       {/* Water Drop Badge */}
                       {crop && isWatered && (
-                        <div className="absolute top-0 right-0 z-20 bg-sky-100 border border-sky-300 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-xs">
-                          💧
+                        <div className="absolute top-0 right-0 z-20 bg-sky-100 border border-sky-300 rounded-full w-5 h-5 flex items-center justify-center p-0.5 shadow-xs">
+                          <img src="/assets/icons/icon_water.png" alt="Water" className="w-3.5 h-3.5 object-contain pixel-art" />
                         </div>
                       )}
                     </div>
@@ -164,7 +164,7 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
                     {!crop ? (
                       <button
                         onClick={() => setSelectedPlot(plot.id)}
-                        className="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-xs rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center space-x-1"
+                        className="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-xs rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>เลือกปลูกพืช</span>
@@ -172,7 +172,7 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
                     ) : isReady ? (
                       <button
                         onClick={() => { sound.playLevelUp(); onHarvest(plot.id); }}
-                        className="w-full py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 animate-bounce"
+                        className="w-full py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 animate-bounce cursor-pointer"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>เก็บเกี่ยว!</span>
@@ -185,11 +185,11 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
                           className={`w-full py-1 font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1 ${
                             isWatered
                               ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                              : "bg-sky-400 hover:bg-sky-500 text-white active:scale-95 shadow-sm"
+                              : "bg-sky-400 hover:bg-sky-500 text-white active:scale-95 shadow-sm cursor-pointer"
                           }`}
                         >
                           <Droplets className="w-3.5 h-3.5" />
-                          <span>{isWatered ? "รดน้ำแล้ว 💧" : "รดน้ำเร่งโต"}</span>
+                          <span>{isWatered ? "รดน้ำแล้ว" : "รดน้ำเร่งโต"}</span>
                         </button>
                         <button
                           onClick={() => {
@@ -198,7 +198,12 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
                           className="w-full py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
                           title="ใช้ 5 เพชรเพื่อเร่งโตทันที"
                         >
-                          <span>⚡ เร่งโต (5 💎)</span>
+                          <span className="flex items-center space-x-1">
+                            <img src="/assets/icons/icon_energy.png" alt="Speed" className="w-3 h-3 object-contain pixel-art" />
+                            <span>เร่งโต (5</span>
+                            <img src="/assets/icons/icon_diamond.png" alt="Diamond" className="w-3 h-3 object-contain pixel-art animate-pulse" />
+                            <span>)</span>
+                          </span>
                         </button>
                       </div>
                     )}
@@ -235,7 +240,10 @@ export default function HamsterGardenModal({ state, isOpen, onClose, onPlant, on
                       <div className="flex-1 min-w-0">
                         <div className="text-[11px] font-black text-slate-900 truncate">{crop.name}</div>
                         <div className="text-[10px] font-extrabold text-amber-700 flex items-center space-x-1">
-                          <span>🌻 {crop.seedCost}</span>
+                          <span className="flex items-center space-x-0.5">
+                            <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3 h-3 object-contain pixel-art inline-block" />
+                            <span>{crop.seedCost}</span>
+                          </span>
                           <span className="text-slate-400">•</span>
                           <span>⏳ {crop.growTime}s</span>
                         </div>

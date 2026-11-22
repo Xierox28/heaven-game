@@ -81,7 +81,8 @@ export default function HamsterPassModal({
                 : "text-amber-950 hover:bg-amber-200/60"
             }`}
           >
-            <span>🎟️ Hamster Pass</span>
+            <img src="/assets/icons/badge_pass.png" alt="Pass" className="w-3.5 h-3.5 object-contain pixel-art inline-block" />
+            <span>Hamster Pass</span>
           </button>
 
           <button
@@ -92,7 +93,8 @@ export default function HamsterPassModal({
                 : "text-amber-950 hover:bg-amber-200/60"
             }`}
           >
-            <span>📋 เควสต์รายวัน</span>
+            <img src="/assets/icons/icon_star.png" alt="Quests" className="w-3.5 h-3.5 object-contain pixel-art inline-block" />
+            <span>เควสต์รายวัน</span>
           </button>
 
           <button
@@ -103,7 +105,8 @@ export default function HamsterPassModal({
                 : "text-amber-950 hover:bg-amber-200/60"
             }`}
           >
-            <span>📅 เช็คชื่อ 7 วัน</span>
+            <img src="/assets/icons/badge_calendar.png" alt="Streak" className="w-3.5 h-3.5 object-contain pixel-art inline-block" />
+            <span>เช็คชื่อ 7 วัน</span>
             {canClaimStreakToday && (
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
             )}
@@ -152,14 +155,15 @@ export default function HamsterPassModal({
                   <button
                     onClick={onUnlockGoldPass}
                     disabled={gameState.coins < 200}
-                    className={`px-3 py-1.5 rounded-xl font-black text-xs shadow-sm transition-all active:scale-95 flex items-center space-x-1 ${
+                    className={`px-3 py-1.5 rounded-xl font-black text-xs shadow-sm transition-all active:scale-95 flex items-center space-x-1 cursor-pointer ${
                       gameState.coins >= 200
                         ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 text-white"
                         : "bg-slate-200 text-slate-400 cursor-not-allowed"
                     }`}
                   >
                     <span>200</span>
-                    <span>🌻 ซื้อ</span>
+                    <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3.5 h-3.5 object-contain pixel-art inline-block" />
+                    <span>ซื้อ</span>
                   </button>
                 </div>
               ) : (
@@ -307,7 +311,10 @@ export default function HamsterPassModal({
                       <p className="text-[11px] text-slate-500 mt-0.5">{quest.desc}</p>
                       <div className="flex items-center space-x-2 mt-1 text-[10px] font-bold">
                         <span className="text-amber-700">+{quest.passExpReward} Pass EXP</span>
-                        <span className="text-yellow-600">+{quest.coinsReward} 🌻</span>
+                        <span className="flex items-center text-yellow-600">
+                          +{quest.coinsReward}
+                          <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3 h-3 object-contain pixel-art inline-block ml-0.5" />
+                        </span>
                         <span className="text-slate-400">({Math.min(quest.target, currentProgress)}/{quest.target})</span>
                       </div>
                     </div>

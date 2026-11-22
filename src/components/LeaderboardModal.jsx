@@ -69,7 +69,11 @@ export default function LeaderboardModal({ isOpen, onClose, currentUsername }) {
         {/* หัวข้อ */}
         <div className="text-center mb-3">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-tr from-yellow-400 to-amber-500 rounded-2xl shadow-md border-2 border-white mb-1">
-            <Trophy className="w-6 h-6 text-white" />
+            <img
+              src="/assets/icons/icon_trophy.png"
+              alt="Leaderboard"
+              className="w-7 h-7 object-contain pixel-art drop-shadow"
+            />
           </div>
           <h3 className="text-lg font-black text-amber-950">
             ตารางอันดับผู้เลี้ยงแฮมสเตอร์ (Leaderboard)
@@ -112,9 +116,13 @@ export default function LeaderboardModal({ isOpen, onClose, currentUsername }) {
                   {/* Rank badge + Avatar */}
                   <div className="flex items-center space-x-2.5">
                     {/* อันดับ 1, 2, 3 หรือเลขทั่วไป */}
-                    <div className="w-7 text-center font-black">
+                    <div className="w-7 text-center font-black flex items-center justify-center">
                       {rank === 1 ? (
-                        <span className="text-xl">🥇</span>
+                        <img
+                          src="/assets/icons/icon_crown.png"
+                          alt="Rank 1"
+                          className="w-6 h-6 object-contain pixel-art drop-shadow-xs animate-bounce"
+                        />
                       ) : rank === 2 ? (
                         <span className="text-xl">🥈</span>
                       ) : rank === 3 ? (
@@ -155,8 +163,12 @@ export default function LeaderboardModal({ isOpen, onClose, currentUsername }) {
                       <Sparkles className="w-2.5 h-2.5" />
                       <span>Lv. {player.level || 1}</span>
                     </span>
-                    <span className="text-[10px] text-amber-900 font-black mt-0.5 flex items-center">
-                      <span className="mr-0.5">🌻</span>
+                    <span className="text-[10px] text-amber-900 font-black mt-0.5 flex items-center space-x-1">
+                      <img
+                        src="/assets/icons/icon_seed.png"
+                        alt="Seeds"
+                        className="w-3 h-3 object-contain pixel-art inline"
+                      />
                       <span>{player.coins || 0}</span>
                     </span>
                   </div>
@@ -168,8 +180,13 @@ export default function LeaderboardModal({ isOpen, onClose, currentUsername }) {
 
         {/* ข้อความให้กำลังใจท้ายการ์ด */}
         <div className="mt-3 pt-2 border-t border-amber-200 text-center">
-          <p className="text-[11px] font-bold text-amber-800">
-            ⭐ ให้อาหารและลูบหัวน้องบ่อยๆ เพื่อเพิ่มเลเวลขึ้นสู่อันดับ 1!
+          <p className="text-[11px] font-bold text-amber-800 flex items-center justify-center space-x-1">
+            <img
+              src="/assets/icons/icon_star.png"
+              alt="Star"
+              className="w-3.5 h-3.5 object-contain pixel-art inline"
+            />
+            <span>ให้อาหารและลูบหัวน้องบ่อยๆ เพื่อเพิ่มเลเวลขึ้นสู่อันดับ 1!</span>
           </p>
         </div>
       </div>

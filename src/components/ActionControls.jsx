@@ -421,7 +421,7 @@ export default function ActionControls({
         <button
           type="button"
           onClick={() => setMobileTab("care")}
-          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer ${
+          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
             mobileTab === "care"
               ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs scale-[1.02]"
               : isDarkMode
@@ -429,7 +429,11 @@ export default function ActionControls({
               : "text-amber-900 hover:text-amber-950"
           }`}
         >
-          <span>🎮</span>
+          <img
+            src="/assets/icons/icon_gamepad.png"
+            alt="Care"
+            className="w-3.5 h-3.5 object-contain pixel-art inline-block"
+          />
           <span>ดูแลน้อง</span>
           {poopCount > 0 && (
             <span className="ml-1 bg-red-500 text-white text-[9px] px-1.5 rounded-full font-black animate-pulse">
@@ -441,7 +445,7 @@ export default function ActionControls({
         <button
           type="button"
           onClick={() => setMobileTab("activities")}
-          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer ${
+          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
             mobileTab === "activities"
               ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs scale-[1.02]"
               : isDarkMode
@@ -449,7 +453,11 @@ export default function ActionControls({
               : "text-amber-900 hover:text-amber-950"
           }`}
         >
-          <span>🎡</span>
+          <img
+            src="/assets/ui/btn_wheel.png"
+            alt="Activities"
+            className="w-3.5 h-3.5 object-contain pixel-art inline-block"
+          />
           <span>กิจกรรม & ร้านค้า</span>
         </button>
       </div>

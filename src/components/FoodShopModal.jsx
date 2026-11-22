@@ -6,26 +6,30 @@ export default function FoodShopModal({ isOpen, onClose, coins, userLevel, onSel
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn font-['Itim',sans-serif]">
       <div className="relative w-full max-w-sm bg-gradient-to-b from-amber-50 to-orange-50 border-4 border-amber-300 rounded-3xl p-5 shadow-2xl text-slate-800">
         {/* ปิดหน้าต่าง */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-900 flex items-center justify-center font-bold text-sm transition-transform active:scale-90"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-900 flex items-center justify-center font-bold text-sm transition-transform active:scale-90 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* หัวข้อร้าน */}
         <div className="text-center mb-4">
-          <span className="text-3xl">🍓</span>
+          <img
+            src="/assets/garden/strawberry.png"
+            alt="Shop"
+            className="w-9 h-9 object-contain pixel-art mx-auto"
+          />
           <h3 className="text-lg font-black text-amber-900 mt-1">ร้านค้าอาหารพรีเมียม</h3>
           <p className="text-xs text-amber-700">เลือกซื้อของอร่อยที่มีประโยชน์ให้น้องเฮเว่น</p>
 
           {/* จำนวนเหรียญคงเหลือ */}
-          <div className="inline-flex items-center space-x-1 bg-amber-200/80 px-3 py-1 rounded-full text-xs font-black text-amber-900 mt-2 border border-amber-300">
-            <span>🌻 กระเป๋า:</span>
-            <span>{coins} เมล็ดทานตะวัน</span>
+          <div className="inline-flex items-center space-x-1.5 bg-amber-200/80 px-3 py-1 rounded-full text-xs font-black text-amber-900 mt-2 border border-amber-300">
+            <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3.5 h-3.5 object-contain pixel-art" />
+            <span>กระเป๋า: {coins} เมล็ดทานตะวัน</span>
           </div>
         </div>
 
@@ -45,8 +49,12 @@ export default function FoodShopModal({ isOpen, onClose, coins, userLevel, onSel
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className="text-3xl bg-amber-100 rounded-2xl w-12 h-12 flex items-center justify-center shadow-xs">
-                    {food.icon}
+                  <div className="bg-amber-100 rounded-2xl w-12 h-12 flex items-center justify-center shadow-xs overflow-hidden p-1">
+                    {food.image ? (
+                      <img src={food.image} alt={food.name} className="w-full h-full object-contain pixel-art" />
+                    ) : (
+                      <span className="text-2xl">{food.icon}</span>
+                    )}
                   </div>
                   <div>
                     <h4 className="font-black text-sm text-amber-950 flex items-center">
@@ -59,9 +67,18 @@ export default function FoodShopModal({ isOpen, onClose, coins, userLevel, onSel
                     </h4>
                     <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{food.desc}</p>
                     <div className="flex items-center space-x-2 mt-1 text-[10px] font-bold">
-                      <span className="text-amber-700">🥣 +{food.hunger}%</span>
-                      <span className="text-rose-600">💖 +{food.happiness}%</span>
-                      <span className="text-indigo-600">🌟 +{food.exp} EXP</span>
+                      <span className="flex items-center text-amber-700">
+                        <img src="/assets/icons/icon_hunger.png" alt="Hunger" className="w-3 h-3 object-contain pixel-art mr-0.5" />
+                        +{food.hunger}%
+                      </span>
+                      <span className="flex items-center text-rose-600">
+                        <img src="/assets/icons/icon_happiness.png" alt="Happiness" className="w-3 h-3 object-contain pixel-art mr-0.5" />
+                        +{food.happiness}%
+                      </span>
+                      <span className="flex items-center text-indigo-600">
+                        <img src="/assets/icons/icon_star.png" alt="EXP" className="w-3 h-3 object-contain pixel-art mr-0.5" />
+                        +{food.exp} EXP
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -76,7 +93,7 @@ export default function FoodShopModal({ isOpen, onClose, coins, userLevel, onSel
                         }
                       }}
                       disabled={!canAfford}
-                      className={`px-3 py-1.5 rounded-xl font-black text-xs transition-all active:scale-95 ${
+                      className={`px-3 py-1.5 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer ${
                         canAfford
                           ? "bg-amber-400 hover:bg-amber-500 text-amber-950 shadow-sm"
                           : "bg-slate-200 text-slate-400 cursor-not-allowed"
@@ -85,7 +102,7 @@ export default function FoodShopModal({ isOpen, onClose, coins, userLevel, onSel
                       {food.cost > 0 ? (
                         <span className="flex items-center space-x-1">
                           <span>{food.cost}</span>
-                          <span>🌻</span>
+                          <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3.5 h-3.5 object-contain pixel-art" />
                         </span>
                       ) : (
                         "เลือก"

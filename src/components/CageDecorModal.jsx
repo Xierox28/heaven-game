@@ -53,9 +53,19 @@ export default function CageDecorModal({
   const getRarityBadge = (rarity) => {
     switch (rarity) {
       case "epic":
-        return <span className="bg-purple-100 text-purple-700 border border-purple-300 text-[9px] font-black px-1.5 py-0.5 rounded-full">✨ EPIC</span>;
+        return (
+          <span className="bg-purple-100 text-purple-700 border border-purple-300 text-[9px] font-black px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5">
+            <img src="/assets/icons/icon_cleanliness.png" alt="Epic" className="w-2.5 h-2.5 object-contain pixel-art inline" />
+            <span>EPIC</span>
+          </span>
+        );
       case "rare":
-        return <span className="bg-sky-100 text-sky-700 border border-sky-300 text-[9px] font-black px-1.5 py-0.5 rounded-full">⭐ RARE</span>;
+        return (
+          <span className="bg-sky-100 text-sky-700 border border-sky-300 text-[9px] font-black px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5">
+            <img src="/assets/icons/icon_star.png" alt="Rare" className="w-2.5 h-2.5 object-contain pixel-art inline" />
+            <span>RARE</span>
+          </span>
+        );
       default:
         return <span className="bg-slate-100 text-slate-600 border border-slate-300 text-[9px] font-bold px-1.5 py-0.5 rounded-full">COMMON</span>;
     }
@@ -75,7 +85,7 @@ export default function CageDecorModal({
         {/* หัวข้อและยอดเหรียญ */}
         <div className="flex items-center justify-between mb-3 pr-8">
           <div className="flex items-center space-x-2">
-            <span className="text-3xl">🏡</span>
+            <img src="/assets/ui/btn_decor.png" alt="Decor" className="w-8 h-8 object-contain pixel-art" />
             <div>
               <h3 className="text-lg font-black text-amber-950 leading-tight">
                 ตกแต่งกรง & กล่องสุ่ม
@@ -85,8 +95,8 @@ export default function CageDecorModal({
               </p>
             </div>
           </div>
-          <div className="bg-amber-200/90 border border-amber-400 px-3 py-1 rounded-xl flex items-center space-x-1 font-black text-amber-950 text-xs shadow-xs">
-            <span>🌻</span>
+          <div className="bg-amber-200/90 border border-amber-400 px-3 py-1 rounded-xl flex items-center space-x-1.5 font-black text-amber-950 text-xs shadow-xs">
+            <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3.5 h-3.5 object-contain pixel-art" />
             <span>{coins}</span>
           </div>
         </div>
@@ -119,7 +129,14 @@ export default function CageDecorModal({
             }`}
           >
             <Gift className="w-3.5 h-3.5" />
-            <span>กล่องสุ่มนำโชค 🎁</span>
+            <span className="flex items-center space-x-1">
+              <span>กล่องสุ่มนำโชค</span>
+              <img
+                src="/assets/icons/icon_gift.png"
+                alt="Gift"
+                className="w-3.5 h-3.5 object-contain pixel-art inline"
+              />
+            </span>
           </button>
         </div>
 
@@ -230,9 +247,9 @@ export default function CageDecorModal({
                       ) : (
                         <button
                           onClick={() => onBuy(item.id)}
-                          className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-xs hover:from-amber-600 hover:to-orange-600 active:scale-95 flex items-center space-x-1"
+                          className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-xs hover:from-amber-600 hover:to-orange-600 active:scale-95 flex items-center space-x-1 cursor-pointer"
                         >
-                          <span>🌻</span>
+                          <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3.5 h-3.5 object-contain pixel-art" />
                           <span>{item.cost}</span>
                         </button>
                       )}
@@ -277,8 +294,13 @@ export default function CageDecorModal({
                 </div>
 
                 {unboxResult.isDuplicate && (
-                  <p className="text-[11px] text-amber-800 font-bold bg-amber-100 p-2 rounded-xl mb-3 border border-amber-200">
-                    🔄 คุณมีไอเทมชิ้นนี้แล้ว! ได้รับเงินชดเชย +{unboxResult.refund} 🌻
+                  <p className="text-[11px] text-amber-800 font-bold bg-amber-100 p-2 rounded-xl mb-3 border border-amber-200 flex items-center justify-center space-x-1">
+                    <span>🔄 คุณมีไอเทมชิ้นนี้แล้ว! ได้รับเงินชดเชย +{unboxResult.refund}</span>
+                    <img
+                      src="/assets/icons/icon_seed.png"
+                      alt="Seeds"
+                      className="w-3.5 h-3.5 object-contain pixel-art inline"
+                    />
                   </p>
                 )}
 
@@ -305,8 +327,12 @@ export default function CageDecorModal({
             ) : isOpeningBox ? (
               /* หน้าแอนิเมชันเปิดกล่องกำลังลุ้น */
               <div className="flex flex-col items-center justify-center my-auto py-8">
-                <div className="relative text-7xl animate-bounce">
-                  🎁
+                <div className="relative animate-bounce">
+                  <img
+                    src="/assets/icons/icon_gift.png"
+                    alt="Opening Gift"
+                    className="w-20 h-20 object-contain pixel-art drop-shadow-xl"
+                  />
                   <Sparkles className="absolute -top-3 -right-3 w-8 h-8 text-yellow-400 fill-yellow-300 animate-spin" />
                 </div>
                 <h4 className="font-black text-base text-amber-950 mt-4 animate-pulse">
@@ -350,7 +376,11 @@ export default function CageDecorModal({
                           : "bg-slate-300 text-slate-500 cursor-not-allowed"
                       }`}
                     >
-                      <span>🌻</span>
+                      <img
+                        src="/assets/icons/icon_seed.png"
+                        alt="Seeds"
+                        className="w-3.5 h-3.5 object-contain pixel-art inline"
+                      />
                       <span>{box.cost}</span>
                     </button>
                   </div>

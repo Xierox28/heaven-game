@@ -12,8 +12,13 @@ export default function AnnouncementModal({ announcement, onDismiss }) {
           <Bell className="w-8 h-8 text-amber-950 animate-wiggle" />
         </div>
 
-        <div className="inline-block bg-amber-200/90 text-amber-900 text-[10px] font-black px-2.5 py-0.5 rounded-full mb-1 border border-amber-300">
-          👑 ประกาศพิเศษจาก GM แอดมิน
+        <div className="inline-flex items-center space-x-1 bg-amber-200/90 text-amber-900 text-[10px] font-black px-2.5 py-0.5 rounded-full mb-1 border border-amber-300">
+          <img
+            src="/assets/icons/icon_crown.png"
+            alt="Admin"
+            className="w-3.5 h-3.5 object-contain pixel-art inline"
+          />
+          <span>ประกาศพิเศษจาก GM แอดมิน</span>
         </div>
 
         <h3 className="text-lg font-black text-amber-950 mt-1 mb-2">

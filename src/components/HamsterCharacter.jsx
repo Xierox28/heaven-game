@@ -140,10 +140,14 @@ export default function HamsterCharacter({ state, onPet }) {
       {tears.map((tear) => (
         <div
           key={tear.id}
-          className="absolute z-25 pointer-events-none text-sky-400 text-xs animate-[floatTear_1s_ease-in_forwards]"
+          className="absolute z-25 pointer-events-none animate-[floatTear_1s_ease-in_forwards]"
           style={{ left: `${tear.x}%`, top: "60%" }}
         >
-          💧
+          <img
+            src="/assets/icons/icon_water.png"
+            alt="Tear"
+            className="w-3.5 h-3.5 object-contain pixel-art drop-shadow-xs"
+          />
         </div>
       ))}
 
@@ -160,10 +164,14 @@ export default function HamsterCharacter({ state, onPet }) {
       {floatingStars.map((star) => (
         <div
           key={star.id}
-          className="absolute z-25 pointer-events-none animate-[floatStar_1.2s_ease-out_forwards] text-yellow-400"
+          className="absolute z-25 pointer-events-none animate-[floatStar_1.2s_ease-out_forwards]"
           style={{ left: `${star.x}%`, top: "20%" }}
         >
-          ✨
+          <img
+            src="/assets/icons/icon_cleanliness.png"
+            alt="Sparkle"
+            className="w-3.5 h-3.5 object-contain pixel-art drop-shadow-xs"
+          />
         </div>
       ))}
 
@@ -333,8 +341,16 @@ export default function HamsterCharacter({ state, onPet }) {
           {/* Eating bowl */}
           {isEating && (
             <div className="absolute top-[68%] left-[50%] z-20 pointer-events-none animate-bounce flex items-center">
-              <span className="text-2xl sm:text-3xl">🥣</span>
-              <span className="absolute -top-1.5 -right-1 text-xs">✨</span>
+              <img
+                src="/assets/icons/icon_hunger.png"
+                alt="Food Bowl"
+                className="w-8 h-8 object-contain pixel-art drop-shadow-md"
+              />
+              <img
+                src="/assets/icons/icon_cleanliness.png"
+                alt="Sparkle"
+                className="w-3.5 h-3.5 object-contain pixel-art absolute -top-1 -right-1 animate-spin"
+              />
             </div>
           )}
 
@@ -379,7 +395,21 @@ export default function HamsterCharacter({ state, onPet }) {
       {/* Hint label & Growth stage badge */}
       {(() => {
         const level = state.level || 1;
-        const stageBadge = level >= 25 ? "👑 วัยโตเต็มวัย" : level >= 10 ? "🏃 วัยรุ่น" : "🍼 วัยเบบี้";
+        const stageBadge =
+          level >= 25 ? (
+            <span className="inline-flex items-center gap-1">
+              <img
+                src="/assets/icons/icon_crown.png"
+                alt="Adult"
+                className="w-3.5 h-3.5 object-contain pixel-art inline"
+              />
+              <span>วัยโตเต็มวัย</span>
+            </span>
+          ) : level >= 10 ? (
+            "🏃 วัยรุ่น"
+          ) : (
+            "🍼 วัยเบบี้"
+          );
         const breedDef = HAMSTER_BREEDS.find((b) => b.id === state.breed);
         const pDef = PERSONALITIES.find((p) => p.id === state.personality);
         const prestigeRank = state.prestige?.rank || 0;

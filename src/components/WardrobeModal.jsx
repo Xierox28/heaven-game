@@ -52,9 +52,13 @@ export default function WardrobeModal({
           <p className="text-xs text-purple-700">แต่งตัวให้น้องเฮเว่น (สวมใส่ได้หลายชิ้นพร้อมกันตามใจชอบ)</p>
 
           {/* จำนวนเหรียญคงเหลือ */}
-          <div className="inline-flex items-center space-x-1 bg-amber-200/90 px-3 py-1 rounded-full text-xs font-black text-amber-900 mt-2 border border-amber-300">
-            <span>🌻 มีอยู่:</span>
-            <span>{coins} เมล็ดทานตะวัน</span>
+          <div className="inline-flex items-center space-x-1.5 bg-amber-200/90 px-3 py-1 rounded-full text-xs font-black text-amber-900 mt-2 border border-amber-300">
+            <img
+              src="/assets/icons/icon_seed.png"
+              alt="Seeds"
+              className="w-4 h-4 object-contain pixel-art inline"
+            />
+            <span>มีอยู่: {coins} เมล็ดทานตะวัน</span>
           </div>
         </div>
 
@@ -268,7 +272,12 @@ export default function WardrobeModal({
                             }`}
                           >
                             <span>{b.cost}</span>
-                            <span>🌻 ปลดล็อค</span>
+                            <img
+                              src="/assets/icons/icon_seed.png"
+                              alt="Seeds"
+                              className="w-3.5 h-3.5 object-contain pixel-art inline"
+                            />
+                            <span>ปลดล็อค</span>
                           </button>
                         )}
                       </div>
@@ -380,7 +389,12 @@ export default function WardrobeModal({
                         }`}
                       >
                         <span>{item.cost}</span>
-                        <span>🌻 ซื้อ</span>
+                        <img
+                          src="/assets/icons/icon_seed.png"
+                          alt="Seeds"
+                          className="w-3.5 h-3.5 object-contain pixel-art inline"
+                        />
+                        <span>ซื้อ</span>
                       </button>
                     )}
                   </div>

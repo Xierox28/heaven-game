@@ -337,13 +337,27 @@ export default function HamsterJumpMiniGame({ state, isOpen, onClose, onFinish }
         {/* Live In-Game HUD */}
         <div className="w-full flex items-center justify-between py-1.5 px-2 text-xs font-black text-sky-950 z-10">
           <div className="flex items-center space-x-1 bg-white/80 px-2 py-0.5 rounded-full shadow-xs">
-            <span>🚀 {score} m</span>
+            <img
+              src="/assets/ui/btn_jump.png"
+              alt="Height"
+              className="w-3.5 h-3.5 object-contain pixel-art inline"
+            />
+            <span>{score} m</span>
           </div>
           <div className="flex items-center space-x-1 bg-amber-100/90 px-2 py-0.5 rounded-full shadow-xs text-amber-900">
-            <span>🌻 +{seedsCollected}</span>
+            <img
+              src="/assets/icons/icon_seed.png"
+              alt="Seeds"
+              className="w-3.5 h-3.5 object-contain pixel-art inline"
+            />
+            <span>+{seedsCollected}</span>
           </div>
           <div className="flex items-center space-x-1 bg-yellow-100/90 px-2 py-0.5 rounded-full shadow-xs text-yellow-900">
-            <Trophy className="w-3 h-3 text-amber-600" />
+            <img
+              src="/assets/icons/icon_trophy.png"
+              alt="Best"
+              className="w-3.5 h-3.5 object-contain pixel-art inline"
+            />
             <span>{highScore} m</span>
           </div>
         </div>
@@ -355,11 +369,28 @@ export default function HamsterJumpMiniGame({ state, isOpen, onClose, onFinish }
           {/* START SCREEN OVERLAY */}
           {gameState === "start" && (
             <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center text-white">
-              <span className="text-5xl animate-bounce mb-2">🐹🚀</span>
+              <img
+                src="/assets/ui/btn_jump.png"
+                alt="Jump"
+                className="w-14 h-14 object-contain pixel-art animate-bounce mb-2 drop-shadow-lg"
+              />
               <h3 className="text-lg font-black text-amber-300 drop-shadow-md">Hamster Jump!</h3>
-              <p className="text-xs font-bold text-sky-100 my-2 leading-relaxed">
-                กระโดดเหยียบเมฆไต่ระดับขึ้นฟ้า<br />
-                หลบเมฆสายฟ้า ⚡ เก็บเมล็ดทานตะวัน 🌻
+              <p className="text-xs font-bold text-sky-100 my-2 leading-relaxed flex flex-col items-center">
+                <span>กระโดดเหยียบเมฆไต่ระดับขึ้นฟ้า</span>
+                <span className="flex items-center space-x-1 mt-0.5">
+                  <span>หลบเมฆสายฟ้า</span>
+                  <img
+                    src="/assets/icons/icon_energy.png"
+                    alt="Lightning"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
+                  <span>เก็บเมล็ดทานตะวัน</span>
+                  <img
+                    src="/assets/icons/icon_seed.png"
+                    alt="Seeds"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
+                </span>
               </p>
               <button
                 onClick={startGame}
@@ -378,7 +409,17 @@ export default function HamsterJumpMiniGame({ state, isOpen, onClose, onFinish }
               <h3 className="text-base font-black text-amber-300">ร่วงลงมาแล้ววว!</h3>
               <div className="bg-white/10 rounded-2xl p-3 my-2 w-full max-w-[220px] text-xs font-black space-y-1">
                 <div>ความสูงที่ทำได้: <span className="text-sky-300 text-sm">{score} เมตร</span></div>
-                <div>เมล็ดทานตะวันที่เก็บได้: <span className="text-amber-300 text-sm">+{seedsCollected} 🌻</span></div>
+                <div className="flex items-center justify-center space-x-1">
+                  <span>เมล็ดทานตะวันที่เก็บได้:</span>
+                  <span className="text-amber-300 text-sm flex items-center">
+                    <span>+{seedsCollected}</span>
+                    <img
+                      src="/assets/icons/icon_seed.png"
+                      alt="Seeds"
+                      className="w-3.5 h-3.5 object-contain pixel-art inline ml-0.5"
+                    />
+                  </span>
+                </div>
                 <div>สถิติสูงสุด: <span className="text-yellow-400">{highScore} เมตร</span></div>
               </div>
 

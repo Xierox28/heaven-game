@@ -276,8 +276,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
       return (
         <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl p-3 shadow-md flex items-center justify-between animate-slide-in-down border-2 border-white/60">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shadow-inner">
-              🏡
+            <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center p-1 shadow-inner overflow-hidden">
+              <img src="/assets/ui/btn_decor.png" alt="Room" className="w-full h-full object-contain pixel-art" />
             </div>
             <div>
               <h2 className="text-sm font-black leading-tight flex items-center">
@@ -391,7 +391,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
           {/* Wallets */}
           <div className="flex items-center space-x-1 sm:space-x-1.5">
             <div className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border border-amber-400/90 rounded-xl px-2 py-1 flex items-center space-x-1 shadow-2xs">
-              <span className="text-sm">🌻</span>
+              <img
+                src="/assets/icons/icon_seed.png"
+                alt="Seeds"
+                className="w-4 h-4 object-contain pixel-art"
+              />
               <span className="font-black text-xs text-amber-950 max-w-[70px] truncate">
                 {(gameState.coins || 0).toLocaleString()}
               </span>
@@ -405,7 +409,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
               className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 border-b-2 border-b-blue-600 text-white rounded-xl px-2 py-1 flex items-center space-x-1 shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
               title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
             >
-              <span className="text-sm animate-pulse">💎</span>
+              <img
+                src="/assets/icons/icon_diamond.png"
+                alt="Diamond"
+                className="w-4 h-4 object-contain pixel-art animate-pulse"
+              />
               <span className="font-black text-xs max-w-[50px] truncate">
                 {(gameState.diamonds || 0).toLocaleString()}
               </span>
@@ -432,7 +440,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
               className="p-1.5 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400/90 transition-all active:scale-90 shadow-2xs cursor-pointer"
               title="ตารางอันดับผู้เล่น (Leaderboard)"
             >
-              <Trophy className="w-3.5 h-3.5 fill-amber-700 text-amber-950" />
+              <img
+                src="/assets/icons/icon_trophy.png"
+                alt="Leaderboard"
+                className="w-3.5 h-3.5 object-contain pixel-art"
+              />
             </button>
 
             {/* Update Log Button 📜 */}
@@ -474,7 +486,19 @@ export default function PlayerView({ onNavigateToAdmin }) {
               }`}
               title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
             >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-slate-400" /> : <Volume2 className="w-3.5 h-3.5 text-amber-700" />}
+              {isMuted ? (
+                <img
+                  src="/assets/icons/icon_speaker_mute.png"
+                  alt="Muted"
+                  className="w-3.5 h-3.5 object-contain pixel-art opacity-75"
+                />
+              ) : (
+                <img
+                  src="/assets/icons/icon_speaker.png"
+                  alt="Sound"
+                  className="w-3.5 h-3.5 object-contain pixel-art"
+                />
+              )}
             </button>
 
             {/* GM button */}
@@ -503,7 +527,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
           className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 hover:from-amber-500 text-slate-950 p-2 sm:p-2.5 rounded-2xl border-2 border-white border-b-4 border-b-orange-500 shadow-sm flex items-center justify-between text-left transition-all active:translate-y-0.5 active:border-b-2 group cursor-pointer"
         >
           <div className="flex items-center space-x-2">
-            <span className="text-2xl group-hover:scale-110 transition-transform">🎟️</span>
+            <img
+              src="/assets/icons/badge_pass.png"
+              alt="Pass"
+              className="w-7 h-7 object-contain pixel-art group-hover:scale-110 transition-transform"
+            />
             <div>
               <div className="text-[10px] font-black uppercase text-amber-950 tracking-wider">SEASON 1</div>
               <div className="text-xs font-black leading-tight text-slate-950">Hamster Pass</div>
@@ -519,7 +547,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
           className="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 hover:from-purple-500 text-white p-2 sm:p-2.5 rounded-2xl border-2 border-white border-b-4 border-b-purple-600 shadow-sm flex items-center justify-between text-left transition-all active:translate-y-0.5 active:border-b-2 group cursor-pointer"
         >
           <div className="flex items-center space-x-2">
-            <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
+            <img
+              src="/assets/icons/badge_calendar.png"
+              alt="Calendar"
+              className="w-7 h-7 object-contain pixel-art group-hover:scale-110 transition-transform"
+            />
             <div>
               <div className="text-[10px] font-black uppercase text-purple-100 tracking-wider">
                 {hasStreakToClaim ? "ยังไม่เช็คชื่อ" : "เช็คชื่อแล้ว"}
@@ -530,8 +562,13 @@ export default function PlayerView({ onNavigateToAdmin }) {
             </div>
           </div>
           {hasStreakToClaim ? (
-            <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs border border-white">
-              รับ! 🎁
+            <span className="text-[9px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full animate-bounce shadow-xs border border-white inline-flex items-center gap-1">
+              <span>รับ!</span>
+              <img
+                src="/assets/icons/icon_gift.png"
+                alt="Gift"
+                className="w-3 h-3 object-contain pixel-art inline"
+              />
             </span>
           ) : (
             <span className="text-[9px] bg-white/30 text-white font-black px-2 py-0.5 rounded-full">
@@ -646,7 +683,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   }`}
                   title="ตกแต่งกรง & ร้านค้าเฟอร์นิเจอร์"
                 >
-                  <span>🛋️</span>
+                  <img
+                    src="/assets/icons/icon_decor_room.png"
+                    alt="Decor"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline-block"
+                  />
                   <span>แต่งห้อง</span>
                 </button>
 
@@ -664,7 +705,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   }`}
                   title="โหมดจัดวางและเลื่อนตำแหน่งของตกแต่ง"
                 >
-                  <span>📍</span>
+                  <img
+                    src="/assets/icons/icon_move_pin.png"
+                    alt="Move"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline-block"
+                  />
                   <span>ย้ายของ</span>
                 </button>
               </div>
@@ -685,7 +730,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-teal-700 group cursor-pointer pointer-events-auto relative z-40"
                 title="สวนผักออร์แกนิก & ครัวปรุงอาหาร"
               >
-                <span className="text-sm sm:text-lg leading-none pointer-events-none">🌱</span>
+                <img
+                  src="/assets/ui/btn_garden.png"
+                  alt="Garden"
+                  className="w-5 h-5 sm:w-6 sm:h-6 object-contain pixel-art pointer-events-none"
+                />
                 <span className="text-[7px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">สวน</span>
               </button>
 
@@ -700,7 +749,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-purple-700 group cursor-pointer pointer-events-auto relative z-40"
                 title="ตู้สุ่มกาชาปอง & คฤหาสน์"
               >
-                <span className="text-sm sm:text-lg leading-none pointer-events-none">🎰</span>
+                <img
+                  src="/assets/ui/btn_gashapon.png"
+                  alt="Gashapon"
+                  className="w-5 h-5 sm:w-6 sm:h-6 object-contain pixel-art pointer-events-none"
+                />
                 <span className="text-[7px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">กาชา</span>
               </button>
 
@@ -715,7 +768,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-orange-600 group cursor-pointer pointer-events-auto relative z-40"
                 title="มินิเกม Hamster Jump ไต่เมฆ"
               >
-                <span className="text-sm sm:text-lg leading-none pointer-events-none">🚀</span>
+                <img
+                  src="/assets/ui/btn_jump.png"
+                  alt="Jump"
+                  className="w-5 h-5 sm:w-6 sm:h-6 object-contain pixel-art pointer-events-none"
+                />
                 <span className="text-[7px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">Jump</span>
               </button>
 
@@ -733,7 +790,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   }`}
                   title="สั่งทำท่าทางพิเศษเล่นกับน้องเฮเว่น"
                 >
-                  <span className="text-sm sm:text-lg leading-none pointer-events-none">🎭</span>
+                  <img
+                    src="/assets/icons/icon_tricks_mask.png"
+                    alt="Tricks"
+                    className="w-5 h-5 sm:w-6 sm:h-6 object-contain pixel-art pointer-events-none"
+                  />
                   <span className="text-[7px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">เล่น</span>
                 </button>
 
@@ -883,7 +944,10 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 <div className="w-full h-9 bg-sky-400"></div>
                 <div className="absolute -bottom-1.5 -right-1 w-2 h-3.5 bg-slate-400 rounded-xs rotate-45 border border-slate-500"></div>
               </div>
-              <span className="text-[9px] font-bold text-sky-700 mt-1">💧 ดื่มน้ำ</span>
+              <span className="flex items-center text-[9px] font-bold text-sky-700 mt-1">
+                <img src="/assets/icons/icon_water.png" alt="Water" className="w-3.5 h-3.5 object-contain pixel-art mr-0.5" />
+                <span>ดื่มน้ำ</span>
+              </span>
             </div>
           )}
 
@@ -1007,11 +1071,15 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     e.stopPropagation();
                     gameStateService.cleanCage();
                   }}
-                  className="cursor-pointer text-2xl filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
+                  className="cursor-pointer filter drop-shadow transform hover:scale-125 transition-transform animate-bounce active:scale-90"
                   style={{ animationDelay: `${idx * 0.2}s`, margin: "0 4px" }}
                   title="คลิกเพื่อเก็บอึ!"
                 >
-                  💩
+                  <img
+                    src="/assets/icons/icon_poop.png"
+                    alt="Poop"
+                    className="w-7 h-7 object-contain pixel-art"
+                  />
                 </div>
               ))}
             </div>
@@ -1069,7 +1137,11 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
           {/* Floor decoration */}
           <div className="relative z-10 self-end mr-2 flex items-center space-x-1 pointer-events-none">
-            <span className="text-xl">🌻</span>
+            <img
+              src="/assets/icons/prop_sunflower_flower.png"
+              alt="Sunflower"
+              className="w-8 h-8 object-contain pixel-art drop-shadow-xs"
+            />
             <div className="w-12 h-2.5 bg-amber-900/20 rounded-full blur-[1px]"></div>
           </div>
         </div>
@@ -1222,13 +1294,18 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const renderFooterHints = () => (
     <div className="flex items-center justify-between pt-1 px-1">
       <span
-        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs ${
+        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs flex items-center ${
           isDarkMode
             ? "bg-slate-800 text-amber-300 border-slate-700"
             : "bg-amber-100/80 text-amber-900 border-amber-200"
         }`}
       >
-        💡 ดับเบิ้ลแทปที่กรงเพื่อให้อาหารด่วน
+        <img
+          src="/assets/icons/icon_bulb.png"
+          alt="Tip"
+          className="w-3.5 h-3.5 object-contain pixel-art mr-1"
+        />
+        <span>ดับเบิ้ลแทปที่กรงเพื่อให้อาหารด่วน</span>
       </span>
       <button
         onClick={() => setIsUpdateLogOpen(true)}

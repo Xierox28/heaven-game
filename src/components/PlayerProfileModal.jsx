@@ -69,8 +69,13 @@ export default function PlayerProfileModal({ state, isOpen, onClose, onSave }) {
                 Lv.{level}
               </span>
             </div>
-            <div className="text-xs font-black text-amber-950 bg-white/90 px-2 py-0.5 rounded-lg border border-white/60 inline-block mt-1">
-              👑 {selectedTitle}
+            <div className="text-xs font-black text-amber-950 bg-white/90 px-2 py-0.5 rounded-lg border border-white/60 inline-flex items-center space-x-1 mt-1">
+              <img
+                src="/assets/icons/icon_crown.png"
+                alt="Title"
+                className="w-3.5 h-3.5 object-contain pixel-art inline"
+              />
+              <span>{selectedTitle}</span>
             </div>
           </div>
         </div>
@@ -111,7 +116,12 @@ export default function PlayerProfileModal({ state, isOpen, onClose, onSave }) {
           {/* Title Selector */}
           <div>
             <label className="text-xs font-black text-amber-950 mb-2 flex items-center space-x-1">
-              <span>👑 เลือกฉายาประจำตัว (Title):</span>
+              <img
+                src="/assets/icons/icon_crown.png"
+                alt="Crown"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
+              <span>เลือกฉายาประจำตัว (Title):</span>
             </label>
             <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
               {allAvailableTitles.map((t, idx) => (

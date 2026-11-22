@@ -340,8 +340,13 @@ export default function AdminView({ onNavigateToPlayer }) {
               <h3 className="text-sm font-black text-amber-400 flex items-center space-x-2">
                 <span>🐹 ตรวจสอบและแก้ไขข้อมูลของ @{selectedTarget}</span>
                 {targetHamster?.pass?.hasGoldPass && (
-                  <span className="bg-amber-500/20 text-yellow-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/40">
-                    GOLD PASS OWNER ⭐
+                  <span className="bg-amber-500/20 text-yellow-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/40 flex items-center space-x-1">
+                    <span>GOLD PASS OWNER</span>
+                    <img
+                      src="/assets/icons/icon_star.png"
+                      alt="Star"
+                      className="w-3 h-3 object-contain pixel-art inline"
+                    />
                   </span>
                 )}
               </h3>
@@ -372,14 +377,28 @@ export default function AdminView({ onNavigateToPlayer }) {
                   </div>
                   <div className="bg-slate-800/70 p-2.5 rounded-xl border border-slate-700">
                     <div className="text-[10px] text-slate-400 font-bold">เหรียญทานตะวัน</div>
-                    <div className="font-black text-yellow-400 mt-0.5">
-                      🌻 {targetHamster.coins || 0}
+                    <div className="font-black text-yellow-400 mt-0.5 flex items-center space-x-1">
+                      <img
+                        src="/assets/icons/icon_seed.png"
+                        alt="Seeds"
+                        className="w-3.5 h-3.5 object-contain pixel-art inline"
+                      />
+                      <span>{targetHamster.coins || 0}</span>
                     </div>
                   </div>
                   <div className="bg-slate-800/70 p-2.5 rounded-xl border border-slate-700">
                     <div className="text-[10px] text-slate-400 font-bold">สถานะ / อึในกรง</div>
-                    <div className="font-black text-indigo-300 mt-0.5">
-                      {targetHamster.isSleeping ? "💤 นอนหลับ" : "☀️ ตื่นอยู่"} ({targetHamster.poopCount || 0} 💩)
+                    <div className="font-black text-indigo-300 mt-0.5 flex items-center space-x-1">
+                      <span>{targetHamster.isSleeping ? "💤 นอนหลับ" : "☀️ ตื่นอยู่"}</span>
+                      <span className="flex items-center text-amber-200">
+                        <span>({targetHamster.poopCount || 0}</span>
+                        <img
+                          src="/assets/icons/icon_poop.png"
+                          alt="Poop"
+                          className="w-3.5 h-3.5 object-contain pixel-art inline ml-0.5"
+                        />
+                        <span>)</span>
+                      </span>
                     </div>
                   </div>
                   <div className="bg-slate-800/70 p-2.5 rounded-xl border border-slate-700">
@@ -393,7 +412,14 @@ export default function AdminView({ onNavigateToPlayer }) {
                 {/* 2. Direct Stat Overwrite Form */}
                 <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-3">
                   <h4 className="text-xs font-black text-slate-300 flex items-center justify-between">
-                    <span>⚡ ปรับแต่งค่าสถานะตัวเลขสด (Direct Edit & Overwrite)</span>
+                    <span className="flex items-center">
+                      <img
+                        src="/assets/icons/icon_energy.png"
+                        alt="Energy"
+                        className="w-3.5 h-3.5 object-contain pixel-art inline mr-1"
+                      />
+                      <span>ปรับแต่งค่าสถานะตัวเลขสด (Direct Edit & Overwrite)</span>
+                    </span>
                     <button
                       onClick={async () => {
                         await adminService.updatePlayerHamster(selectedTarget, {
@@ -484,8 +510,13 @@ export default function AdminView({ onNavigateToPlayer }) {
 
                 {/* 3. Special Gifts & Moderation Buttons */}
                 <div className="space-y-2">
-                  <div className="text-[11px] font-black text-amber-400 uppercase tracking-wider">
-                    🎁 ไอเทมพิเศษและคำสั่งจัดการเฉพาะผู้เล่น
+                  <div className="text-[11px] font-black text-amber-400 uppercase tracking-wider flex items-center space-x-1">
+                    <img
+                      src="/assets/icons/icon_gift.png"
+                      alt="Gift"
+                      className="w-3.5 h-3.5 object-contain pixel-art inline"
+                    />
+                    <span>ไอเทมพิเศษและคำสั่งจัดการเฉพาะผู้เล่น</span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs">
@@ -692,7 +723,11 @@ export default function AdminView({ onNavigateToPlayer }) {
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-900/50 pb-2.5">
                 <div className="flex items-center space-x-2">
                   <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
-                    <span>💎</span>
+                    <img
+                      src="/assets/icons/icon_diamond.png"
+                      alt="Diamond"
+                      className="w-4 h-4 object-contain pixel-art inline"
+                    />
                     <span>คำขออ้อนขอเพชรจากผู้เล่น (Diamond Requests)</span>
                   </h3>
                   <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full text-[10px] font-black">
@@ -772,8 +807,13 @@ export default function AdminView({ onNavigateToPlayer }) {
                           </div>
 
                           <div className="flex items-center space-x-1.5">
-                            <span className="font-black text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full text-[11px]">
-                              ขอ +{req.amount} 💎
+                            <span className="font-black text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full text-[11px] flex items-center space-x-1">
+                              <span>ขอ +{req.amount}</span>
+                              <img
+                                src="/assets/icons/icon_diamond.png"
+                                alt="Diamond"
+                                className="w-3 h-3 object-contain pixel-art inline"
+                              />
                             </span>
 
                             {/* ลบรายการทิ้งเดี่ยวๆ */}
@@ -796,12 +836,17 @@ export default function AdminView({ onNavigateToPlayer }) {
                         </p>
 
                         {req.reply && (
-                          <div className={`text-[11px] p-2 rounded-xl border ${
+                          <div className={`text-[11px] p-2 rounded-xl border flex items-center space-x-1 ${
                             isApproved
                               ? "bg-emerald-950/40 text-emerald-300 border-emerald-800/40"
                               : "bg-rose-950/40 text-rose-300 border-rose-800/40"
                           }`}>
-                            <span className="font-black">👑 ตอบกลับ: </span>
+                            <img
+                              src="/assets/icons/icon_crown.png"
+                              alt="Admin"
+                              className="w-3 h-3 object-contain pixel-art inline flex-shrink-0"
+                            />
+                            <span className="font-black">ตอบกลับ: </span>
                             <span>{req.reply}</span>
                           </div>
                         )}
@@ -836,9 +881,14 @@ export default function AdminView({ onNavigateToPlayer }) {
                                       await adminService.approveDiamondRequest(req.id, req.username, amt);
                                       triggerFeedback(`อนุมัติแจก +${amt} 💎 ให้ @${req.username} แล้ว!`);
                                     }}
-                                    className="px-2.5 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                                    className="px-2.5 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white font-black text-[10px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center space-x-1"
                                   >
-                                    อนุมัติ +{amt} 💎
+                                    <span>อนุมัติ +{amt}</span>
+                                    <img
+                                      src="/assets/icons/icon_diamond.png"
+                                      alt="Diamond"
+                                      className="w-3 h-3 object-contain pixel-art inline"
+                                    />
                                   </button>
                                 ))}
 
@@ -914,8 +964,12 @@ export default function AdminView({ onNavigateToPlayer }) {
               }}
               className="p-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
             >
-              <Gift className="w-4 h-4" />
-              <span>ดรอปกล่องสมบัติลงกรง 🎁</span>
+              <img
+                src="/assets/icons/icon_gift.png"
+                alt="Gift"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
+              <span>ดรอปกล่องสมบัติลงกรง</span>
             </button>
 
             {/* v5.0: เปิด Golden Fever Time 15 นาที */}
@@ -926,7 +980,11 @@ export default function AdminView({ onNavigateToPlayer }) {
               }}
               className="p-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm animate-pulse"
             >
-              <Zap className="w-4 h-4" />
+              <img
+                src="/assets/icons/icon_energy.png"
+                alt="Energy"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
               <span>เปิด Fever Time (x2 ทั่วเซิร์ฟ 15น.)</span>
             </button>
 
@@ -960,10 +1018,20 @@ export default function AdminView({ onNavigateToPlayer }) {
                 await adminService.massAddCoins(500);
                 triggerFeedback("แจกอั่งเปา +500 เหรียญมหาศาลให้ทุกคนสำเร็จ!");
               }}
-              className="p-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+              className="p-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <Coins className="w-4 h-4" />
-              <span>แจกอั่งเปา +500 🌻 ให้ทุกคน</span>
+              <img
+                src="/assets/icons/icon_gift.png"
+                alt="Angpao"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
+              <span>แจกอั่งเปา +500</span>
+              <img
+                src="/assets/icons/icon_seed.png"
+                alt="Seeds"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
+              <span>ให้ทุกคน</span>
             </button>
 
             {/* 💎 v6.0: พี่ดิวแจกเพชรทุกคน +100 💎 */}
@@ -972,10 +1040,14 @@ export default function AdminView({ onNavigateToPlayer }) {
                 await adminService.massAddDiamonds(100);
                 triggerFeedback("พี่ดิวเสกเพชร +100 💎 ให้ทุกคนทั่วเซิร์ฟเวอร์เรียบร้อย!");
               }}
-              className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+              className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <span>💎</span>
-              <span>พี่ดิวแจกเพชร +100 💎 ทุกคน</span>
+              <img
+                src="/assets/icons/icon_diamond.png"
+                alt="Diamond"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
+              <span>พี่ดิวแจกเพชร +100 ให้ทุกคน</span>
             </button>
 
             {/* 💎 v6.0: พี่ดิวแจกเพชรทุกคน +500 💎 */}
@@ -984,10 +1056,14 @@ export default function AdminView({ onNavigateToPlayer }) {
                 await adminService.massAddDiamonds(500);
                 triggerFeedback("พี่ดิวเสกเพชร +500 💎 ให้ทุกคนทั่วเซิร์ฟเวอร์เรียบร้อย!");
               }}
-              className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-2 shadow-sm"
+              className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <span>💎</span>
-              <span>พี่ดิวแจกเพชร +500 💎 ทุกคน</span>
+              <img
+                src="/assets/icons/icon_diamond.png"
+                alt="Diamond"
+                className="w-4 h-4 object-contain pixel-art inline"
+              />
+              <span>พี่ดิวแจกเพชร +500 ให้ทุกคน</span>
             </button>
           </div>
         </section>

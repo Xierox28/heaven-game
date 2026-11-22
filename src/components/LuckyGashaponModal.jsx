@@ -130,11 +130,17 @@ export default function LuckyGashaponModal({
         {/* Currency Strip */}
         <div className="grid grid-cols-3 gap-1.5 my-2.5">
           <div className="bg-amber-100/90 border border-amber-300 rounded-xl p-1.5 text-center shadow-2xs">
-            <div className="text-[9px] font-bold text-amber-800">🌻 เมล็ดทานตะวัน</div>
+            <div className="text-[9px] font-bold text-amber-800 flex items-center justify-center space-x-1">
+              <img src="/assets/icons/icon_seed.png" alt="Seeds" className="w-3 h-3 object-contain pixel-art" />
+              <span>เมล็ดทานตะวัน</span>
+            </div>
             <div className="text-xs sm:text-sm font-black text-amber-950 truncate">{coins.toLocaleString()}</div>
           </div>
           <div className="bg-cyan-100/90 border border-cyan-300 rounded-xl p-1.5 text-center shadow-2xs">
-            <div className="text-[9px] font-bold text-cyan-800">💎 เพชร VIP</div>
+            <div className="text-[9px] font-bold text-cyan-800 flex items-center justify-center space-x-1">
+              <img src="/assets/icons/icon_diamond.png" alt="Diamond" className="w-3 h-3 object-contain pixel-art animate-pulse" />
+              <span>เพชร VIP</span>
+            </div>
             <div className="text-xs sm:text-sm font-black text-cyan-950 truncate">{diamonds.toLocaleString()}</div>
           </div>
           <div className="bg-purple-100/90 border border-purple-300 rounded-xl p-1.5 text-center shadow-2xs">
@@ -246,7 +252,14 @@ export default function LuckyGashaponModal({
                 }`}
               >
                 <span>สุ่ม 1 ครั้ง</span>
-                <span className="text-[10px] font-extrabold opacity-90">🌻 150 เมล็ด</span>
+                <span className="text-[10px] font-extrabold opacity-90 flex items-center space-x-1 mt-0.5">
+                  <img
+                    src="/assets/icons/icon_seed.png"
+                    alt="Seeds"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
+                  <span>150 เมล็ด</span>
+                </span>
               </button>
 
               <button
@@ -262,7 +275,14 @@ export default function LuckyGashaponModal({
                   ลด 10%
                 </div>
                 <span>สุ่ม 10 ครั้งรวด!</span>
-                <span className="text-[10px] font-extrabold opacity-95">🌻 1,350 เมล็ด</span>
+                <span className="text-[10px] font-extrabold opacity-95 flex items-center space-x-1 mt-0.5">
+                  <img
+                    src="/assets/icons/icon_seed.png"
+                    alt="Seeds"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
+                  <span>1,350 เมล็ด</span>
+                </span>
               </button>
             </div>
           </div>
@@ -275,11 +295,20 @@ export default function LuckyGashaponModal({
           <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-center">
             <div className="bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500 text-amber-950 p-3 rounded-2xl shadow-md border-2 border-yellow-200 flex items-center justify-between">
               <div className="flex items-center space-x-2 text-left">
-                <span className="text-3xl animate-bounce">👑</span>
+                <img
+                  src="/assets/icons/icon_crown.png"
+                  alt="Crown"
+                  className="w-8 h-8 object-contain pixel-art animate-bounce drop-shadow"
+                />
                 <div>
                   <h3 className="text-xs sm:text-sm font-black">ตู้สุ่มมหาเศรษฐี VIP Golden Gashapon</h3>
-                  <p className="text-[10px] font-bold text-amber-900">
-                    โอกาสได้ SSR สูงถึง 10%! ลุ้นรับปีกเนบิวลาจักรวาล รูปปั้นทองคำแท้ และหีบเพชร 500 💎
+                  <p className="text-[10px] font-bold text-amber-900 flex items-center flex-wrap">
+                    <span>โอกาสได้ SSR สูงถึง 10%! ลุ้นรับปีกเนบิวลาจักรวาล รูปปั้นทองคำแท้ และหีบเพชร 500</span>
+                    <img
+                      src="/assets/icons/icon_diamond.png"
+                      alt="Diamond"
+                      className="w-3.5 h-3.5 object-contain pixel-art inline ml-1"
+                    />
                   </p>
                 </div>
               </div>
@@ -287,18 +316,37 @@ export default function LuckyGashaponModal({
 
             <div className="relative py-1 flex flex-col items-center justify-center">
               <div className="w-28 h-28 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-300 to-orange-400 p-2 shadow-xl border-4 border-white flex items-center justify-center animate-pulse">
-                <span className="text-5xl drop-shadow-md">💎</span>
+                <img
+                  src="/assets/icons/icon_diamond.png"
+                  alt="Diamond"
+                  className="w-16 h-16 object-contain pixel-art drop-shadow-md"
+                />
               </div>
 
               <div className="flex items-center space-x-1.5 mt-2 text-[10px] font-black">
-                <span className="px-2 py-0.5 bg-yellow-400 text-amber-950 rounded-full border border-yellow-500 font-extrabold">
-                  👑 SSR (10%)
+                <span className="px-2 py-0.5 bg-yellow-400 text-amber-950 rounded-full border border-yellow-500 font-extrabold flex items-center space-x-1">
+                  <img
+                    src="/assets/icons/icon_crown.png"
+                    alt="SSR"
+                    className="w-3 h-3 object-contain pixel-art inline"
+                  />
+                  <span>SSR (10%)</span>
                 </span>
-                <span className="px-2 py-0.5 bg-purple-300 text-purple-950 rounded-full border border-purple-400 font-bold">
-                  🌟 SR (30%)
+                <span className="px-2 py-0.5 bg-purple-300 text-purple-950 rounded-full border border-purple-400 font-bold flex items-center space-x-1">
+                  <img
+                    src="/assets/icons/icon_star.png"
+                    alt="SR"
+                    className="w-3 h-3 object-contain pixel-art inline"
+                  />
+                  <span>SR (30%)</span>
                 </span>
-                <span className="px-2 py-0.5 bg-cyan-200 text-cyan-950 rounded-full border border-cyan-300">
-                  💎 เพชร & กะเพรา (60%)
+                <span className="px-2 py-0.5 bg-cyan-200 text-cyan-950 rounded-full border border-cyan-300 flex items-center space-x-1">
+                  <img
+                    src="/assets/icons/icon_diamond.png"
+                    alt="Diamond"
+                    className="w-3 h-3 object-contain pixel-art inline"
+                  />
+                  <span>เพชร & กะเพรา (60%)</span>
                 </span>
               </div>
             </div>
@@ -306,7 +354,14 @@ export default function LuckyGashaponModal({
             {/* Results Display */}
             {spinResults && spinResults.length > 0 && (
               <div className="bg-white/95 rounded-2xl border-2 border-amber-400 p-2.5 shadow-lg animate-slide-in-up">
-                <div className="text-xs font-black text-amber-950 mb-2">🏆 รางวัลระดับมหาเศรษฐีที่ได้รับ:</div>
+                <div className="text-xs font-black text-amber-950 mb-2 flex items-center justify-center space-x-1">
+                  <img
+                    src="/assets/icons/icon_trophy.png"
+                    alt="Trophy"
+                    className="w-4 h-4 object-contain pixel-art inline"
+                  />
+                  <span>รางวัลระดับมหาเศรษฐีที่ได้รับ:</span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {spinResults.map((r, idx) => (
                     <div
@@ -342,7 +397,14 @@ export default function LuckyGashaponModal({
                 }`}
               >
                 <span>สุ่ม VIP 1 ครั้ง</span>
-                <span className="text-[10px] font-black text-amber-900">🌻 5,000 เมล็ด</span>
+                <span className="text-[10px] font-black text-amber-900 flex items-center space-x-1 mt-0.5">
+                  <img
+                    src="/assets/icons/icon_seed.png"
+                    alt="Seeds"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
+                  <span>5,000 เมล็ด</span>
+                </span>
               </button>
 
               <button
@@ -358,7 +420,14 @@ export default function LuckyGashaponModal({
                   ลด 10%
                 </div>
                 <span>สุ่ม VIP 10 ครั้งรวด!</span>
-                <span className="text-[10px] font-black text-yellow-200">🌻 45,000 เมล็ด (การันตี SSR)</span>
+                <span className="text-[10px] font-black text-yellow-200 flex items-center space-x-1 mt-0.5">
+                  <img
+                    src="/assets/icons/icon_seed.png"
+                    alt="Seeds"
+                    className="w-3.5 h-3.5 object-contain pixel-art inline"
+                  />
+                  <span>45,000 เมล็ด (การันตี SSR)</span>
+                </span>
               </button>
             </div>
           </div>
@@ -372,7 +441,11 @@ export default function LuckyGashaponModal({
             <div className="bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-950 text-white p-3.5 rounded-2xl shadow-lg border-2 border-amber-400 flex items-center justify-between">
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="text-xl">⭐</span>
+                  <img
+                    src="/assets/icons/icon_star.png"
+                    alt="Star"
+                    className="w-5 h-5 object-contain pixel-art inline"
+                  />
                   <h3 className="text-sm font-black text-amber-300">
                     ระดับจุติปัจจุบัน: {prestigeRank > 0 ? `★${prestigeRank} ขั้นที่ ${prestigeRank}` : "ยังไม่เคยจุติ"}
                   </h3>
@@ -388,7 +461,11 @@ export default function LuckyGashaponModal({
               <div className="bg-white rounded-2xl border-2 border-purple-300 p-3.5 shadow-sm space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-purple-950 flex items-center space-x-1">
-                    <span>🌟</span>
+                    <img
+                      src="/assets/icons/icon_star.png"
+                      alt="Star"
+                      className="w-4 h-4 object-contain pixel-art inline"
+                    />
                     <span>เป้าหมายต่อไป: {nextPrestigeTier.star} '{nextPrestigeTier.name}'</span>
                   </span>
                   <span className="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full font-black border border-amber-300">

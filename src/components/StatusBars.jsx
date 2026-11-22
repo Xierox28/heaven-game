@@ -5,6 +5,7 @@ const STAT_CONFIG = [
     key: "hunger",
     label: "ความหิว",
     emoji: "🥣",
+    iconSrc: "/assets/icons/icon_hunger.png",
     barGradient: "bg-gradient-to-r from-amber-400 to-yellow-400",
     critColor: "bg-gradient-to-r from-red-500 to-rose-500",
     bg: "bg-gradient-to-b from-amber-50/95 to-orange-50/60",
@@ -20,6 +21,7 @@ const STAT_CONFIG = [
     key: "happiness",
     label: "ความสุข",
     emoji: "💖",
+    iconSrc: "/assets/icons/icon_happiness.png",
     barGradient: "bg-gradient-to-r from-rose-400 to-pink-500",
     critColor: "bg-gradient-to-r from-red-500 to-rose-500",
     bg: "bg-gradient-to-b from-rose-50/95 to-pink-50/60",
@@ -35,6 +37,7 @@ const STAT_CONFIG = [
     key: "cleanliness",
     label: "ความสะอาด",
     emoji: "✨",
+    iconSrc: "/assets/icons/icon_cleanliness.png",
     barGradient: "bg-gradient-to-r from-sky-400 to-cyan-400",
     critColor: "bg-gradient-to-r from-red-500 to-rose-500",
     bg: "bg-gradient-to-b from-sky-50/95 to-cyan-50/60",
@@ -50,6 +53,7 @@ const STAT_CONFIG = [
     key: "energy",
     label: "พลังงาน",
     emoji: "⚡",
+    iconSrc: "/assets/icons/icon_energy.png",
     barGradient: "bg-gradient-to-r from-indigo-400 to-purple-500",
     critColor: "bg-gradient-to-r from-red-500 to-rose-500",
     bg: "bg-gradient-to-b from-indigo-50/95 to-purple-50/60",
@@ -90,7 +94,12 @@ export default function StatusBars({ state, onInstantRefresh, isDarkMode = false
           <div className="flex items-center space-x-1.5 font-black">
             {/* Level Badge with Star */}
             <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-white rounded-xl px-2.5 py-0.5 text-xs shadow-xs flex items-center space-x-1 border border-yellow-200/60">
-              <span className="animate-star-shine inline-block">⭐</span>
+              <img
+                src="/assets/icons/icon_star.png"
+                alt="Level"
+                className="w-3.5 h-3.5 object-contain pixel-art animate-star-shine inline-block"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
               <span className="font-extrabold tracking-wide">Lv. {level}</span>
             </span>
 
@@ -145,24 +154,35 @@ export default function StatusBars({ state, onInstantRefresh, isDarkMode = false
           className="w-full bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border-2 border-white text-white p-2 sm:p-2.5 rounded-2xl shadow-sm flex items-center justify-between text-left transition-all active:translate-y-0.5 cursor-pointer animate-pulse"
         >
           <div className="flex items-center space-x-2">
-            <span className="text-xl">💎</span>
+            <img
+              src="/assets/icons/icon_diamond.png"
+              alt="Diamond"
+              className="w-5 h-5 object-contain pixel-art animate-pulse"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
             <div>
               <div className="text-[11px] font-black leading-tight">ฟื้นฟูค่าสถานะเต็ม 100% ทันที!</div>
               <div className="text-[9px] text-cyan-100 font-bold">อิ่มแปล้ อารมณ์ดี สะอาดเอี่ยม พลังเต็มเปี่ยม</div>
             </div>
           </div>
-          <span className="text-[10px] bg-white/30 text-white font-black px-2.5 py-1 rounded-xl shadow-xs border border-white/40">
-            ใช้ 10 💎
+          <span className="text-[10px] bg-white/30 text-white font-black px-2.5 py-1 rounded-xl shadow-xs border border-white/40 flex items-center space-x-1">
+            <span>ใช้ 10</span>
+            <img
+              src="/assets/icons/icon_diamond.png"
+              alt="Diamond"
+              className="w-3.5 h-3.5 object-contain pixel-art"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
           </span>
         </button>
       )}
 
       {/* ============================================================
-          4 VITAL STATUS CARDS (Tactile 2x2 Grid)
+          4 VITAL STATUS CARDS (Tactile 2x2 Grid with Pixel Icons)
           ============================================================ */}
       <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
         {STAT_CONFIG.map((cfg) => {
-          const { key, label, emoji, barGradient, bg, border, text, pillBg, darkBg, darkBorder, darkText, darkPillBg } = cfg;
+          const { key, label, emoji, iconSrc, barGradient, bg, border, text, pillBg, darkBg, darkBorder, darkText, darkPillBg } = cfg;
           const val = Math.max(0, Math.min(100, state[key] || 0));
           const isCritical = val < 15;
           const isLow = val < 35;
@@ -196,8 +216,15 @@ export default function StatusBars({ state, onInstantRefresh, isDarkMode = false
 
               {/* Title row */}
               <div className="flex items-center justify-between text-xs mb-1">
-                <div className="flex items-center space-x-1 font-extrabold">
-                  <span className="text-sm drop-shadow-2xs">{emoji}</span>
+                <div className="flex items-center space-x-1.5 font-extrabold">
+                  <img
+                    src={iconSrc}
+                    alt={label}
+                    className="w-4 h-4 sm:w-4.5 sm:h-4.5 object-contain pixel-art drop-shadow-2xs"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
                   <span className={`text-[11px] font-bold ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}>
                     {label}
                   </span>
@@ -238,7 +265,12 @@ export default function StatusBars({ state, onInstantRefresh, isDarkMode = false
               {/* Fast Sleep Recharge Alert */}
               {key === "energy" && isSleeping && (
                 <div className="text-[9px] text-indigo-400 font-black mt-1 animate-pulse flex items-center space-x-1 bg-indigo-950/80 px-1.5 py-0.5 rounded-md border border-indigo-700/60">
-                  <span className="animate-bounce">⚡</span>
+                  <img
+                    src="/assets/icons/icon_energy.png"
+                    alt="Energy"
+                    className="w-3 h-3 object-contain pixel-art animate-bounce"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
                   <span>ชาร์จไว 10 วิเต็ม! ({val}%)</span>
                 </div>
               )}
