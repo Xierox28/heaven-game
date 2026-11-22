@@ -269,8 +269,85 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const hasStreakToClaim = gameState.streak?.lastClaimDate !== todayStr;
 
   // ============================================================
-  // SUB-RENDER 1: HEADER BAR (Profile, Currencies, Toggles)
+  // SUB-RENDER 1: HEADER BAR (Profile, Currencies, Quick Toggles)
   // ============================================================
+  const renderQuickDock = () => (
+    <div
+      className={`flex items-center space-x-1 p-0.5 rounded-2xl shadow-2xs flex-shrink-0 ${
+        isDarkMode
+          ? "bg-slate-800/80 border border-slate-700/80"
+          : "bg-amber-50/80 border border-amber-200/80"
+      }`}
+    >
+      {/* Leaderboard Button 🏆 */}
+      <button
+        onClick={() => {
+          sound.playClick();
+          setIsLeaderboardOpen(true);
+        }}
+        className="p-1.5 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400/90 transition-all active:scale-90 shadow-2xs cursor-pointer"
+        title="ตารางอันดับผู้เล่น (Leaderboard)"
+      >
+        <Trophy className="w-3.5 h-3.5 fill-amber-700 text-amber-950" />
+      </button>
+
+      {/* Update Log Button 📜 */}
+      <button
+        onClick={() => {
+          sound.playClick();
+          setIsUpdateLogOpen(true);
+        }}
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer ${
+          isDarkMode
+            ? "bg-slate-750 hover:bg-slate-700 text-slate-200 border-slate-650"
+            : "bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300/80"
+        }`}
+        title="ประวัติการอัปเดต (Update Log v8.0)"
+      >
+        <Scroll className={`w-3.5 h-3.5 ${isDarkMode ? "text-amber-400" : "text-amber-800"}`} />
+      </button>
+
+      {/* Dark Mode toggle button 🌙 / ☀️ */}
+      <button
+        onClick={toggleDarkMode}
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer ${
+          isDarkMode
+            ? "bg-indigo-900/80 border-indigo-500/60 text-yellow-300 hover:bg-indigo-800"
+            : "bg-amber-100 hover:bg-amber-200 text-indigo-900 border-amber-300/80"
+        }`}
+        title={isDarkMode ? "เปลี่ยนเป็นโหมดสว่าง (Day Mode)" : "เปิดโหมดมืดถนอมสายตา (Cozy Dark Mode)"}
+      >
+        {isDarkMode ? <Sun className="w-3.5 h-3.5 text-yellow-300" /> : <Moon className="w-3.5 h-3.5 text-indigo-700" />}
+      </button>
+
+      {/* Mute button */}
+      <button
+        onClick={toggleSound}
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 cursor-pointer ${
+          isDarkMode
+            ? "bg-slate-750 hover:bg-slate-700 text-slate-200 border-slate-650"
+            : "bg-amber-100/90 hover:bg-amber-200 text-amber-900 border-amber-300/70"
+        }`}
+        title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
+      >
+        {isMuted ? (
+          <VolumeX className="w-3.5 h-3.5 text-slate-400" />
+        ) : (
+          <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+        )}
+      </button>
+
+      {/* GM button */}
+      <button
+        onClick={onNavigateToAdmin}
+        className="p-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-2xs cursor-pointer"
+        title="แผงควบคุม GM"
+      >
+        <Shield className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+
   const renderHeaderBar = () => {
     if (isMoveMode) {
       return (
@@ -304,7 +381,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
     return (
       <header
-        className={`backdrop-blur-md border-2 rounded-3xl px-3 sm:px-4 py-2.5 shadow-xs flex items-center justify-between transition-all ${
+        className={`backdrop-blur-md border-2 rounded-3xl p-2.5 sm:px-4 sm:py-3 shadow-xs transition-all ${
           isDarkMode
             ? "dark-card-glass border-slate-700/80 text-white"
             : isNight
@@ -312,203 +389,135 @@ export default function PlayerView({ onNavigateToAdmin }) {
             : "bg-white/95 border-amber-200/90 text-slate-900"
         }`}
       >
-        {/* Profile: Avatar + Name + Title */}
-        <div className="flex items-center space-x-2">
-          <div
-            onClick={() => {
-              sound.playClick();
-              setIsProfileModalOpen(true);
-            }}
-            className="relative cursor-pointer group"
-            title="แตะเพื่อเปลี่ยนรูปโปรไฟล์และฉายา"
-          >
-            <div
-              className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center p-0.5 shadow-xs overflow-hidden group-hover:scale-105 transition-transform ${
-                isDarkMode ? "bg-slate-800 border-amber-500/50" : "bg-white border-amber-300"
-              }`}
-            >
-              <img
-                src={`/assets/avatars/${gameState.playerAvatar || "avatar_hamster_classic"}.png`}
-                alt="Avatar"
-                className="w-full h-full object-contain pixel-art"
-              />
-            </div>
-            {gameState.prestige?.rank > 0 && (
-              <span className="absolute -top-1.5 -left-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border border-amber-600 shadow-2xs animate-pulse">
-                ★{gameState.prestige.rank}
-              </span>
-            )}
-            <div
-              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                isCloud ? "bg-emerald-400 shadow-emerald-300 shadow-2xs" : "bg-blue-400"
-              }`}
-              title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
-            ></div>
-          </div>
-
-          <div>
-            <div className="flex items-center space-x-1">
-              <h1
-                className={`font-black text-sm leading-tight flex items-center ${
-                  isDarkMode ? "text-amber-200" : "text-amber-950"
-                }`}
-              >
-                <span>{gameState.name || "Heaven (เฮเว่น)"}</span>
-              </h1>
-              <button
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+          {/* Section 1: Profile (Avatar + Name + Title + @user) and Mobile Quick Dock */}
+          <div className="flex items-center justify-between sm:justify-start space-x-2 sm:space-x-3 min-w-0">
+            {/* Avatar & Profile Meta */}
+            <div className="flex items-center space-x-2 min-w-0">
+              <div
                 onClick={() => {
                   sound.playClick();
                   setIsProfileModalOpen(true);
                 }}
-                className={`text-[9px] border font-black px-2 py-0.2 rounded-full cursor-pointer max-w-[110px] truncate shadow-2xs transition-all ${
-                  isDarkMode
-                    ? "bg-slate-800 text-amber-300 border-amber-500/40 hover:bg-slate-700"
-                    : "bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 text-amber-900 border-amber-300/80"
-                }`}
-                title="แตะเพื่อเปลี่ยนฉายา"
+                className="relative cursor-pointer group flex-shrink-0"
+                title="แตะเพื่อเปลี่ยนรูปโปรไฟล์และฉายา"
               >
-                {gameState.playerTitle || "เด็กเส้นแอดมินดิว 💎"}
+                <div
+                  className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center p-0.5 shadow-xs overflow-hidden group-hover:scale-105 transition-transform ${
+                    isDarkMode ? "bg-slate-800 border-amber-500/50" : "bg-white border-amber-300"
+                  }`}
+                >
+                  <img
+                    src={`/assets/avatars/${gameState.playerAvatar || "avatar_hamster_classic"}.png`}
+                    alt="Avatar"
+                    className="w-full h-full object-contain pixel-art"
+                  />
+                </div>
+                {gameState.prestige?.rank > 0 && (
+                  <span className="absolute -top-1.5 -left-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border border-amber-600 shadow-2xs animate-pulse">
+                    ★{gameState.prestige.rank}
+                  </span>
+                )}
+                <div
+                  className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                    isCloud ? "bg-emerald-400 shadow-emerald-300 shadow-2xs" : "bg-blue-400"
+                  }`}
+                  title={isCloud ? "Firebase Cloud Real-time" : "Local Sync"}
+                ></div>
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex items-center space-x-1.5 flex-wrap">
+                  <h1
+                    className={`font-black text-xs sm:text-sm leading-tight whitespace-nowrap ${
+                      isDarkMode ? "text-amber-200" : "text-amber-950"
+                    }`}
+                  >
+                    {gameState.name || "Heaven (เฮเว่น)"}
+                  </h1>
+                  <button
+                    onClick={() => {
+                      sound.playClick();
+                      setIsProfileModalOpen(true);
+                    }}
+                    className={`text-[9px] border font-black px-2 py-0.5 rounded-full cursor-pointer max-w-[130px] truncate shadow-2xs transition-all whitespace-nowrap ${
+                      isDarkMode
+                        ? "bg-slate-800 text-amber-300 border-amber-500/40 hover:bg-slate-700"
+                        : "bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 text-amber-900 border-amber-300/80"
+                    }`}
+                    title="แตะเพื่อเปลี่ยนฉายา"
+                  >
+                    {gameState.playerTitle || "เด็กเส้นแอดมินดิว 💎"}
+                  </button>
+                </div>
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className={`flex items-center space-x-1 text-[10px] sm:text-[11px] font-bold transition-colors mt-0.5 ${
+                    isDarkMode
+                      ? "text-slate-300 hover:text-white"
+                      : "text-amber-800 hover:text-amber-950"
+                  }`}
+                >
+                  <User className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? "text-amber-400" : "text-amber-600"}`} />
+                  <span className="underline underline-offset-2 truncate max-w-[120px]">
+                    {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Dock on small screens (< sm) sits on top-right */}
+            <div className="sm:hidden flex-shrink-0">
+              {renderQuickDock()}
+            </div>
+          </div>
+
+          {/* Section 2: Currencies & Desktop Quick Dock */}
+          <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-3">
+            {/* Wallets (Seed & Diamond) */}
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:space-x-2 w-full sm:w-auto">
+              {/* Sunflower Seed Wallet */}
+              <div
+                className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border border-amber-400/90 rounded-xl px-2.5 py-1 flex items-center justify-center sm:justify-start space-x-1.5 shadow-2xs"
+                title={`${(gameState.coins || 0).toLocaleString()} เมล็ดทานตะวัน`}
+              >
+                <img
+                  src="/assets/icons/icon_seed.png"
+                  alt="Seeds"
+                  className="w-4 h-4 object-contain pixel-art flex-shrink-0"
+                />
+                <span className="font-black text-xs text-amber-950 whitespace-nowrap">
+                  {(gameState.coins || 0).toLocaleString()}
+                </span>
+              </div>
+
+              {/* VIP Diamond Wallet */}
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setIsDiamondModalOpen(true);
+                }}
+                className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 border-b-2 border-b-blue-600 text-white rounded-xl px-2.5 py-1 flex items-center justify-center sm:justify-start space-x-1.5 shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
+                title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
+              >
+                <img
+                  src="/assets/icons/icon_diamond.png"
+                  alt="Diamond"
+                  className="w-4 h-4 object-contain pixel-art animate-pulse flex-shrink-0"
+                />
+                <span className="font-black text-xs whitespace-nowrap">
+                  {(gameState.diamonds || 0).toLocaleString()}
+                </span>
+                <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5 flex-shrink-0">
+                  +
+                </span>
               </button>
             </div>
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className={`flex items-center space-x-1 text-[11px] font-bold transition-colors mt-0.5 ${
-                isDarkMode
-                  ? "text-slate-300 hover:text-white"
-                  : "text-amber-800 hover:text-amber-950"
-              }`}
-            >
-              <User className={`w-3 h-3 ${isDarkMode ? "text-amber-400" : "text-amber-600"}`} />
-              <span className="underline underline-offset-2">
-                {currentUser ? `@${currentUser.username}` : "เข้าสู่ระบบ / Guest"}
-              </span>
-            </button>
-          </div>
-        </div>
 
-        {/* Right: Currencies & Utility Dock */}
-        <div className="flex items-center space-x-1.5 sm:space-x-2">
-          {/* Wallets */}
-          <div className="flex items-center space-x-1 sm:space-x-1.5">
-            <div className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 border border-amber-400/90 rounded-xl px-2 py-1 flex items-center space-x-1 shadow-2xs">
-              <img
-                src="/assets/icons/icon_seed.png"
-                alt="Seeds"
-                className="w-4 h-4 object-contain pixel-art"
-              />
-              <span className="font-black text-xs text-amber-950 max-w-[70px] truncate">
-                {(gameState.coins || 0).toLocaleString()}
-              </span>
+            {/* Quick Dock on tablet/desktop (sm:) sits on the right */}
+            <div className="hidden sm:block flex-shrink-0">
+              {renderQuickDock()}
             </div>
-
-            <button
-              onClick={() => {
-                sound.playClick();
-                setIsDiamondModalOpen(true);
-              }}
-              className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border border-cyan-300 border-b-2 border-b-blue-600 text-white rounded-xl px-2 py-1 flex items-center space-x-1 shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
-              title="อ้อนแอดมินดิวเพื่อขอเพชรเพิ่ม"
-            >
-              <img
-                src="/assets/icons/icon_diamond.png"
-                alt="Diamond"
-                className="w-4 h-4 object-contain pixel-art animate-pulse"
-              />
-              <span className="font-black text-xs max-w-[50px] truncate">
-                {(gameState.diamonds || 0).toLocaleString()}
-              </span>
-              <span className="bg-white/30 text-[10px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black ml-0.5">
-                +
-              </span>
-            </button>
-          </div>
-
-          {/* Utility Quick Dock */}
-          <div
-            className={`flex items-center space-x-1 p-0.5 rounded-2xl shadow-2xs ${
-              isDarkMode
-                ? "bg-slate-800/80 border border-slate-700/80"
-                : "bg-amber-50/80 border border-amber-200/80"
-            }`}
-          >
-            {/* Leaderboard Button 🏆 */}
-            <button
-              onClick={() => {
-                sound.playClick();
-                setIsLeaderboardOpen(true);
-              }}
-              className="p-1.5 bg-gradient-to-tr from-yellow-300 to-amber-400 hover:from-yellow-400 hover:to-amber-500 text-amber-950 rounded-xl border border-amber-400/90 transition-all active:scale-90 shadow-2xs cursor-pointer"
-              title="ตารางอันดับผู้เล่น (Leaderboard)"
-            >
-              <img
-                src="/assets/icons/icon_trophy.png"
-                alt="Leaderboard"
-                className="w-3.5 h-3.5 object-contain pixel-art"
-              />
-            </button>
-
-            {/* Update Log Button 📜 */}
-            <button
-              onClick={() => {
-                sound.playClick();
-                setIsUpdateLogOpen(true);
-              }}
-              className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer ${
-                isDarkMode
-                  ? "bg-slate-750 hover:bg-slate-700 text-slate-200 border-slate-650"
-                  : "bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300/80"
-              }`}
-              title="ประวัติการอัปเดต (Update Log v8.0)"
-            >
-              <Scroll className={`w-3.5 h-3.5 ${isDarkMode ? "text-amber-400" : "text-amber-800"}`} />
-            </button>
-
-            {/* Dark Mode toggle button 🌙 / ☀️ */}
-            <button
-              onClick={toggleDarkMode}
-              className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer ${
-                isDarkMode
-                  ? "bg-indigo-900/80 border-indigo-500/60 text-yellow-300 hover:bg-indigo-800"
-                  : "bg-amber-100 hover:bg-amber-200 text-indigo-900 border-amber-300/80"
-              }`}
-              title={isDarkMode ? "เปลี่ยนเป็นโหมดสว่าง (Day Mode)" : "เปิดโหมดมืดถนอมสายตา (Cozy Dark Mode)"}
-            >
-              {isDarkMode ? <Sun className="w-3.5 h-3.5 text-yellow-300" /> : <Moon className="w-3.5 h-3.5 text-indigo-700" />}
-            </button>
-
-            {/* Mute button */}
-            <button
-              onClick={toggleSound}
-              className={`p-1.5 rounded-xl border transition-all active:scale-90 cursor-pointer ${
-                isDarkMode
-                  ? "bg-slate-750 hover:bg-slate-700 text-slate-200 border-slate-650"
-                  : "bg-amber-100/90 hover:bg-amber-200 text-amber-900 border-amber-300/70"
-              }`}
-              title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
-            >
-              {isMuted ? (
-                <img
-                  src="/assets/icons/icon_speaker_mute.png"
-                  alt="Muted"
-                  className="w-3.5 h-3.5 object-contain pixel-art opacity-75"
-                />
-              ) : (
-                <img
-                  src="/assets/icons/icon_speaker.png"
-                  alt="Sound"
-                  className="w-3.5 h-3.5 object-contain pixel-art"
-                />
-              )}
-            </button>
-
-            {/* GM button */}
-            <button
-              onClick={onNavigateToAdmin}
-              className="p-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl border border-amber-600 text-white transition-all active:scale-90 shadow-2xs cursor-pointer"
-              title="แผงควบคุม GM"
-            >
-              <Shield className="w-3.5 h-3.5" />
-            </button>
           </div>
         </div>
       </header>
@@ -1356,7 +1365,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
 
       {/* Main Responsive Container */}
       <div className="relative z-10 flex flex-col items-center justify-start p-2 sm:p-4 md:p-6 pb-14">
-        <div className="w-full max-w-md md:max-w-4xl lg:max-w-5xl">
+        <div className="w-full max-w-md md:max-w-4xl lg:max-w-5xl space-y-3">
+          {/* Top Header Bar spans full width across the entire layout */}
+          {renderHeaderBar()}
 
           {/* ============================================================
               IPAD / TABLET / DESKTOP STUDIO VIEW (2-COLUMN GRID)
@@ -1375,9 +1386,8 @@ export default function PlayerView({ onNavigateToAdmin }) {
               {renderFooterHints()}
             </div>
 
-            {/* Right Column (iPad: 5 cols): Header + Pass + ActionControls */}
+            {/* Right Column (iPad: 5 cols): Pass + ActionControls */}
             <div className="md:col-span-5 space-y-3">
-              {renderHeaderBar()}
               {renderPassCards()}
               <ActionControls
                 state={gameState}
@@ -1401,7 +1411,6 @@ export default function PlayerView({ onNavigateToAdmin }) {
               MOBILE PHONE ERGONOMIC LAYOUT (< md)
               ============================================================ */}
           <div className="flex flex-col space-y-2.5 md:hidden">
-            {renderHeaderBar()}
             {renderPassCards()}
             {renderCageStage()}
             {renderMoveToolbar()}
