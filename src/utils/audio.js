@@ -204,6 +204,108 @@ class SoundFX {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.25);
   }
+
+  playDrink() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Refreshing liquid bubble / gulp sound
+    const bubbles = [260, 340, 420];
+    bubbles.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const t = this.ctx.currentTime + idx * 0.08;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.06);
+
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.08);
+    });
+  }
+
+  playWaterPlant() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Water droplet sprinkle sound
+    const drops = [520, 680, 840, 1020];
+    drops.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const t = this.ctx.currentTime + idx * 0.05;
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.7, t + 0.05);
+
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.07);
+    });
+  }
+
+  playGashaponRoll() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Mechanical crank & ticking ball roll
+    for (let i = 0; i < 6; i++) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "triangle";
+      const t = this.ctx.currentTime + i * 0.09;
+      osc.frequency.setValueAtTime(450 + i * 50, t);
+      osc.frequency.exponentialRampToValueAtTime(150, t + 0.04);
+
+      gain.gain.setValueAtTime(0.14, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.05);
+    }
+  }
+
+  playPurchase() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Register chime: E5 -> G#5 -> B5
+    const freqs = [659.25, 830.61, 987.77];
+    freqs.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const t = this.ctx.currentTime + idx * 0.07;
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.14, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.22);
+    });
+  }
 }
 
 export const sound = new SoundFX();

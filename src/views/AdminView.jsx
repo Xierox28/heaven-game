@@ -60,6 +60,7 @@ export default function AdminView({ onNavigateToPlayer }) {
 
   // Edit custom stats inputs
   const [editCoins, setEditCoins] = useState(0);
+  const [editDiamonds, setEditDiamonds] = useState(0);
   const [editLevel, setEditLevel] = useState(1);
   const [editHunger, setEditHunger] = useState(100);
   const [editHappiness, setEditHappiness] = useState(100);
@@ -97,6 +98,7 @@ export default function AdminView({ onNavigateToPlayer }) {
       setTargetHamster(hamster);
       if (hamster) {
         setEditCoins(hamster.coins || 0);
+        setEditDiamonds(hamster.diamonds || 0);
         setEditLevel(hamster.level || 1);
         setEditHunger(hamster.hunger ?? 80);
         setEditHappiness(hamster.happiness ?? 85);
@@ -396,6 +398,7 @@ export default function AdminView({ onNavigateToPlayer }) {
                       onClick={async () => {
                         await adminService.updatePlayerHamster(selectedTarget, {
                           coins: Number(editCoins),
+                          diamonds: Number(editDiamonds),
                           level: Number(editLevel),
                           hunger: Number(editHunger),
                           happiness: Number(editHappiness),
@@ -412,7 +415,7 @@ export default function AdminView({ onNavigateToPlayer }) {
                     </button>
                   </h4>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                     <div>
                       <label className="text-[10px] text-slate-400 font-bold block mb-1">เหรียญทานตะวัน (Coins)</label>
                       <input
@@ -420,6 +423,15 @@ export default function AdminView({ onNavigateToPlayer }) {
                         value={editCoins}
                         onChange={(e) => setEditCoins(e.target.value)}
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-cyan-400 font-bold block mb-1">เพชรพรีเมียม (Diamonds 💎)</label>
+                      <input
+                        type="number"
+                        value={editDiamonds}
+                        onChange={(e) => setEditDiamonds(e.target.value)}
+                        className="w-full bg-slate-900 border border-cyan-700/60 rounded-lg px-2.5 py-1 text-cyan-300 font-bold"
                       />
                     </div>
                     <div>

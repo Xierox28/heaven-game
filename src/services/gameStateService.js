@@ -120,14 +120,12 @@ class GameStateService {
     const incomingAchievements = toSafeArray(val?.achievements, []);
     const mergedAchievements = Array.from(new Set([...prevAchievements, ...incomingAchievements]));
 
-    // Monotonic coins & level guard: ป้องกันเงินลดฮวบหรือเลเวลลดลงเอง
-    const currentCoins = Math.max(0, Number(this.currentState?.coins) || 0);
-    const incomingCoins = Math.max(0, Number(val?.coins) || 0);
-    const finalCoins = Math.max(currentCoins, incomingCoins);
+    // Coins & level handling: If incoming state has valid numbers, respect incoming state (supporting prestige rebirth, spend & GM edits)
+    const incomingCoins = val?.coins !== undefined ? Math.max(0, Number(val.coins) || 0) : undefined;
+    const finalCoins = incomingCoins !== undefined ? incomingCoins : Math.max(0, Number(this.currentState?.coins) || 0);
 
-    const currentLevel = Math.max(1, Number(this.currentState?.level) || 1);
-    const incomingLevel = Math.max(1, Number(val?.level) || 1);
-    const finalLevel = Math.max(currentLevel, incomingLevel);
+    const incomingLevel = val?.level !== undefined ? Math.max(1, Number(val.level) || 1) : undefined;
+    const finalLevel = incomingLevel !== undefined ? incomingLevel : Math.max(1, Number(this.currentState?.level) || 1);
 
     // Stats safety floors: ป้องกันค่าสถานะกลายเป็น 0 โดยมีพื้นต่ำสุดที่ปลอดภัย
     const rawHunger = Number(val?.hunger ?? this.currentState?.hunger ?? 80);
@@ -553,8 +551,21 @@ class GameStateService {
     this.decayInterval = setInterval(() => {
       const now = Date.now();
       const last = this.currentState.lastDecayTime || now;
-      let elapsedSeconds = Math.max(0, (now - last) / 1000);
+      const rawElapsed = Math.max(0, (now - last) / 1000);
+      let elapsedSeconds = rawElapsed;
       if (elapsedSeconds < 10) return;
+
+      // 🎁 Offline Welcome Back Gift (เมื่อไม่ได้เปิดเกมนานกว่า 15 นาที)
+      let welcomeBonus = 0;
+      let welcomeBubble = null;
+      if (rawElapsed >= 900) {
+        welcomeBonus = 25;
+        welcomeBubble = {
+          text: "ยินดีต้อนรับกลับมางับ! คิดถึงจังเลย ได้รับของขวัญต้อนรับกลับ +25 🌻 เมล็ด! 💖",
+          timestamp: Date.now(),
+          duration: 6000,
+        };
+      }
 
       // 🛡️ SAFETY CAP: จำกัดเวลาลดค่าสถานะไม่เกิน 60 วินาทีต่อครั้ง
       // ป้องกันอาการค่าสถานะลดฮวบเหลือ 0 ทันทีเมื่อสลับแท็บหรือเปิดเกมทิ้งไว้
@@ -598,12 +609,14 @@ class GameStateService {
 
         return {
           ...prev,
+          coins: prev.coins + welcomeBonus,
           hunger: Math.round(hunger),
           happiness: Math.round(happiness),
           cleanliness: Math.round(cleanliness),
           energy: Math.round(energy),
           poopCount,
           actionState,
+          speechBubble: welcomeBubble || prev.speechBubble,
           lastDecayTime: now,
         };
       });
@@ -2080,6 +2093,10 @@ class GameStateService {
       ...prev,
       playerTitle: title,
     }));
+  }
+
+  calculateExp(currentExp, currentLevel, currentMaxExp) {
+    return this.calculateLevelProgression(currentExp, currentLevel);
   }
 
   calculateLevelProgression(currentExp, currentLevel) {

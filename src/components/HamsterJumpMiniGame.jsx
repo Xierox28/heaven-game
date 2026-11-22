@@ -26,9 +26,12 @@ export default function HamsterJumpMiniGame({ state, isOpen, onClose, onFinish }
 
   useEffect(() => {
     const img = new Image();
-    img.src = "/assets/breeds/winter_white.png";
+    img.src = `/assets/breeds/${state?.breed || "winter_white"}.png`;
+    img.onerror = () => {
+      img.src = "/assets/breeds/winter_white.png";
+    };
     hamsterImgRef.current = img;
-  }, []);
+  }, [state?.breed]);
 
   // Keyboard controls
   useEffect(() => {

@@ -47,10 +47,14 @@ const STAT_CONFIG = [
   },
 ];
 
-export default function StatusBars({ state }) {
+export default function StatusBars({ state, onInstantRefresh }) {
   const { level = 1, exp = 0, maxExp = 100, isSleeping, prestige } = state || {};
   const expPercent = Math.min(100, Math.round(((exp || 0) / (maxExp || 100)) * 100));
   const prestigeRank = prestige?.rank || 0;
+
+  const anyLow = ["hunger", "happiness", "cleanliness", "energy"].some(
+    (k) => (state?.[k] || 0) < 35
+  );
 
   return (
     <div className="w-full space-y-2.5">
@@ -95,6 +99,25 @@ export default function StatusBars({ state }) {
           />
         </div>
       </div>
+
+      {/* 💎 Quick Full Recovery Banner using Diamonds */}
+      {anyLow && onInstantRefresh && (
+        <button
+          onClick={onInstantRefresh}
+          className="w-full bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 border-2 border-white text-white p-2 sm:p-2.5 rounded-2xl shadow-sm flex items-center justify-between text-left transition-all active:translate-y-0.5 cursor-pointer animate-pulse"
+        >
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">💎</span>
+            <div>
+              <div className="text-[11px] font-black leading-tight">ฟื้นฟูค่าสถานะเต็ม 100% ทันที!</div>
+              <div className="text-[9px] text-cyan-100 font-bold">อิ่มแปล้ อารมณ์ดี สะอาดเอี่ยม พลังเต็มเปี่ยม</div>
+            </div>
+          </div>
+          <span className="text-[10px] bg-white/30 text-white font-black px-2.5 py-1 rounded-xl shadow-xs border border-white/40">
+            ใช้ 10 💎
+          </span>
+        </button>
+      )}
 
       {/* ============================================================
           4 VITAL STATUS CARDS (Tactile 2x2 Grid)

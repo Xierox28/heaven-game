@@ -787,15 +787,17 @@ export default function PlayerView({ onNavigateToAdmin }) {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (gameState.isSleeping) return;
-                      sound.playEat();
+                      sound.playDrink();
                       gameStateService.updateState((prev) => ({
                         ...prev,
-                        happiness: Math.min(100, prev.happiness + 5),
-                        speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! 💧🐹", timestamp: Date.now(), duration: 3000 },
+                        happiness: Math.min(100, prev.happiness + 15),
+                        cleanliness: Math.min(100, prev.cleanliness + 10),
+                        energy: Math.min(100, prev.energy + 5),
+                        speechBubble: { text: "จ๊วบๆ... น้ำเย็นชื่นใจจังงับ! หายเหนื่อยเลย 💧🐹✨", timestamp: Date.now(), duration: 3500 },
                       }));
                     }}
-                    className="absolute top-12 left-3 z-40 pointer-events-auto cursor-pointer group flex flex-col items-center"
-                    title="กดเพื่อดื่มน้ำ"
+                    className="absolute top-12 left-3 z-40 pointer-events-auto cursor-pointer group flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"
+                    title="กดเพื่อดื่มน้ำเย็นสดชื่น (+ความสุข & ความสะอาด)"
                   >
                     <div className="relative w-7 h-14 bg-sky-200/90 border-2 border-sky-400 rounded-b-xl shadow-xs flex flex-col justify-end p-0.5 overflow-hidden">
                       <div className="w-full h-9 bg-sky-400"></div>
@@ -1138,7 +1140,10 @@ export default function PlayerView({ onNavigateToAdmin }) {
           {/* ============================================================
               3. STATUS BARS
           ============================================================ */}
-          <StatusBars state={gameState} />
+          <StatusBars
+            state={gameState}
+            onInstantRefresh={() => gameStateService.instantRefreshStats(10)}
+          />
 
           {/* ============================================================
               4. ACTION CONTROLS & MINI-GAMES

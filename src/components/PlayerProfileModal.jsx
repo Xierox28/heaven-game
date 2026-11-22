@@ -6,11 +6,13 @@ import { sound } from "../utils/audio";
 export default function PlayerProfileModal({ state, isOpen, onClose, onSave }) {
   const [selectedAvatar, setSelectedAvatar] = useState(() => state?.playerAvatar || "avatar_hamster_classic");
   const [selectedTitle, setSelectedTitle] = useState(() => state?.playerTitle || "เด็กเส้นแอดมินดิว 💎");
+  const [customTitleInput, setCustomTitleInput] = useState("");
 
   if (!isOpen) return null;
 
   const level = state?.level || 1;
   const currentAvatarDef = PLAYER_AVATARS.find((a) => a.id === selectedAvatar) || PLAYER_AVATARS[0];
+  const allAvailableTitles = Array.from(new Set([...(state?.unlockedTitles || []), ...PLAYER_TITLES]));
 
   const handleSave = () => {
     sound.playLevelUp();
@@ -111,13 +113,13 @@ export default function PlayerProfileModal({ state, isOpen, onClose, onSave }) {
             <label className="text-xs font-black text-amber-950 mb-2 flex items-center space-x-1">
               <span>👑 เลือกฉายาประจำตัว (Title):</span>
             </label>
-            <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-              {PLAYER_TITLES.map((t, idx) => (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+              {allAvailableTitles.map((t, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => { sound.playClick(); setSelectedTitle(t); }}
-                  className={`w-full p-2 rounded-xl text-left text-xs font-black border transition-all flex items-center justify-between ${
+                  className={`w-full p-2 rounded-xl text-left text-xs font-black border transition-all flex items-center justify-between cursor-pointer ${
                     selectedTitle === t
                       ? "bg-amber-500 text-white border-amber-600 shadow-xs"
                       : "bg-white hover:bg-amber-50 border-amber-200 text-amber-950"
@@ -127,6 +129,35 @@ export default function PlayerProfileModal({ state, isOpen, onClose, onSave }) {
                   {selectedTitle === t && <Check className="w-4 h-4 stroke-[3]" />}
                 </button>
               ))}
+            </div>
+
+            {/* Custom Title Input */}
+            <div className="mt-2.5 pt-2 border-t border-amber-200/80">
+              <label className="text-[11px] font-black text-amber-900 block mb-1">
+                ✏️ หรือพิมพ์ฉายาตามใจชอบ:
+              </label>
+              <div className="flex space-x-1.5">
+                <input
+                  type="text"
+                  maxLength={28}
+                  value={customTitleInput}
+                  onChange={(e) => setCustomTitleInput(e.target.value)}
+                  placeholder="เช่น คนรักแฮมสเตอร์เบอร์ 1 ✨..."
+                  className="flex-1 bg-white border border-amber-300 rounded-xl px-2.5 py-1 text-xs text-amber-950 font-bold focus:outline-hidden focus:border-amber-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (customTitleInput.trim()) {
+                      sound.playClick();
+                      setSelectedTitle(customTitleInput.trim());
+                    }
+                  }}
+                  className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black shadow-xs cursor-pointer active:scale-95 transition-all"
+                >
+                  ใช้
+                </button>
+              </div>
             </div>
           </div>
         </div>
