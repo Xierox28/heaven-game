@@ -378,3 +378,36 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+/* ============================================================
+   COZY DARK MODE / MIDNIGHT EYE-CARE (v8.0)
+   ============================================================ */
+.dark-theme-bg {
+  background: linear-gradient(135deg, #090c19 0%, #11172e 45%, #0d1124 100%) !important;
+}
+
+.dark-card-glass {
+  background: rgba(22, 28, 52, 0.88) !important;
+  backdrop-filter: blur(16px);
+  border-color: rgba(99, 102, 241, 0.28) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+.dark-subcard {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(71, 85, 105, 0.6) !important;
+  color: #e2e8f0 !important;
+}
+
+.dark-text-main {
+  color: #f8fafc !important;
+}
+
+.dark-text-sub {
+  color: #94a3b8 !important;
+}
+
+.dark-cage-frame {
+  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.6), 0 4px 10px -2px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+}
