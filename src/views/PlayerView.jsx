@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star, Scroll, Check, Move, RotateCcw } from "lucide-react";
+import { Moon, Sun, Volume2, VolumeX, Shield, Trophy, Wifi, Sparkles, User, LogOut, LogIn, Calendar, Star, Scroll, Check, Move, RotateCcw, Camera } from "lucide-react";
 
 import { gameStateService } from "../services/gameStateService";
 import { authService } from "../services/authService";
 import { isFirebaseConfigured } from "../firebaseConfig";
-import { sound } from "../utils/audio";
+import { sound, haptic } from "../utils/audio";
 import { FOOD_ITEMS } from "../constants/gameData";
 import { FURNITURE_ITEMS } from "../constants/furnitureData";
 
@@ -27,6 +27,8 @@ import LuckyGashaponModal from "../components/LuckyGashaponModal";
 import HamsterJumpMiniGame from "../components/HamsterJumpMiniGame";
 import AskDewDiamondModal from "../components/AskDewDiamondModal";
 import PlayerProfileModal from "../components/PlayerProfileModal";
+import HamsterCameraModal from "../components/HamsterCameraModal";
+import HamsterWheelModal from "../components/HamsterWheelModal";
 import { MANSION_THEMES } from "../constants/gameData";
 import { AchievementToast, AchievementPanel } from "../components/AchievementSystem";
 
@@ -54,6 +56,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
   const [isGardenOpen, setIsGardenOpen] = useState(false);
   const [isGashaponOpen, setIsGashaponOpen] = useState(false);
   const [isJumpOpen, setIsJumpOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isWheelSprintOpen, setIsWheelSprintOpen] = useState(false);
+  const [isBgmPlaying, setIsBgmPlaying] = useState(() => Boolean(sound.bgmPlaying));
   const [isDiamondModalOpen, setIsDiamondModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isTricksMenuOpen, setIsTricksMenuOpen] = useState(false);
@@ -105,6 +110,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
   };
 
   const handleFeed = () => {
+    haptic.eat();
     if (gameState.level >= 3) {
       setIsFoodShopOpen(true);
     } else {
@@ -319,6 +325,25 @@ export default function PlayerView({ onNavigateToAdmin }) {
         title={isDarkMode ? "เปลี่ยนเป็นโหมดสว่าง (Day Mode)" : "เปิดโหมดมืดถนอมสายตา (Cozy Dark Mode)"}
       >
         {isDarkMode ? <Sun className="w-3.5 h-3.5 text-yellow-300" /> : <Moon className="w-3.5 h-3.5 text-indigo-700" />}
+      </button>
+
+      {/* Cozy Lo-Fi BGM Music button 🎵 / 🔇 */}
+      <button
+        onClick={() => {
+          const nextState = sound.toggleBGM();
+          setIsBgmPlaying(nextState);
+          haptic.tap();
+        }}
+        className={`p-1.5 rounded-xl border transition-all active:scale-90 shadow-2xs cursor-pointer flex items-center justify-center flex-shrink-0 ${
+          isBgmPlaying
+            ? "bg-gradient-to-tr from-pink-400 to-rose-500 text-white border-pink-400 shadow-pink-500/30"
+            : isDarkMode
+            ? "bg-slate-750 hover:bg-slate-700 text-slate-300 border-slate-650"
+            : "bg-amber-100/90 hover:bg-amber-200 text-amber-900 border-amber-300/70"
+        }`}
+        title={isBgmPlaying ? "ปิดเสียงเพลงคลอ (Stop Cozy BGM)" : "เปิดเพลงคลอบรรยากาศชิลล์ๆ (Play Cozy Lo-Fi BGM)"}
+      >
+        <span className="text-xs leading-none">{isBgmPlaying ? "🎵" : "🔇"}</span>
       </button>
 
       {/* Mute button */}
@@ -766,6 +791,26 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   />
                   <span>ย้ายของ</span>
                 </button>
+
+                {/* 📸 โหมดถ่ายรูปโพลารอยด์ Photo Studio */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    sound.playClick();
+                    haptic.tap();
+                    setIsCameraOpen(true);
+                  }}
+                  className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-black shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:translate-y-0.5 border-2 pointer-events-auto ${
+                    isDarkMode
+                      ? "bg-slate-800/95 hover:bg-slate-700 text-cyan-300 border-cyan-500/50 border-b-3 border-b-cyan-600"
+                      : "bg-white/95 hover:bg-cyan-50 text-cyan-900 border-cyan-300 border-b-3 border-b-cyan-500"
+                  }`}
+                  title="ถ่ายรูปโพลารอยด์น้องแฮมสเตอร์"
+                >
+                  <Camera className="w-3.5 h-3.5 inline-block text-cyan-600" />
+                  <span>ถ่ายรูป</span>
+                </button>
               </div>
             </div>
           )}
@@ -828,6 +873,22 @@ export default function PlayerView({ onNavigateToAdmin }) {
                   className="w-5 h-5 sm:w-6 sm:h-6 object-contain pixel-art pointer-events-none"
                 />
                 <span className="text-[7px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">Jump</span>
+              </button>
+
+              {/* 🎡 วิ่งวงล้อสปรินต์ Wheel Sprint Shortcut */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  sound.playClick();
+                  haptic.tap();
+                  setIsWheelSprintOpen(true);
+                }}
+                className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-yellow-400 via-orange-500 to-amber-600 text-white shadow-md hover:scale-105 active:translate-y-1 active:border-b-2 transition-all flex flex-col items-center justify-center border-2 border-white/90 border-b-4 border-b-orange-700 group cursor-pointer pointer-events-auto relative z-40"
+                title="มินิเกมวิ่งวงล้อสปรินต์ Hamster Wheel Sprint"
+              >
+                <span className="text-sm pointer-events-none">🎡</span>
+                <span className="text-[7px] sm:text-[9px] font-black tracking-tighter leading-none mt-0.5 pointer-events-none">วิ่งล้อ</span>
               </button>
 
               {/* 🎭 เล่นกับน้อง Tricks Dropdown */}
@@ -1401,9 +1462,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
               <ActionControls
                 state={gameState}
                 onFeed={handleFeed}
-                onPet={() => gameStateService.pet()}
-                onClean={() => gameStateService.cleanCage()}
-                onToggleSleep={() => gameStateService.toggleSleep()}
+                onPet={() => { gameStateService.pet(); haptic.pet(); }}
+                onClean={() => { gameStateService.cleanCage(); haptic.success(); }}
+                onToggleSleep={() => { gameStateService.toggleSleep(); haptic.tap(); }}
                 onOpenWheel={() => setIsWheelOpen(true)}
                 onOpenFoodShop={() => setIsFoodShopOpen(true)}
                 onOpenDecor={() => setIsDecorOpen(true)}
@@ -1411,6 +1472,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
                 onOpenGarden={() => setIsGardenOpen(true)}
                 onOpenGashapon={() => setIsGashaponOpen(true)}
                 onOpenJump={() => setIsJumpOpen(true)}
+                onOpenWheelSprint={() => setIsWheelSprintOpen(true)}
                 isDarkMode={isDarkMode}
               />
             </div>
@@ -1432,9 +1494,9 @@ export default function PlayerView({ onNavigateToAdmin }) {
             <ActionControls
               state={gameState}
               onFeed={handleFeed}
-              onPet={() => gameStateService.pet()}
-              onClean={() => gameStateService.cleanCage()}
-              onToggleSleep={() => gameStateService.toggleSleep()}
+              onPet={() => { gameStateService.pet(); haptic.pet(); }}
+              onClean={() => { gameStateService.cleanCage(); haptic.success(); }}
+              onToggleSleep={() => { gameStateService.toggleSleep(); haptic.tap(); }}
               onOpenWheel={() => setIsWheelOpen(true)}
               onOpenFoodShop={() => setIsFoodShopOpen(true)}
               onOpenDecor={() => setIsDecorOpen(true)}
@@ -1442,6 +1504,7 @@ export default function PlayerView({ onNavigateToAdmin }) {
               onOpenGarden={() => setIsGardenOpen(true)}
               onOpenGashapon={() => setIsGashaponOpen(true)}
               onOpenJump={() => setIsJumpOpen(true)}
+              onOpenWheelSprint={() => setIsWheelSprintOpen(true)}
               isDarkMode={isDarkMode}
             />
             {renderFooterHints()}
@@ -1595,6 +1658,21 @@ export default function PlayerView({ onNavigateToAdmin }) {
           gameStateService.setAvatar(avatar);
           gameStateService.setTitle(title);
         }}
+      />
+
+      {/* 📸 Hamster Polaroid Photo Studio Modal */}
+      <HamsterCameraModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        gameState={gameState}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* 🎡 Hamster Running Wheel Sprint Minigame Modal */}
+      <HamsterWheelModal
+        isOpen={isWheelSprintOpen}
+        onClose={() => setIsWheelSprintOpen(false)}
+        gameState={gameState}
       />
     </div>
   );

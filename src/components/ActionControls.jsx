@@ -31,6 +31,7 @@ export default function ActionControls({
   onOpenGarden,
   onOpenGashapon,
   onOpenJump,
+  onOpenWheelSprint,
   isDarkMode = false,
 }) {
   const { level = 1, isSleeping = false, poopCount = 0, cleanliness = 100 } = state || {};
@@ -330,9 +331,9 @@ export default function ActionControls({
         </button>
       </div>
 
-      {/* 3 Adventure & Mini-Game Modules */}
+      {/* 4 Adventure & Mini-Game Modules */}
       <div
-        className={`grid grid-cols-3 gap-1.5 sm:gap-2 mt-2.5 pt-2.5 border-t ${
+        className={`grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 mt-2.5 pt-2.5 border-t ${
           isDarkMode ? "border-slate-700/80" : "border-amber-200/80"
         }`}
       >
@@ -402,6 +403,29 @@ export default function ActionControls({
           <span className="text-[10px] sm:text-[11px] font-black leading-tight">Hamster Jump</span>
           <span className={`text-[8px] sm:text-[9px] font-bold mt-0.5 ${isDarkMode ? "text-orange-400" : "text-orange-700"}`}>
             ไต่เมฆเก็บเหรียญ
+          </span>
+        </button>
+
+        {/* วิ่งวงล้อสปรินต์ Hamster Wheel Sprint (New!) */}
+        <button
+          onClick={onOpenWheelSprint}
+          disabled={isSleeping}
+          className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 text-center transition-all ${
+            !isSleeping
+              ? isDarkMode
+                ? "bg-slate-800/90 border-orange-500/50 border-b-3 border-b-orange-500 text-orange-200 hover:bg-slate-750 active:translate-y-0.5 cursor-pointer"
+                : "bg-gradient-to-b from-orange-50 to-amber-100/90 border-orange-300 border-b-3 border-b-orange-500 text-orange-950 hover:shadow-xs active:translate-y-0.5 cursor-pointer"
+              : isDarkMode
+              ? "bg-slate-800/40 border-slate-700/40 border-b-2 text-slate-500 cursor-not-allowed opacity-50"
+              : "bg-slate-100 border-slate-200 border-b-2 text-slate-400 cursor-not-allowed opacity-60"
+          }`}
+        >
+          <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center mb-0.5 text-2xl">
+            🎡
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-black leading-tight">วิ่งวงล้อสปรินต์</span>
+          <span className={`text-[8px] sm:text-[9px] font-bold mt-0.5 ${isDarkMode ? "text-amber-400" : "text-amber-700"}`}>
+            RPM ชาเลนจ์ 🏃‍♂️
           </span>
         </button>
       </div>

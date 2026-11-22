@@ -2137,6 +2137,45 @@ class GameStateService {
     });
   }
 
+  // 🏃‍♂️ บันทึกผลคะแนนมินิเกมวิ่งวงล้อสปรินต์ (Hamster Wheel Sprint)
+  recordWheelScore(rpm, distanceMeters, earnedSeeds) {
+    sound.playLevelUp();
+    return this.updateState((prev) => {
+      const isFever = prev.serverFever?.active && ((prev.serverFever.expiresAt || 0) > Date.now());
+      const hasDoubleBuff = (prev.activeBuffs?.doubleCoinUntil || 0) > Date.now();
+      let multiplier = 1;
+      if (isFever) multiplier *= (prev.serverFever.multiplier || 2);
+      if (hasDoubleBuff) multiplier *= 2;
+      const totalSeeds = Math.round(earnedSeeds * multiplier);
+
+      const currentBestRPM = prev.highScores?.wheelSprintRPM || 0;
+      const newBestRPM = Math.max(currentBestRPM, rpm);
+
+      const currentBestDist = prev.highScores?.wheelSprintDist || 0;
+      const newBestDist = Math.max(currentBestDist, distanceMeters);
+
+      return {
+        ...prev,
+        coins: prev.coins + totalSeeds,
+        exp: (prev.exp || 0) + Math.min(50, Math.floor(distanceMeters / 10)),
+        highScores: {
+          ...(prev.highScores || {}),
+          wheelSprintRPM: newBestRPM,
+          wheelSprintDist: newBestDist,
+        },
+        energy: Math.min(100, (prev.energy || 50) + 20),
+        happiness: Math.min(100, (prev.happiness || 50) + 25),
+        speechBubble: {
+          text: rpm > currentBestRPM
+            ? `NEW RECORD! วิ่งวงล้อสปรินต์ทะลุ ${rpm} RPM วิ่งได้ ${distanceMeters} เมตร! ได้รับ ${totalSeeds} เมล็ดทานตะวัน! ⚡🐹🔥`
+            : `วิ่งวงล้อออกกำลังกายฟินมากก! ปั่นได้ ${rpm} RPM ได้รับ ${totalSeeds} เมล็ดทานตะวันงับ! 🏃‍♂️💨`,
+          timestamp: Date.now(),
+          duration: 4000,
+        },
+      };
+    });
+  }
+
   // 💎 ใช้เพชรเร่งโตแปลงผักเสร็จทันที (Instant Crop Acceleration)
   instantHarvestPlot(plotIndex, costDiamonds = 5) {
     if ((this.currentState?.diamonds || 0) < costDiamonds) {

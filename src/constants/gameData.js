@@ -131,6 +131,8 @@ export const INITIAL_GAME_STATE = {
   mysteryBoxPending: null,
   highScores: {
     hamsterJump: 0,
+    wheelSprintRPM: 0,
+    wheelSprintDist: 0,
   },
 
   // 🏛️ v7.0 TYCOON ECONOMY & PRESTIGE
